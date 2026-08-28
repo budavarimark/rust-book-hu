@@ -1,28 +1,28 @@
-## Building a Single-Threaded Web Server
+## Egyszálú webszerver építése
 
-We’ll start by getting a single-threaded web server working. Before we begin,
-let’s look at a quick overview of the protocols involved in building web
-servers. The details of these protocols are beyond the scope of this book, but
-a brief overview will give you the information you need.
+Kezdjük azzal, hogy működésre bírunk egy egyszálú webszervert. Mielőtt
+belefognánk, nézzünk egy gyors áttekintést a webszerverek építésében szerepet
+játszó protokollokról. E protokollok részletei túlmutatnak a könyv keretein, de
+egy rövid áttekintés megadja a szükséges információkat.
 
-The two main protocols involved in web servers are _Hypertext Transfer
-Protocol_ _(HTTP)_ and _Transmission Control Protocol_ _(TCP)_. Both protocols
-are _request-response_ protocols, meaning a _client_ initiates requests and a
-_server_ listens to the requests and provides a response to the client. The
-contents of those requests and responses are defined by the protocols.
+A webszerverekben szerepet játszó két fő protokoll a _Hypertext Transfer
+Protocol_ _(HTTP)_ és a _Transmission Control Protocol_ _(TCP)_. Mindkettő
+_kérés-válasz_ (request-response) protokoll, vagyis egy _kliens_ kéréseket
+kezdeményez, a _szerver_ pedig figyeli a kéréseket, és választ ad a kliensnek.
+E kérések és válaszok tartalmát a protokollok határozzák meg.
 
-TCP is the lower-level protocol that describes the details of how information
-gets from one server to another but doesn’t specify what that information is.
-HTTP builds on top of TCP by defining the contents of the requests and
-responses. It’s technically possible to use HTTP with other protocols, but in
-the vast majority of cases, HTTP sends its data over TCP. We’ll work with the
-raw bytes of TCP and HTTP requests and responses.
+A TCP az alacsonyabb szintű protokoll, amely leírja, hogyan jut el az
+információ az egyik szerverről a másikra, de azt nem határozza meg, hogy mi ez
+az információ. A HTTP a TCP-re épül, és a kérések és válaszok tartalmát
+definiálja. Technikailag lehetséges a HTTP-t más protokollokkal is használni,
+de az esetek túlnyomó többségében a HTTP TCP-n keresztül küldi az adatait. Mi a
+TCP- és HTTP-kérések és -válaszok nyers bájtjaival fogunk dolgozni.
 
-### Listening to the TCP Connection
+### A TCP-kapcsolat figyelése
 
-Our web server needs to listen to a TCP connection, so that’s the first part
-we’ll work on. The standard library offers a `std::net` module that lets us do
-this. Let’s make a new project in the usual fashion:
+A webszerverünknek figyelnie kell egy TCP-kapcsolatot, tehát ezzel a résszel
+kezdjük. A standard könyvtár erre a `std::net` modult kínálja. Hozzunk létre a
+szokásos módon egy új projektet:
 
 ```console
 $ cargo new hello
@@ -30,11 +30,11 @@ $ cargo new hello
 $ cd hello
 ```
 
-Now enter the code in Listing 21-1 in _src/main.rs_ to start. This code will
-listen at the local address `127.0.0.1:7878` for incoming TCP streams. When it
-gets an incoming stream, it will print `Connection established!`.
+Most kezdésként írd be a 21-1. listában látható kódot a _src/main.rs_ fájlba.
+Ez a kód a helyi `127.0.0.1:7878` címen figyeli a beérkező TCP-stream-eket. Ha
+beérkező streamet kap, kiírja a `Connection established!` üzenetet.
 
-<Listing number="21-1" file-name="src/main.rs" caption="Listening for incoming streams and printing a message when we receive a stream">
+<Listing number="21-1" file-name="src/main.rs" caption="Beérkező stream-ek figyelése és üzenet kiírása, amikor streamet kapunk">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-01/src/main.rs}}
@@ -42,53 +42,52 @@ gets an incoming stream, it will print `Connection established!`.
 
 </Listing>
 
-Using `TcpListener`, we can listen for TCP connections at the address
-`127.0.0.1:7878`. In the address, the section before the colon is an IP address
-representing your computer (this is the same on every computer and doesn’t
-represent the authors’ computer specifically), and `7878` is the port. We’ve
-chosen this port for two reasons: HTTP isn’t normally accepted on this port, so
-our server is unlikely to conflict with any other web server you might have
-running on your machine, and 7878 is _rust_ typed on a telephone.
+A `TcpListener` segítségével a `127.0.0.1:7878` címen tudjuk figyelni a
+TCP-kapcsolatokat. A címben a kettőspont előtti rész egy IP-cím, amely a saját
+gépedet jelöli (ez minden gépen ugyanaz, és nem konkrétan a szerzők gépét
+jelenti), a `7878` pedig a port. Ezt a portot két okból választottuk: a HTTP-t
+általában nem ezen a porton fogadják, így a szerverünk vélhetően nem ütközik
+más, a gépeden esetleg futó webszerverrel, ráadásul a 7878 a _rust_ szó
+begépelve egy telefonon.
 
-The `bind` function in this scenario works like the `new` function in that it
-will return a new `TcpListener` instance. The function is called `bind`
-because, in networking, connecting to a port to listen to is known as “binding
-to a port.”
+A `bind` függvény ebben a helyzetben úgy működik, mint a `new` függvény: új
+`TcpListener` példányt ad vissza. A függvény neve azért `bind`, mert a
+hálózatkezelésben azt, hogy egy porthoz kapcsolódunk figyelés céljából,
+„porthoz kötésnek” (binding to a port) nevezik.
 
-The `bind` function returns a `Result<T, E>`, which indicates that it’s
-possible for binding to fail, for example, if we ran two instances of our
-program and so had two programs listening to the same port. Because we’re
-writing a basic server just for learning purposes, we won’t worry about
-handling these kinds of errors; instead, we use `unwrap` to stop the program if
-errors happen.
+A `bind` függvény `Result<T, E>` értéket ad vissza, ami jelzi, hogy a kötés
+meghiúsulhat, például ha a programunk két példányát futtatnánk, és így két
+program figyelné ugyanazt a portot. Mivel csak tanulási célból írunk egy
+egyszerű szervert, most nem foglalkozunk az ilyen hibák kezelésével; helyette
+`unwrap`-pel állítjuk le a programot, ha hiba történik.
 
-The `incoming` method on `TcpListener` returns an iterator that gives us a
-sequence of streams (more specifically, streams of type `TcpStream`). A single
-_stream_ represents an open connection between the client and the server.
-_Connection_ is the name for the full request and response process in which a
-client connects to the server, the server generates a response, and the server
-closes the connection. As such, we will read from the `TcpStream` to see what
-the client sent and then write our response to the stream to send data back to
-the client. Overall, this `for` loop will process each connection in turn and
-produce a series of streams for us to handle.
+A `TcpListener` `incoming` metódusa olyan iterátort ad vissza, amely stream-ek
+sorozatát adja nekünk (pontosabban `TcpStream` típusú stream-eket). Egyetlen
+_stream_ egy nyitott kapcsolatot jelöl a kliens és a szerver között. A
+_kapcsolat_ (connection) a teljes kérés-válasz folyamat neve, amelyben a kliens
+csatlakozik a szerverhez, a szerver választ állít elő, majd lezárja a
+kapcsolatot. Ennek megfelelően a `TcpStream`-ből olvassuk ki, mit küldött a
+kliens, majd a válaszunkat a streambe írjuk, hogy adatot küldjünk vissza a
+kliensnek. Összességében ez a `for` ciklus egymás után dolgozza fel a
+kapcsolatokat, és stream-ek sorozatát adja a kezünkbe.
 
-For now, our handling of the stream consists of calling `unwrap` to terminate
-our program if the stream has any errors; if there aren’t any errors, the
-program prints a message. We’ll add more functionality for the success case in
-the next listing. The reason we might receive errors from the `incoming` method
-when a client connects to the server is that we’re not actually iterating over
-connections. Instead, we’re iterating over _connection attempts_. The
-connection might not be successful for a number of reasons, many of them
-operating system specific. For example, many operating systems have a limit to
-the number of simultaneous open connections they can support; new connection
-attempts beyond that number will produce an error until some of the open
-connections are closed.
+Egyelőre a stream kezelése annyiból áll, hogy `unwrap`-et hívunk, ami leállítja
+a programunkat, ha a streamnek bármilyen hibája van; ha nincs hiba, a program
+kiír egy üzenetet. A sikeres esethez a következő listában adunk további
+funkcionalitást. Azért kaphatunk hibát az `incoming` metódustól, amikor egy
+kliens csatlakozik a szerverhez, mert valójában nem kapcsolatokon iterálunk,
+hanem _kapcsolódási kísérleteken_. A kapcsolat több okból is meghiúsulhat, és
+ezek közül sok operációs rendszer specifikus. Sok operációs rendszerben például
+korlátozott az egyszerre nyitva tartható kapcsolatok száma; az ezen felüli új
+kapcsolódási kísérletek hibát okoznak, amíg néhány nyitott kapcsolat le nem
+zárul.
 
-Let’s try running this code! Invoke `cargo run` in the terminal and then load
-_127.0.0.1:7878_ in a web browser. The browser should show an error message
-like “Connection reset” because the server isn’t currently sending back any
-data. But when you look at your terminal, you should see several messages that
-were printed when the browser connected to the server!
+Próbáljuk ki ezt a kódot! Add ki a `cargo run` parancsot a terminálban, majd
+töltsd be a _127.0.0.1:7878_ címet egy böngészőben. A böngészőnek valamilyen
+hibaüzenetet kell mutatnia, például „Connection reset”, mert a szerver
+pillanatnyilag semmilyen adatot nem küld vissza. Ha viszont a terminálra nézel,
+több üzenetet is látnod kell, amelyek akkor íródtak ki, amikor a böngésző
+csatlakozott a szerverhez!
 
 ```text
      Running `target/debug/hello`
@@ -97,42 +96,40 @@ Connection established!
 Connection established!
 ```
 
-Sometimes you’ll see multiple messages printed for one browser request; the
-reason might be that the browser is making a request for the page as well as a
-request for other resources, like the _favicon.ico_ icon that appears in the
-browser tab.
+Néha egyetlen böngészőkérésre több üzenet is kiíródik; ennek oka lehet, hogy a
+böngésző az oldalra vonatkozó kérés mellett más erőforrásokat is kér, például a
+böngészőfülön megjelenő _favicon.ico_ ikont.
 
-It could also be that the browser is trying to connect to the server multiple
-times because the server isn’t responding with any data. When `stream` goes out
-of scope and is dropped at the end of the loop, the connection is closed as
-part of the `drop` implementation. Browsers sometimes deal with closed
-connections by retrying, because the problem might be temporary.
+Az is előfordulhat, hogy a böngésző többször próbál csatlakozni a szerverhez,
+mert a szerver nem válaszol semmilyen adattal. Amikor a `stream` kikerül a
+hatóköréből, és a ciklus végén eldobódik, a kapcsolat a `drop` implementáció
+részeként lezárul. A böngészők a lezárt kapcsolatokat néha újrapróbálkozással
+kezelik, mert a probléma átmeneti is lehet.
 
-Browsers also sometimes open multiple connections to the server without sending
-any requests so that if they *do* later send requests, those requests can
-happen more quickly. When this occurs, our server will see each connection,
-regardless of whether there are any requests over that connection. Many
-versions of Chrome-based browsers do this, for example; you can disable that
-optimization by using private browsing mode or using a different browser.
+A böngészők időnként több kapcsolatot is nyitnak a szerverhez anélkül, hogy
+kéréseket küldenének, hogy ha *tényleg* küldenek később kéréseket, azok
+gyorsabban mehessenek végbe. Ilyenkor a szerverünk minden kapcsolatot lát,
+függetlenül attól, hogy érkezik-e kérés azon a kapcsolaton. Sok Chrome-alapú
+böngésző verziója csinálja ezt például; ezt az optimalizációt privát böngészési
+móddal vagy másik böngésző használatával kapcsolhatod ki.
 
-The important factor is that we’ve successfully gotten a handle to a TCP
-connection!
+A lényeg az, hogy sikeresen hozzájutottunk egy TCP-kapcsolat kezelőjéhez!
 
-Remember to stop the program by pressing <kbd>ctrl</kbd>-<kbd>C</kbd> when
-you’re done running a particular version of the code. Then, restart the program
-by invoking the `cargo run` command after you’ve made each set of code changes
-to make sure you’re running the newest code.
+Ne feledd leállítani a programot a <kbd>ctrl</kbd>-<kbd>C</kbd> lenyomásával,
+amikor végeztél a kód egy adott változatának futtatásával. Ezután a `cargo run`
+paranccsal indítsd újra a programot minden kódmódosítás után, hogy biztosan a
+legfrissebb kód fusson.
 
-### Reading the Request
+### A kérés beolvasása
 
-Let’s implement the functionality to read the request from the browser! To
-separate the concerns of first getting a connection and then taking some action
-with the connection, we’ll start a new function for processing connections. In
-this new `handle_connection` function, we’ll read data from the TCP stream and
-print it so that we can see the data being sent from the browser. Change the
-code to look like Listing 21-2.
+Implementáljuk azt a funkciót, amely beolvassa a böngésző kérését! Hogy
+szétválasszuk a kapcsolat felvételét attól, hogy utána kezdünk is valamit a
+kapcsolattal, új függvényt indítunk a kapcsolatok feldolgozására. Ebben az új
+`handle_connection` függvényben adatot olvasunk a TCP streamből, és kiírjuk,
+hogy lássuk, mit küld a böngésző. Módosítsd a kódot úgy, hogy a 21-2. listára
+hasonlítson.
 
-<Listing number="21-2" file-name="src/main.rs" caption="Reading from the `TcpStream` and printing the data">
+<Listing number="21-2" file-name="src/main.rs" caption="Olvasás a `TcpStream`-ből és az adat kiírása">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-02/src/main.rs}}
@@ -140,38 +137,39 @@ code to look like Listing 21-2.
 
 </Listing>
 
-We bring `std::io::BufReader` and `std::io::prelude` into scope to get access
-to traits and types that let us read from and write to the stream. In the `for`
-loop in the `main` function, instead of printing a message that says we made a
-connection, we now call the new `handle_connection` function and pass the
-`stream` to it.
+Behozzuk a hatókörbe a `std::io::BufReader` és a `std::io::prelude` elemeit,
+hogy hozzáférjünk azokhoz a trait-ekhez és típusokhoz, amelyekkel olvasni és
+írni tudunk a streamből, illetve a streambe. A `main` függvény `for`
+ciklusában ahelyett, hogy kiírnánk egy üzenetet a kapcsolat létrejöttéről, most
+meghívjuk az új `handle_connection` függvényt, és átadjuk neki a `stream`-et.
 
-In the `handle_connection` function, we create a new `BufReader` instance that
-wraps a reference to the `stream`. The `BufReader` adds buffering by managing
-calls to the `std::io::Read` trait methods for us.
+A `handle_connection` függvényben létrehozunk egy új `BufReader` példányt,
+amely a `stream`-re mutató referenciát csomagolja be. A `BufReader`
+pufferelést ad hozzá azzal, hogy helyettünk kezeli a `std::io::Read` trait
+metódusainak hívásait.
 
-We create a variable named `http_request` to collect the lines of the request
-the browser sends to our server. We indicate that we want to collect these
-lines in a vector by adding the `Vec<_>` type annotation.
+Létrehozunk egy `http_request` nevű változót, amelybe összegyűjtjük a
+böngészőtől a szerverünkhöz érkező kérés sorait. A `Vec<_>` típusannotációval
+jelezzük, hogy ezeket a sorokat egy vektorba szeretnénk gyűjteni.
 
-`BufReader` implements the `std::io::BufRead` trait, which provides the `lines`
-method. The `lines` method returns an iterator of `Result<String,
-std::io::Error>` by splitting the stream of data whenever it sees a newline
-byte. To get each `String`, we `map` and `unwrap` each `Result`. The `Result`
-might be an error if the data isn’t valid UTF-8 or if there was a problem
-reading from the stream. Again, a production program should handle these errors
-more gracefully, but we’re choosing to stop the program in the error case for
-simplicity.
+A `BufReader` implementálja a `std::io::BufRead` trait-et, amely a `lines`
+metódust nyújtja. A `lines` metódus `Result<String, std::io::Error>` értékek
+iterátorát adja vissza úgy, hogy minden újsor bájtnál felosztja az adatfolyamot.
+Ahhoz, hogy megkapjuk az egyes `String`-eket, `map`-eljük és `unwrap`-eljük az
+egyes `Result`-okat. A `Result` hibát is tartalmazhat, ha az adat nem érvényes
+UTF-8, vagy ha probléma adódott a streamből való olvasás során. Egy éles
+programnak megint csak elegánsabban kellene kezelnie ezeket a hibákat, mi
+viszont az egyszerűség kedvéért a hiba esetén leállítjuk a programot.
 
-The browser signals the end of an HTTP request by sending two newline
-characters in a row, so to get one request from the stream, we take lines until
-we get a line that is the empty string. Once we’ve collected the lines into the
-vector, we’re printing them out using pretty debug formatting so that we can
-take a look at the instructions the web browser is sending to our server.
+A böngésző két egymást követő újsorkarakterrel jelzi a HTTP-kérés végét, ezért
+hogy egy kérést kapjunk a streamből, addig vesszük ki a sorokat, amíg üres
+sztringet nem kapunk. Miután a sorokat összegyűjtöttük a vektorba, szépített
+debug formázással kiírjuk őket, hogy megnézhessük, milyen utasításokat küld a
+böngésző a szerverünknek.
 
-Let’s try this code! Start the program and make a request in a web browser
-again. Note that we’ll still get an error page in the browser, but our
-program’s output in the terminal will now look similar to this:
+Próbáljuk ki ezt a kódot! Indítsd el a programot, és küldj újra egy kérést a
+böngészőből. Vedd észre, hogy a böngészőben továbbra is hibaoldalt kapunk, de a
+programunk kimenete a terminálban most már valahogy így fog kinézni:
 
 <!-- manual-regeneration
 cd listings/ch21-web-server/listing-21-02
@@ -203,24 +201,24 @@ Request: [
 ]
 ```
 
-Depending on your browser, you might get slightly different output. Now that
-we’re printing the request data, we can see why we get multiple connections
-from one browser request by looking at the path after `GET` in the first line
-of the request. If the repeated connections are all requesting _/_, we know the
-browser is trying to fetch _/_ repeatedly because it’s not getting a response
-from our program.
+A böngésződtől függően kicsit eltérő kimenetet kaphatsz. Most, hogy kiírjuk a
+kérés adatait, a kérés első sorában a `GET` utáni útvonalat megnézve azt is
+láthatjuk, miért kapunk egyetlen böngészőkérésből több kapcsolatot. Ha az
+ismétlődő kapcsolatok mind a _/_ útvonalat kérik, akkor tudjuk, hogy a böngésző
+azért próbálja újra és újra lekérni a _/_ címet, mert nem kap választ a
+programunktól.
 
-Let’s break down this request data to understand what the browser is asking of
-our program.
+Bontsuk szét ezeket a kérésadatokat, hogy megértsük, mit kér a böngésző a
+programunktól.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="a-closer-look-at-an-http-request"></a>
 <a id="looking-closer-at-an-http-request"></a>
 
-### Looking More Closely at an HTTP Request
+### Nézzük meg közelebbről a HTTP-kérést
 
-HTTP is a text-based protocol, and a request takes this format:
+A HTTP szöveges alapú protokoll, és egy kérés a következő formátumú:
 
 ```text
 Method Request-URI HTTP-Version CRLF
@@ -228,41 +226,43 @@ headers CRLF
 message-body
 ```
 
-The first line is the _request line_ that holds information about what the
-client is requesting. The first part of the request line indicates the method
-being used, such as `GET` or `POST`, which describes how the client is making
-this request. Our client used a `GET` request, which means it is asking for
-information.
+Az első sor a _kéréssor_ (request line), amely azt tartalmazza, hogy mit kér a
+kliens. A kéréssor első része a használt metódust jelöli, például `GET` vagy
+`POST`, amely leírja, hogyan intézi a kliens a kérést. A mi kliensünk `GET`
+kérést használt, ami azt jelenti, hogy információt kér.
 
-The next part of the request line is _/_, which indicates the _uniform resource
-identifier_ _(URI)_ the client is requesting: A URI is almost, but not quite,
-the same as a _uniform resource locator_ _(URL)_. The difference between URIs
-and URLs isn’t important for our purposes in this chapter, but the HTTP spec
-uses the term _URI_, so we can just mentally substitute _URL_ for _URI_ here.
+A kéréssor következő része a _/_, amely azt az _uniform resource identifier_
+_(URI)_ értéket adja meg, amelyet a kliens kér: az URI majdnem, de nem
+teljesen ugyanaz, mint az _uniform resource locator_ _(URL)_. Az URI-k és az
+URL-ek közti különbség ebben a fejezetben nem számít nekünk, de a HTTP
+specifikáció az _URI_ kifejezést használja, így itt gondolatban nyugodtan
+behelyettesíthetjük az _URL_-t az _URI_ helyére.
 
-The last part is the HTTP version the client uses, and then the request line
-ends in a CRLF sequence. (_CRLF_ stands for _carriage return_ and _line feed_,
-which are terms from the typewriter days!) The CRLF sequence can also be
-written as `\r\n`, where `\r` is a carriage return and `\n` is a line feed. The
-_CRLF sequence_ separates the request line from the rest of the request data.
-Note that when the CRLF is printed, we see a new line start rather than `\r\n`.
+Az utolsó rész a kliens által használt HTTP-verzió, majd a kéréssor egy CRLF
+szekvenciával zárul. (A _CRLF_ a _carriage return_ és a _line feed_
+rövidítése, ezek még az írógépek korából származó kifejezések!) A CRLF
+szekvencia `\r\n` alakban is írható, ahol a `\r` a kocsivissza, a `\n` pedig a
+soremelés. A _CRLF szekvencia_ választja el a kéréssort a kérés többi
+adatától. Vedd észre, hogy amikor a CRLF kiíródik, `\r\n` helyett egy új sor
+kezdetét látjuk.
 
-Looking at the request line data we received from running our program so far,
-we see that `GET` is the method, _/_ is the request URI, and `HTTP/1.1` is the
-version.
+Ha megnézzük a kéréssor adatait, amelyeket a programunk eddigi futtatásából
+kaptunk, azt látjuk, hogy a metódus a `GET`, a kért URI a _/_, a verzió pedig a
+`HTTP/1.1`.
 
-After the request line, the remaining lines starting from `Host:` onward are
-headers. `GET` requests have no body.
+A kéréssor után a `Host:`-tól kezdődő további sorok fejlécek. A `GET`
+kéréseknek nincs törzsük.
 
-Try making a request from a different browser or asking for a different
-address, such as _127.0.0.1:7878/test_, to see how the request data changes.
+Próbálj kérést küldeni egy másik böngészőből, vagy kérj le egy másik címet,
+például a _127.0.0.1:7878/test_ címet, hogy lásd, hogyan változnak a kérés
+adatai.
 
-Now that we know what the browser is asking for, let’s send back some data!
+Most, hogy tudjuk, mit kér a böngésző, küldjünk vissza némi adatot!
 
-### Writing a Response
+### Válasz írása
 
-We’re going to implement sending data in response to a client request.
-Responses have the following format:
+Most azt implementáljuk, hogy adatot küldjünk válaszul a kliens kérésére. A
+válaszok formátuma a következő:
 
 ```text
 HTTP-Version Status-Code Reason-Phrase CRLF
@@ -270,26 +270,25 @@ headers CRLF
 message-body
 ```
 
-The first line is a _status line_ that contains the HTTP version used in the
-response, a numeric status code that summarizes the result of the request, and
-a reason phrase that provides a text description of the status code. After the
-CRLF sequence are any headers, another CRLF sequence, and the body of the
-response.
+Az első sor az _állapotsor_ (status line), amely a válaszban használt
+HTTP-verziót, a kérés eredményét összefoglaló numerikus állapotkódot, valamint
+egy indoklást tartalmaz, amely szövegesen írja le az állapotkódot. A CRLF
+szekvencia után jönnek az esetleges fejlécek, majd egy újabb CRLF szekvencia és
+a válasz törzse.
 
-Here is an example response that uses HTTP version 1.1 and has a status code of
-200, an OK reason phrase, no headers, and no body:
+Íme egy példa válasz, amely az 1.1-es HTTP-verziót használja, állapotkódja 200,
+az indoklása OK, nincsenek fejlécei és nincs törzse:
 
 ```text
 HTTP/1.1 200 OK\r\n\r\n
 ```
 
-The status code 200 is the standard success response. The text is a tiny
-successful HTTP response. Let’s write this to the stream as our response to a
-successful request! From the `handle_connection` function, remove the
-`println!` that was printing the request data and replace it with the code in
-Listing 21-3.
+A 200-as állapotkód a szabványos sikerválasz. Ez a szöveg egy pici sikeres
+HTTP-válasz. Írjuk ki ezt a streambe a sikeres kérésre adott válaszunkként! A
+`handle_connection` függvényből távolítsd el a `println!`-t, amely a kérés
+adatait írta ki, és cseréld le a 21-3. listában látható kódra.
 
-<Listing number="21-3" file-name="src/main.rs" caption="Writing a tiny successful HTTP response to the stream">
+<Listing number="21-3" file-name="src/main.rs" caption="Pici sikeres HTTP-válasz írása a streambe">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-03/src/main.rs:here}}
@@ -297,27 +296,27 @@ Listing 21-3.
 
 </Listing>
 
-The first new line defines the `response` variable that holds the success
-message’s data. Then, we call `as_bytes` on our `response` to convert the
-string data to bytes. The `write_all` method on `stream` takes a `&[u8]` and
-sends those bytes directly down the connection. Because the `write_all`
-operation could fail, we use `unwrap` on any error result as before. Again, in
-a real application, you would add error handling here.
+Az első új sor definiálja a `response` változót, amely a sikerüzenet adatait
+tartalmazza. Ezután `as_bytes`-t hívunk a `response`-on, hogy a sztringadatokat
+bájtokká alakítsuk. A `stream` `write_all` metódusa `&[u8]` értéket vár, és
+ezeket a bájtokat közvetlenül a kapcsolatba küldi. Mivel a `write_all` művelet
+meghiúsulhat, mint korábban, `unwrap`-et használunk bármilyen hibaeredményre.
+Egy valódi alkalmazásban itt megint csak hibakezelést kellene beépítened.
 
-With these changes, let’s run our code and make a request. We’re no longer
-printing any data to the terminal, so we won’t see any output other than the
-output from Cargo. When you load _127.0.0.1:7878_ in a web browser, you should
-get a blank page instead of an error. You’ve just handcoded receiving an HTTP
-request and sending a response!
+Ezekkel a változtatásokkal futtassuk a kódunkat, és küldjünk egy kérést. Már
+nem írunk ki adatot a terminálra, így a Cargo kimenetén kívül semmilyen
+kimenetet nem fogunk látni. Ha betöltöd a _127.0.0.1:7878_ címet egy
+böngészőben, hibaüzenet helyett üres oldalt kell kapnod. Épp most kódoltad le
+kézzel egy HTTP-kérés fogadását és egy válasz elküldését!
 
-### Returning Real HTML
+### Valódi HTML visszaadása
 
-Let’s implement the functionality for returning more than a blank page. Create
-the new file _hello.html_ in the root of your project directory, not in the
-_src_ directory. You can input any HTML you want; Listing 21-4 shows one
-possibility.
+Implementáljuk azt a funkciót, hogy ne csak egy üres oldalt adjunk vissza. Hozd
+létre az új _hello.html_ fájlt a projektkönyvtárad gyökerében, ne a _src_
+könyvtárban. Bármilyen HTML-t megadhatsz benne; a 21-4. lista egy lehetséges
+változatot mutat.
 
-<Listing number="21-4" file-name="hello.html" caption="A sample HTML file to return in a response">
+<Listing number="21-4" file-name="hello.html" caption="Példa HTML-fájl, amelyet válaszként adunk vissza">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-05/hello.html}}
@@ -325,12 +324,12 @@ possibility.
 
 </Listing>
 
-This is a minimal HTML5 document with a heading and some text. To return this
-from the server when a request is received, we’ll modify `handle_connection` as
-shown in Listing 21-5 to read the HTML file, add it to the response as a body,
-and send it.
+Ez egy minimális HTML5 dokumentum egy címsorral és némi szöveggel. Ahhoz, hogy
+a szerver ezt adja vissza, amikor kérés érkezik, a 21-5. listában látható módon
+módosítjuk a `handle_connection` függvényt, hogy beolvassa a HTML-fájlt,
+hozzáadja a válasz törzseként, és elküldje.
 
-<Listing number="21-5" file-name="src/main.rs" caption="Sending the contents of *hello.html* as the body of the response">
+<Listing number="21-5" file-name="src/main.rs" caption="A *hello.html* tartalmának elküldése a válasz törzseként">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-05/src/main.rs:here}}
@@ -338,38 +337,39 @@ and send it.
 
 </Listing>
 
-We’ve added `fs` to the `use` statement to bring the standard library’s
-filesystem module into scope. The code for reading the contents of a file to a
-string should look familiar; we used it when we read the contents of a file for
-our I/O project in Listing 12-4.
+A `use` utasításhoz hozzáadtuk az `fs`-t, hogy a standard könyvtár
+fájlrendszer-modulját behozzuk a hatókörbe. Egy fájl tartalmának sztringbe
+olvasásának kódja ismerős lehet; ezt használtuk, amikor az I/O projektünkben
+beolvastuk egy fájl tartalmát a 12-4. listában.
 
-Next, we use `format!` to add the file’s contents as the body of the success
-response. To ensure a valid HTTP response, we add the `Content-Length` header,
-which is set to the size of our response body—in this case, the size of
-`hello.html`.
+Ezután a `format!` makróval a fájl tartalmát a sikerválasz törzseként adjuk
+hozzá. Az érvényes HTTP-válasz érdekében hozzáadjuk a `Content-Length`
+fejlécet, amelynek értéke a válasz törzsének mérete – ebben az esetben a
+`hello.html` mérete.
 
-Run this code with `cargo run` and load _127.0.0.1:7878_ in your browser; you
-should see your HTML rendered!
+Futtasd ezt a kódot `cargo run` paranccsal, és töltsd be a _127.0.0.1:7878_
+címet a böngésződben; látnod kell a megjelenített HTML-t!
 
-Currently, we’re ignoring the request data in `http_request` and just sending
-back the contents of the HTML file unconditionally. That means if you try
-requesting _127.0.0.1:7878/something-else_ in your browser, you’ll still get
-back this same HTML response. At the moment, our server is very limited and
-does not do what most web servers do. We want to customize our responses
-depending on the request and only send back the HTML file for a well-formed
-request to _/_.
+Jelenleg figyelmen kívül hagyjuk a kérés `http_request`-ben lévő adatait, és
+feltétel nélkül visszaküldjük a HTML-fájl tartalmát. Ez azt jelenti, hogy ha a
+böngésződben a _127.0.0.1:7878/valami-mas_ címet kéred le, ugyanezt a
+HTML-választ kapod vissza. A szerverünk pillanatnyilag nagyon korlátozott, és
+nem azt csinálja, amit a legtöbb webszerver. Azt szeretnénk, hogy a válaszaink
+a kéréstől függjenek, és csak a _/_ útvonalra irányuló, jól formált kérésre
+küldjük vissza a HTML-fájlt.
 
-### Validating the Request and Selectively Responding
+### A kérés ellenőrzése és szelektív válasz
 
-Right now, our web server will return the HTML in the file no matter what the
-client requested. Let’s add functionality to check that the browser is
-requesting _/_ before returning the HTML file and to return an error if the
-browser requests anything else. For this we need to modify `handle_connection`,
-as shown in Listing 21-6. This new code checks the content of the request
-received against what we know a request for _/_ looks like and adds `if` and
-`else` blocks to treat requests differently.
+Jelenleg a webszerverünk visszaadja a fájlban lévő HTML-t, akármit is kért a
+kliens. Építsük be azt a funkciót, hogy a HTML-fájl visszaadása előtt
+ellenőrizzük, hogy a böngésző a _/_ útvonalat kéri-e, és hibát adjunk vissza,
+ha a böngésző bármi mást kér. Ehhez módosítanunk kell a `handle_connection`
+függvényt a 21-6. listában látható módon. Ez az új kód összeveti a kapott kérés
+tartalmát azzal, amiről tudjuk, hogyan néz ki egy _/_ útvonalra irányuló kérés,
+és `if`, illetve `else` blokkokat ad hozzá, hogy különbözőképpen kezelje a
+kéréseket.
 
-<Listing number="21-6" file-name="src/main.rs" caption="Handling requests to */* differently from other requests">
+<Listing number="21-6" file-name="src/main.rs" caption="A */* útvonalra irányuló kérések eltérő kezelése a többi kéréstől">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-06/src/main.rs:here}}
@@ -377,32 +377,31 @@ received against what we know a request for _/_ looks like and adds `if` and
 
 </Listing>
 
-We’re only going to be looking at the first line of the HTTP request, so rather
-than reading the entire request into a vector, we’re calling `next` to get the
-first item from the iterator. The first `unwrap` takes care of the `Option` and
-stops the program if the iterator has no items. The second `unwrap` handles the
-`Result` and has the same effect as the `unwrap` that was in the `map` added in
-Listing 21-2.
+Csak a HTTP-kérés első sorát fogjuk megnézni, ezért ahelyett, hogy a teljes
+kérést beolvasnánk egy vektorba, a `next`-et hívjuk meg, hogy megkapjuk az
+iterátor első elemét. Az első `unwrap` az `Option`-t kezeli, és leállítja a
+programot, ha az iterátornak nincs eleme. A második `unwrap` a `Result`-ot
+kezeli, és ugyanaz a hatása, mint a 21-2. listában a `map`-be tett `unwrap`-nek.
 
-Next, we check the `request_line` to see if it equals the request line of a GET
-request to the _/_ path. If it does, the `if` block returns the contents of our
-HTML file.
+Ezután megnézzük a `request_line`-t, hogy megegyezik-e a _/_ útvonalra irányuló
+GET kérés kéréssorával. Ha igen, az `if` blokk visszaadja a HTML-fájlunk
+tartalmát.
 
-If the `request_line` does _not_ equal the GET request to the _/_ path, it
-means we’ve received some other request. We’ll add code to the `else` block in
-a moment to respond to all other requests.
+Ha a `request_line` _nem_ egyezik meg a _/_ útvonalra irányuló GET kéréssel,
+akkor valamilyen más kérést kaptunk. Az `else` blokkba hamarosan kódot adunk,
+hogy az összes többi kérésre is válaszoljunk.
 
-Run this code now and request _127.0.0.1:7878_; you should get the HTML in
-_hello.html_. If you make any other request, such as
-_127.0.0.1:7878/something-else_, you’ll get a connection error like those you
-saw when running the code in Listing 21-1 and Listing 21-2.
+Futtasd most ezt a kódot, és kérd le a _127.0.0.1:7878_ címet; a
+_hello.html_-ben lévő HTML-t kell kapnod. Bármilyen más kérés, például a
+_127.0.0.1:7878/valami-mas_ esetén olyan kapcsolathibát kapsz, amilyeneket a
+21-1. és a 21-2. lista kódjának futtatásakor láttál.
 
-Now let’s add the code in Listing 21-7 to the `else` block to return a response
-with the status code 404, which signals that the content for the request was
-not found. We’ll also return some HTML for a page to render in the browser
-indicating the response to the end user.
+Most adjuk hozzá az `else` blokkhoz a 21-7. listában látható kódot, hogy 404-es
+állapotkóddal térjünk vissza, ami azt jelzi, hogy a kéréshez tartozó tartalom
+nem található. Visszaadunk némi HTML-t is egy oldalhoz, amelyet a böngésző
+megjelenít, és amely a végfelhasználó számára jelzi a választ.
 
-<Listing number="21-7" file-name="src/main.rs" caption="Responding with status code 404 and an error page if anything other than */* was requested">
+<Listing number="21-7" file-name="src/main.rs" caption="Válasz 404-es állapotkóddal és hibaoldallal, ha bármi mást kértek, mint a */*">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-07/src/main.rs:here}}
@@ -410,13 +409,13 @@ indicating the response to the end user.
 
 </Listing>
 
-Here, our response has a status line with status code 404 and the reason phrase
-`NOT FOUND`. The body of the response will be the HTML in the file _404.html_.
-You’ll need to create a _404.html_ file next to _hello.html_ for the error
-page; again, feel free to use any HTML you want, or use the example HTML in
-Listing 21-8.
+Itt a válaszunk állapotsora 404-es állapotkódot és a `NOT FOUND` indoklást
+tartalmazza. A válasz törzse a _404.html_ fájlban lévő HTML lesz. A
+hibaoldalhoz létre kell hoznod egy _404.html_ fájlt a _hello.html_ mellett;
+megint csak nyugodtan használj bármilyen HTML-t, vagy vedd át a 21-8. listában
+szereplő példa HTML-t.
 
-<Listing number="21-8" file-name="404.html" caption="Sample content for the page to send back with any 404 response">
+<Listing number="21-8" file-name="404.html" caption="Példatartalom ahhoz az oldalhoz, amelyet bármely 404-es válasszal visszaküldünk">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-07/404.html}}
@@ -424,26 +423,26 @@ Listing 21-8.
 
 </Listing>
 
-With these changes, run your server again. Requesting _127.0.0.1:7878_ should
-return the contents of _hello.html_, and any other request, like
-_127.0.0.1:7878/foo_, should return the error HTML from _404.html_.
+Ezekkel a változtatásokkal futtasd újra a szervert. A _127.0.0.1:7878_
+lekérésének a _hello.html_ tartalmát kell visszaadnia, minden más kérésnek,
+például a _127.0.0.1:7878/foo_ címnek pedig a _404.html_-ben lévő hiba-HTML-t.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="a-touch-of-refactoring"></a>
 
-### Refactoring
+### Refaktorálás
 
-At the moment, the `if` and `else` blocks have a lot of repetition: They’re
-both reading files and writing the contents of the files to the stream. The
-only differences are the status line and the filename. Let’s make the code more
-concise by pulling out those differences into separate `if` and `else` lines
-that will assign the values of the status line and the filename to variables;
-we can then use those variables unconditionally in the code to read the file
-and write the response. Listing 21-9 shows the resultant code after replacing
-the large `if` and `else` blocks.
+Pillanatnyilag az `if` és az `else` blokkban sok az ismétlés: mindkettő fájlt
+olvas be, és a fájlok tartalmát írja a streambe. Az egyetlen különbség az
+állapotsor és a fájlnév. Tegyük tömörebbé a kódot azzal, hogy ezeket a
+különbségeket külön `if` és `else` sorokba emeljük ki, amelyek az állapotsor és
+a fájlnév értékét változókhoz rendelik; ezután ezeket a változókat feltétel
+nélkül használhatjuk a kódban a fájl beolvasásához és a válasz kiírásához. A
+21-9. lista mutatja az eredményül kapott kódot, miután lecseréltük a nagy `if`
+és `else` blokkokat.
 
-<Listing number="21-9" file-name="src/main.rs" caption="Refactoring the `if` and `else` blocks to contain only the code that differs between the two cases">
+<Listing number="21-9" file-name="src/main.rs" caption="Az `if` és `else` blokkok refaktorálása úgy, hogy csak a két eset közti eltérő kódot tartalmazzák">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-09/src/main.rs:here}}
@@ -451,23 +450,22 @@ the large `if` and `else` blocks.
 
 </Listing>
 
-Now the `if` and `else` blocks only return the appropriate values for the
-status line and filename in a tuple; we then use destructuring to assign these
-two values to `status_line` and `filename` using a pattern in the `let`
-statement, as discussed in Chapter 19.
+Most az `if` és az `else` blokk csak a megfelelő állapotsor- és fájlnévértéket
+adja vissza egy tuple-ben; ezt a két értéket ezután destrukturálással rendeljük
+a `status_line` és a `filename` változókhoz, a `let` utasításban használt
+mintával, ahogy azt a 19. fejezetben tárgyaltuk.
 
-The previously duplicated code is now outside the `if` and `else` blocks and
-uses the `status_line` and `filename` variables. This makes it easier to see
-the difference between the two cases, and it means we have only one place to
-update the code if we want to change how the file reading and response writing
-work. The behavior of the code in Listing 21-9 will be the same as that in
-Listing 21-7.
+A korábban duplikált kód most már az `if` és `else` blokkokon kívül van, és a
+`status_line`, illetve `filename` változókat használja. Így könnyebb látni a
+két eset közti különbséget, és csak egy helyen kell módosítanunk a kódot, ha
+változtatni akarunk a fájlbeolvasás és a válaszírás működésén. A 21-9. lista
+kódjának viselkedése megegyezik a 21-7. listáéval.
 
-Awesome! We now have a simple web server in approximately 40 lines of Rust code
-that responds to one request with a page of content and responds to all other
-requests with a 404 response.
+Nagyszerű! Most van egy egyszerű webszerverünk nagyjából 40 sor Rust kódból,
+amely az egyik kérésre egy tartalmas oldallal, az összes többire pedig 404-es
+válasszal felel.
 
-Currently, our server runs in a single thread, meaning it can only serve one
-request at a time. Let’s examine how that can be a problem by simulating some
-slow requests. Then, we’ll fix it so that our server can handle multiple
-requests at once.
+Jelenleg a szerverünk egyetlen szálon fut, vagyis egyszerre csak egy kérést tud
+kiszolgálni. Nézzük meg, miért lehet ez probléma: szimuláljunk néhány lassú
+kérést. Ezután kijavítjuk, hogy a szerverünk egyszerre több kérést is kezelni
+tudjon.
