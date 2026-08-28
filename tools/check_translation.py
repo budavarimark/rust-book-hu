@@ -17,6 +17,28 @@ def orig(path):
                           capture_output=True, text=True).stdout
 
 
+def strip_aquascope(text):
+    """Kiveszi az Aquascope-blokkokat: ezek a fordításhoz képest kiegészítések."""
+    out, keep, inb, fence = [], True, False, ""
+    for line in text.split("\n"):
+        m = re.match(r"^\s*(`{3,}|~{3,})", line)
+        if m and not inb:
+            inb, fence = True, m.group(1)
+            keep = not line.strip().startswith(fence + "aquascope")
+            if keep:
+                out.append(line)
+            continue
+        if m and inb and line.strip().startswith(fence):
+            inb = False
+            if keep:
+                out.append(line)
+            keep = True
+            continue
+        if not inb or keep:
+            out.append(line)
+    return "\n".join(out)
+
+
 def facts(text):
     f = {}
     f["fences"] = re.findall(r"^[ \t]*(`{3,}|~{3,})[ \t]*(.*)$", text, re.M)
@@ -54,9 +76,22 @@ def main():
         if not o:
             print(f"?? {os.path.basename(path)}: nincs alapverzió")
             continue
-        fo, fn = facts(o), facts(n)
+        fo, fn = facts(o), facts(strip_aquascope(n))
+        # Ezek soha nem változhatnak; a többinél a kiegészítés megengedett.
+        STRICT = {"fences", "includes", "listing_num", "listing_file",
+                  "listing_count", "code"}
         for key in fo:
-            if fo[key] != fn[key]:
+            if key in STRICT:
+                differs = fo[key] != fn[key]
+            else:
+                rest = list(fn[key])
+                differs = False
+                for item in fo[key]:
+                    if item in rest:
+                        rest.remove(item)
+                    else:
+                        differs = True
+            if differs:
                 problems += 1
                 print(f"!! {os.path.basename(path)}: eltérés a(z) '{key}' elemben")
                 so, sn = fo[key], fn[key]
