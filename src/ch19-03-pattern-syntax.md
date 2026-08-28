@@ -276,7 +276,7 @@ use the values we’re interested in separately.
 Destructuring with patterns is a convenient way to use pieces of values, such
 as the value from each field in a struct, separately from each other.
 
-### Ignoring Values in a Pattern
+### Ignoring Values in a Pattern {#ignoring-values-in-a-pattern}
 
 You’ve seen that it’s sometimes useful to ignore values in a pattern, such as
 in the last arm of a `match`, to get a catch-all that doesn’t actually do
@@ -486,7 +486,7 @@ compiler error because using `..` in two places like this is ambiguous.
 
 <a id="extra-conditionals-with-match-guards"></a>
 
-### Adding Conditionals with Match Guards
+### Adding Conditionals with Match Guards {#adding-conditionals-with-match-guards}
 
 A _match guard_ is an additional `if` condition, specified after the pattern in
 a `match` arm, that must also match for that arm to be chosen. Match guards are

@@ -1,4 +1,4 @@
-## To `panic!` or Not to `panic!`
+## To `panic!` or Not to `panic!` {#to-panic-or-not-to-panic}
 
 So, how do you decide when you should call `panic!` and when you should return
 `Result`? When code panics, there’s no way to recover. You could call `panic!`
@@ -68,7 +68,7 @@ Mentioning the assumption that this IP address is hardcoded will prompt us to
 change `expect` to better error-handling code if, in the future, we need to get
 the IP address from some other source instead.
 
-### Guidelines for Error Handling
+### Guidelines for Error Handling {#guidelines-for-error-handling}
 
 It’s advisable to have your code panic when it’s possible that your code could
 end up in a bad state. In this context, a _bad state_ is when some assumption,

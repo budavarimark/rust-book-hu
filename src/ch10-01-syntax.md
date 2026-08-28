@@ -262,7 +262,7 @@ definition. Here, the generic parameters `X1` and `Y1` are declared after
 and `Y2` are declared after `fn mixup` because they’re only relevant to the
 method.
 
-### Performance of Code Using Generics
+### Performance of Code Using Generics {#performance-of-code-using-generics}
 
 You might be wondering whether there is a runtime cost when using generic type
 parameters. The good news is that using generic types won’t make your program

@@ -1,4 +1,4 @@
-## Validating References with Lifetimes
+## Validating References with Lifetimes {#validating-references-with-lifetimes}
 
 Lifetimes are another kind of generic that we’ve already been using. Rather
 than ensuring that a type has the behavior we want, lifetimes ensure that

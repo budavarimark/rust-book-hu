@@ -73,7 +73,7 @@ Most documentation comments don’t need all of these sections, but this is a
 good checklist to remind you of the aspects of your code users will be
 interested in knowing about.
 
-#### Documentation Comments as Tests
+#### Documentation Comments as Tests {#documentation-comments-as-tests}
 
 Adding example code blocks in your documentation comments can help demonstrate
 how to use your library and has an additional bonus: Running `cargo test` will
@@ -149,7 +149,7 @@ including the comment describing the crate as a whole</span>
 
 <a id="exporting-a-convenient-public-api-with-pub-use"></a>
 
-### Exporting a Convenient Public API
+### Exporting a Convenient Public API {#exporting-a-convenient-public-api}
 
 The structure of your public API is a major consideration when publishing a
 crate. People who use your crate are less familiar with the structure than you

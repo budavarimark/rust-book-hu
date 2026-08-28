@@ -60,7 +60,7 @@ stack, where they’re stored by default, is more appropriate in the majority of
 situations. Let’s look at a case where boxes allow us to define types that we
 wouldn’t be allowed to define if we didn’t have boxes.
 
-### Enabling Recursive Types with Boxes
+### Enabling Recursive Types with Boxes {#enabling-recursive-types-with-boxes}
 
 A value of a _recursive type_ can have another value of the same type as part of
 itself. Recursive types pose an issue because Rust needs to know at compile time

@@ -56,7 +56,7 @@ defined with this signature exactly.
 A trait can have multiple methods in its body: The method signatures are listed
 one per line, and each line ends in a semicolon.
 
-### Implementing a Trait on a Type
+### Implementing a Trait on a Type {#implementing-a-trait-on-a-type}
 
 Now that we’ve defined the desired signatures of the `Summary` trait’s methods,
 we can implement it on the types in our media aggregator. Listing 10-13 shows

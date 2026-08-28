@@ -79,7 +79,7 @@ root and not declared as a child of the `front_of_house` module. The
 compiler’s rules for which files to check for which modules’ code mean the
 directories and files more closely match the module tree.
 
-> ### Alternate File Paths
+> ### Alternate File Paths {#alternate-file-paths}
 >
 > So far we’ve covered the most idiomatic file paths the Rust compiler uses,
 > but Rust also supports an older style of file path. For a module named

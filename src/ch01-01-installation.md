@@ -1,4 +1,4 @@
-## Installation
+## Installation {#installation}
 
 The first step is to install Rust. We’ll download Rust through `rustup`, a
 command line tool for managing Rust versions and associated tools. You’ll need
@@ -68,7 +68,7 @@ ignore -->.
 The rest of this book uses commands that work in both _cmd.exe_ and PowerShell.
 If there are specific differences, we’ll explain which to use.
 
-### Troubleshooting
+### Troubleshooting {#troubleshooting}
 
 To check whether you have Rust installed correctly, open a shell and enter this
 line:

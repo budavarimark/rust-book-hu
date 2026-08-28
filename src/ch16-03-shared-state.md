@@ -95,7 +95,7 @@ to change the inner `i32` to `6`.
 
 <a id="sharing-a-mutext-between-multiple-threads"></a>
 
-#### Shared Access to `Mutex<T>`
+#### Shared Access to `Mutex<T>` {#shared-access-to-mutext}
 
 Now let’s try to share a value between multiple threads using `Mutex<T>`. We’ll
 spin up 10 threads and have them each increment a counter value by 1, so the

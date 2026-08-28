@@ -46,7 +46,7 @@ For Windows CMD, enter this:
 <!-- Old headings. Do not remove or links may break. -->
 <a id="writing-and-running-a-rust-program"></a>
 
-### Rust Program Basics
+### Rust Program Basics {#rust-program-basics}
 
 Next, make a new source file and call it _main.rs_. Rust files always end with
 the _.rs_ extension. If you’re using more than one word in your filename, the

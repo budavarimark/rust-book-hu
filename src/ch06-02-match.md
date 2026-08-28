@@ -2,7 +2,7 @@
 
 <a id="the-match-control-flow-operator"></a>
 
-## The `match` Control Flow Construct
+## The `match` Control Flow Construct {#the-match-control-flow-construct}
 
 Rust has an extremely powerful control flow construct called `match` that
 allows you to compare a value against a series of patterns and then execute
@@ -65,7 +65,7 @@ still returns the last value of the block, `1`:
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-08-match-arm-multiple-lines/src/main.rs:here}}
 ```
 
-### Patterns That Bind to Values
+### Patterns That Bind to Values {#patterns-that-bind-to-values}
 
 Another useful feature of match arms is that they can bind to the parts of the
 values that match the pattern. This is how we can extract values out of enum

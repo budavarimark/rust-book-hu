@@ -1,4 +1,4 @@
-## How to Write Tests
+## How to Write Tests {#how-to-write-tests}
 
 _Tests_ are Rust functions that verify that the non-test code is functioning in
 the expected manner. The bodies of test functions typically perform these three

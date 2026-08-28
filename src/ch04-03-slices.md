@@ -1,4 +1,4 @@
-## The Slice Type
+## The Slice Type {#the-slice-type}
 
 _Slices_ let you reference a contiguous sequence of elements in a
 [collection](ch08-00-common-collections.md)<!-- ignore -->. A slice is a kind
@@ -108,7 +108,7 @@ to be kept in sync.
 
 Luckily, Rust has a solution to this problem: string slices.
 
-### String Slices
+### String Slices {#string-slices}
 
 A _string slice_ is a reference to a contiguous sequence of the elements of a
 `String`, and it looks like this:
@@ -253,7 +253,7 @@ The type of `s` here is `&str`: It’s a slice pointing to that specific point o
 the binary. This is also why string literals are immutable; `&str` is an
 immutable reference.
 
-#### String Slices as Parameters
+#### String Slices as Parameters {#string-slices-as-parameters}
 
 Knowing that you can take slices of literals and `String` values leads us to
 one more improvement on `first_word`, and that’s its signature:

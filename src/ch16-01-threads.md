@@ -33,7 +33,7 @@ language thread. There are crates that implement other models of threading that
 make different trade-offs to the 1:1 model. (Rust’s async system, which we will
 see in the next chapter, provides another approach to concurrency as well.)
 
-### Creating a New Thread with `spawn`
+### Creating a New Thread with `spawn` {#creating-a-new-thread-with-spawn}
 
 To create a new thread, we call the `thread::spawn` function and pass it a
 closure (we talked about closures in Chapter 13) containing the code we want to
@@ -85,7 +85,7 @@ for the operating system to switch between the threads.
 
 <a id="waiting-for-all-threads-to-finish-using-join-handles"></a>
 
-### Waiting for All Threads to Finish
+### Waiting for All Threads to Finish {#waiting-for-all-threads-to-finish}
 
 The code in Listing 16-1 not only stops the spawned thread prematurely most of
 the time due to the main thread ending, but because there is no guarantee on
@@ -174,7 +174,7 @@ hi number 4 from the main thread!
 Small details, such as where `join` is called, can affect whether or not your
 threads run at the same time.
 
-### Using `move` Closures with Threads
+### Using `move` Closures with Threads {#using-move-closures-with-threads}
 
 We’ll often use the `move` keyword with closures passed to `thread::spawn`
 because the closure will then take ownership of the values it uses from the

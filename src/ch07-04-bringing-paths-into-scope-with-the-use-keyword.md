@@ -51,7 +51,7 @@ fix this problem, move the `use` within the `customer` module too, or reference
 the shortcut in the parent module with `super::hosting` within the child
 `customer` module.
 
-### Creating Idiomatic `use` Paths
+### Creating Idiomatic `use` Paths {#creating-idiomatic-use-paths}
 
 In Listing 7-11, you might have wondered why we specified `use
 crate::front_of_house::hosting` and then called `hosting::add_to_waitlist` in

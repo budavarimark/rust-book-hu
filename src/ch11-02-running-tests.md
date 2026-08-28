@@ -1,4 +1,4 @@
-## Controlling How Tests Are Run
+## Controlling How Tests Are Run {#controlling-how-tests-are-run}
 
 Just as `cargo run` compiles your code and then runs the resultant binary,
 `cargo test` compiles your code in test mode and runs the resultant test
@@ -94,7 +94,7 @@ see the following output:
 {{#include ../listings/ch11-writing-automated-tests/output-only-01-show-output/output.txt}}
 ```
 
-### Running a Subset of Tests by Name
+### Running a Subset of Tests by Name {#running-a-subset-of-tests-by-name}
 
 Running a full test suite can sometimes take a long time. If you’re working on
 code in a particular area, you might want to run only the tests pertaining to
@@ -153,7 +153,7 @@ on the module’s name.
 
 <a id="ignoring-some-tests-unless-specifically-requested"></a>
 
-### Ignoring Tests Unless Specifically Requested
+### Ignoring Tests Unless Specifically Requested {#ignoring-tests-unless-specifically-requested}
 
 Sometimes a few specific tests can be very time-consuming to execute, so you
 might want to exclude them during most runs of `cargo test`. Rather than

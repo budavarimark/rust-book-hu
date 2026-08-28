@@ -3,7 +3,7 @@
 <a id="treating-smart-pointers-like-regular-references-with-the-deref-trait"></a>
 <a id="treating-smart-pointers-like-regular-references-with-deref"></a>
 
-## Treating Smart Pointers Like Regular References
+## Treating Smart Pointers Like Regular References {#treating-smart-pointers-like-regular-references}
 
 Implementing the `Deref` trait allows you to customize the behavior of the
 _dereference operator_ `*` (not to be confused with the multiplication or glob

@@ -30,7 +30,7 @@ variants of the enum:
 
 `IpAddrKind` is now a custom data type that we can use elsewhere in our code.
 
-### Enum Values
+### Enum Values {#enum-values}
 
 We can create instances of each of the two variants of `IpAddrKind` like this:
 

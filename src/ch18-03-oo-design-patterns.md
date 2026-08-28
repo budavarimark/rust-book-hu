@@ -402,7 +402,7 @@ languages, we’re not taking as full advantage of Rust’s strengths as we coul
 Let’s look at some changes we can make to the `blog` crate that can make
 invalid states and transitions into compile-time errors.
 
-### Encoding States and Behavior as Types
+### Encoding States and Behavior as Types {#encoding-states-and-behavior-as-types}
 
 We’ll show you how to rethink the state pattern to get a different set of
 trade-offs. Rather than encapsulating the states and transitions completely so

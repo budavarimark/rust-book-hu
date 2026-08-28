@@ -1,4 +1,4 @@
-## Data Types
+## Data Types {#data-types}
 
 Every value in Rust is of a certain _data type_, which tells Rust what kind of
 data is being specified so that it knows how to work with that data. We’ll look
@@ -32,7 +32,7 @@ A _scalar_ type represents a single value. Rust has four primary scalar types:
 integers, floating-point numbers, Booleans, and characters. You may recognize
 these from other programming languages. Let’s jump into how they work in Rust.
 
-#### Integer Types
+#### Integer Types {#integer-types}
 
 An _integer_ is a number without a fractional component. We used one integer
 type in Chapter 2, the `u32` type. This type declaration indicates that the
@@ -204,7 +204,7 @@ Encoded Text with Strings”][strings]<!-- ignore --> in Chapter 8.
 _Compound types_ can group multiple values into one type. Rust has two
 primitive compound types: tuples and arrays.
 
-#### The Tuple Type
+#### The Tuple Type {#the-tuple-type}
 
 A _tuple_ is a general way of grouping together a number of values with a
 variety of types into one compound type. Tuples have a fixed length: Once

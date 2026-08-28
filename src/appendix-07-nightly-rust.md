@@ -120,7 +120,7 @@ The Rust project supports the most recent stable version. When a new stable
 version is released, the old version reaches its end of life (EOL). This means
 each version is supported for six weeks.
 
-### Unstable Features
+### Unstable Features {#unstable-features}
 
 There’s one more catch with this release model: unstable features. Rust uses a
 technique called “feature flags” to determine what features are enabled in a

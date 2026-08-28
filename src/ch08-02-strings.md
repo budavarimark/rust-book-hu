@@ -1,4 +1,4 @@
-## Storing UTF-8 Encoded Text with Strings
+## Storing UTF-8 Encoded Text with Strings {#storing-utf-8-encoded-text-with-strings}
 
 We talked about strings in Chapter 4, but we’ll look at them in more depth now.
 New Rustaceans commonly get stuck on strings for a combination of three
@@ -157,7 +157,7 @@ As a result, `s` will contain `lol`.
 
 <a id="concatenation-with-the--operator-or-the-format-macro"></a>
 
-#### Concatenating with `+` or `format!`
+#### Concatenating with `+` or `format!` {#concatenating-with--or-format}
 
 Often, you’ll want to combine two existing strings. One way to do so is to use
 the `+` operator, as shown in Listing 8-18.

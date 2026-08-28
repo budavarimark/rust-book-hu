@@ -1,4 +1,4 @@
-## Macros
+## Macros {#macros}
 
 We’ve used macros like `println!` throughout this book, but we haven’t fully
 explored what a macro is and how it works. The term _macro_ refers to a family
@@ -197,7 +197,7 @@ other forms different.
 
 <a id="how-to-write-a-custom-derive-macro"></a>
 
-### Custom `derive` Macros
+### Custom `derive` Macros {#custom-derive-macros}
 
 Let’s create a crate named `hello_macro` that defines a trait named
 `HelloMacro` with one associated function named `hello_macro`. Rather than

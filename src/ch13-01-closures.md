@@ -173,7 +173,7 @@ infers the type of `x` and the return type of the closure to be `String`. Those
 types are then locked into the closure in `example_closure`, and we get a type
 error when we next try to use a different type with the same closure.
 
-### Capturing References or Moving Ownership
+### Capturing References or Moving Ownership {#capturing-references-or-moving-ownership}
 
 Closures can capture values from their environment in three ways, which
 directly map to the three ways a function can take a parameter: borrowing
@@ -273,7 +273,7 @@ errors you get!
 <a id="moving-captured-values-out-of-the-closure-and-the-fn-traits"></a>
 <a id="moving-captured-values-out-of-closures-and-the-fn-traits"></a>
 
-### Moving Captured Values Out of Closures
+### Moving Captured Values Out of Closures {#moving-captured-values-out-of-closures}
 
 Once a closure has captured a reference or captured ownership of a value from
 the environment where the closure is defined (thus affecting what, if anything,

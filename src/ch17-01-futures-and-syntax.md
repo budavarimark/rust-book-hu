@@ -39,7 +39,7 @@ them concurrently, and return the result of whichever one finishes first. This
 example will have a fair bit of new syntax, but don’t worry—we’ll explain
 everything you need to know as we go.
 
-## Our First Async Program
+## Our First Async Program {#our-first-async-program}
 
 To keep the focus of this chapter on learning async rather than juggling parts
 of the ecosystem, we’ve created the `trpl` crate (`trpl` is short for “The Rust

@@ -1,4 +1,4 @@
-## Methods
+## Methods {#methods}
 
 Methods are similar to functions: We declare them with the `fn` keyword and a
 name, they can have parameters and a return value, and they contain some code
@@ -13,7 +13,7 @@ called on.
 
 <a id="defining-methods"></a>
 
-### Method Syntax
+### Method Syntax {#method-syntax}
 
 Let’s change the `area` function that has a `Rectangle` instance as a parameter
 and instead make an `area` method defined on the `Rectangle` struct, as shown
@@ -92,7 +92,7 @@ field as part of the type’s public API. We will discuss what public and privat
 are and how to designate a field or method as public or private in [Chapter
 7][public]<!-- ignore -->.
 
-> ### Where’s the `->` Operator?
+> ### Where’s the `->` Operator? {#wheres-the---operator}
 >
 > In C and C++, two different operators are used for calling methods: You use
 > `.` if you’re calling a method on the object directly and `->` if you’re

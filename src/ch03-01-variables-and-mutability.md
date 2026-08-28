@@ -1,4 +1,4 @@
-## Variables and Mutability
+## Variables and Mutability {#variables-and-mutability}
 
 As mentioned in the [“Storing Values with
 Variables”][storing-values-with-variables]<!-- ignore --> section, by default,
@@ -74,7 +74,7 @@ depends on what you think is clearest in that particular situation.
 <!-- Old headings. Do not remove or links may break. -->
 <a id="constants"></a>
 
-### Declaring Constants
+### Declaring Constants {#declaring-constants}
 
 Like immutable variables, _constants_ are values that are bound to a name and
 are not allowed to change, but there are a few differences between constants
@@ -121,7 +121,7 @@ conveying the meaning of that value to future maintainers of the code. It also
 helps to have only one place in your code that you would need to change if the
 hardcoded value needed to be updated in the future.
 
-### Shadowing
+### Shadowing {#shadowing}
 
 As you saw in the guessing game tutorial in [Chapter
 2][comparing-the-guess-to-the-secret-number]<!-- ignore -->, you can declare a

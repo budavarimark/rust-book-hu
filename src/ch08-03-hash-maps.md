@@ -43,7 +43,7 @@ keys of type `String` and values of type `i32`. Like vectors, hash maps are
 homogeneous: All of the keys must have the same type, and all of the values
 must have the same type.
 
-### Accessing Values in a Hash Map
+### Accessing Values in a Hash Map {#accessing-values-in-a-hash-map}
 
 We can get a value out of the hash map by providing its key to the `get`
 method, as shown in Listing 8-21.

@@ -140,7 +140,7 @@ pool and think about how things would look different or the same with async.
 
 <a id="creating-a-similar-interface-for-a-finite-number-of-threads"></a>
 
-#### Creating a Finite Number of Threads
+#### Creating a Finite Number of Threads {#creating-a-finite-number-of-threads}
 
 We want our thread pool to work in a similar, familiar way so that switching
 from threads to a thread pool doesn’t require large changes to the code that

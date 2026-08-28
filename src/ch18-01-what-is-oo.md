@@ -24,7 +24,7 @@ and `impl` blocks provide methods on structs and enums. Even though structs and
 enums with methods aren’t _called_ objects, they provide the same
 functionality, according to the Gang of Four’s definition of objects.
 
-### Encapsulation That Hides Implementation Details
+### Encapsulation That Hides Implementation Details {#encapsulation-that-hides-implementation-details}
 
 Another aspect commonly associated with OOP is the idea of _encapsulation_,
 which means that the implementation details of an object aren’t accessible to

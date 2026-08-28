@@ -19,7 +19,7 @@ the features that make Rust unique. In this chapter, you’ll learn ownership by
 working through some examples that focus on a very common data structure:
 strings.
 
-> ### The Stack and the Heap
+> ### The Stack and the Heap {#the-stack-and-the-heap}
 >
 > Many programming languages don’t require you to think about the stack and the
 > heap very often. But in a systems programming language like Rust, whether a
@@ -237,7 +237,7 @@ we’ve allocated on the heap. Let’s explore some of those situations now.
 
 <a id="ways-variables-and-data-interact-move"></a>
 
-#### Variables and Data Interacting with Move
+#### Variables and Data Interacting with Move {#variables-and-data-interacting-with-move}
 
 Multiple variables can interact with the same data in different ways in Rust.
 Listing 4-2 shows an example using an integer.
@@ -390,7 +390,7 @@ at the end, it will be `"ahoy, world!"`.
 
 <a id="ways-variables-and-data-interact-clone"></a>
 
-#### Variables and Data Interacting with Clone
+#### Variables and Data Interacting with Clone {#variables-and-data-interacting-with-clone}
 
 If we _do_ want to deeply copy the heap data of the `String`, not just the
 stack data, we can use a common method called `clone`. We’ll discuss method
@@ -410,7 +410,7 @@ When you see a call to `clone`, you know that some arbitrary code is being
 executed and that code may be expensive. It’s a visual indicator that something
 different is going on.
 
-#### Stack-Only Data: Copy
+#### Stack-Only Data: Copy {#stack-only-data-copy}
 
 There’s another wrinkle we haven’t talked about yet. This code using
 integers—part of which was shown in Listing 4-2—works and is valid:

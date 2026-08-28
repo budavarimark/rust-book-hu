@@ -156,7 +156,7 @@ measure to see what your code’s actual performance bottlenecks are. The
 underlying dynamic is important to keep in mind, though, if you _are_ seeing a
 lot of work happening in serial that you expected to happen concurrently!
 
-### Building Our Own Async Abstractions
+### Building Our Own Async Abstractions {#building-our-own-async-abstractions}
 
 We can also compose futures together to create new patterns. For example, we can
 build a `timeout` function with async building blocks we already have. When

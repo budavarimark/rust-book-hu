@@ -158,7 +158,7 @@ because its value was not moved out of `user1`.
 
 <a id="using-tuple-structs-without-named-fields-to-create-different-types"></a>
 
-### Creating Different Types with Tuple Structs
+### Creating Different Types with Tuple Structs {#creating-different-types-with-tuple-structs}
 
 Rust also supports structs that look similar to tuples, called _tuple structs_.
 Tuple structs have the added meaning the struct name provides but don’t have

@@ -97,7 +97,7 @@ inner code you can change without breaking the outer code. However, Rust does
 give you the option to expose inner parts of child modules’ code to outer
 ancestor modules by using the `pub` keyword to make an item public.
 
-### Exposing Paths with the `pub` Keyword
+### Exposing Paths with the `pub` Keyword {#exposing-paths-with-the-pub-keyword}
 
 Let’s return to the error in Listing 7-4 that told us the `hosting` module is
 private. We want the `eat_at_restaurant` function in the parent module to have

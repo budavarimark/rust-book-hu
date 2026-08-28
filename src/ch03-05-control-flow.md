@@ -1,4 +1,4 @@
-## Control Flow
+## Control Flow {#control-flow}
 
 The ability to run some code depending on whether a condition is `true` and the
 ability to run some code repeatedly while a condition is `true` are basic
@@ -303,7 +303,7 @@ This construct eliminates a lot of nesting that would be necessary if you used
 `loop`, `if`, `else`, and `break`, and it’s clearer. While a condition
 evaluates to `true`, the code runs; otherwise, it exits the loop.
 
-#### Looping Through a Collection with `for`
+#### Looping Through a Collection with `for` {#looping-through-a-collection-with-for}
 
 You can choose to use the `while` construct to loop over the elements of a
 collection, such as an array. For example, the loop in Listing 3-4 prints each

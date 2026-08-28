@@ -41,7 +41,7 @@ section in Chapter 18.
 
 <a id="creating-type-synonyms-with-type-aliases"></a>
 
-### Type Synonyms and Type Aliases
+### Type Synonyms and Type Aliases {#type-synonyms-and-type-aliases}
 
 Rust provides the ability to declare a _type alias_ to give an existing type
 another name. For this we use the `type` keyword. For example, we can create
@@ -212,7 +212,7 @@ Here, the loop never ends, so `!` is the value of the expression. However, this
 wouldn’t be true if we included a `break`, because the loop would terminate
 when it got to the `break`.
 
-### Dynamically Sized Types and the `Sized` Trait
+### Dynamically Sized Types and the `Sized` Trait {#dynamically-sized-types-and-the-sized-trait}
 
 Rust needs to know certain details about its types, such as how much space to
 allocate for a value of a particular type. This leaves one corner of its type

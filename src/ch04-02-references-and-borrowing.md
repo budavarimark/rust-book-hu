@@ -1,4 +1,4 @@
-## References and Borrowing
+## References and Borrowing {#references-and-borrowing}
 
 The issue with the tuple code in Listing 4-5 is that we have to return the
 `String` to the calling function so that we can still use the `String` after
@@ -191,7 +191,7 @@ the Rust compiler pointing out a potential bug early (at compile time rather
 than at runtime) and showing you exactly where the problem is. Then, you don’t
 have to track down why your data isn’t what you thought it was.
 
-### Dangling References
+### Dangling References {#dangling-references}
 
 In languages with pointers, it’s easy to erroneously create a _dangling
 pointer_—a pointer that references a location in memory that may have been

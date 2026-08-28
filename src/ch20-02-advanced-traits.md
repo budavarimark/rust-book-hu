@@ -1,4 +1,4 @@
-## Advanced Traits
+## Advanced Traits {#advanced-traits}
 
 We first covered traits in the [“Defining Shared Behavior with
 Traits”][traits]<!-- ignore --> section in Chapter 10, but we didn’t discuss
@@ -427,7 +427,7 @@ it within an outline of asterisks.
 <a id="using-the-newtype-pattern-to-implement-external-traits-on-external-types"></a>
 <a id="using-the-newtype-pattern-to-implement-external-traits"></a>
 
-### Implementing External Traits with the Newtype Pattern
+### Implementing External Traits with the Newtype Pattern {#implementing-external-traits-with-the-newtype-pattern}
 
 In the [“Implementing a Trait on a Type”][implementing-a-trait-on-a-type]<!--
 ignore --> section in Chapter 10, we mentioned the orphan rule that states

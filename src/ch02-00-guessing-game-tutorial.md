@@ -119,7 +119,7 @@ the screen:
 This code is printing a prompt stating what the game is and requesting input
 from the user.
 
-### Storing Values with Variables
+### Storing Values with Variables {#storing-values-with-variables}
 
 Next, we’ll create a _variable_ to store the user input, like this:
 
@@ -207,7 +207,7 @@ thoroughly.)
 
 <a id="handling-potential-failure-with-the-result-type"></a>
 
-### Handling Potential Failure with `Result`
+### Handling Potential Failure with `Result` {#handling-potential-failure-with-result}
 
 We’re still working on this line of code. We’re now discussing a third line of
 text, but note that it’s still part of a single logical line of code. The next
@@ -513,7 +513,7 @@ for now, that’s all you need to know. Cargo makes it very easy to reuse
 libraries, so Rustaceans are able to write smaller projects that are assembled
 from a number of packages.
 
-### Generating a Random Number
+### Generating a Random Number {#generating-a-random-number}
 
 Let’s start using `rand` to generate a number to guess. The next step is to
 update _src/main.rs_, as shown in Listing 2-3.
@@ -592,7 +592,7 @@ please check that you have `rand = "0.10.1"` in your *Cargo.toml* as future
 versions of `rand` may have a different API, but any version in the `0.10`
 series should work with the code in this chapter.
 
-## Comparing the Guess to the Secret Number
+## Comparing the Guess to the Secret Number {#comparing-the-guess-to-the-secret-number}
 
 Now that we have user input and a random number, we can compare them. That step
 is shown in Listing 2-4. Note that this code won’t compile just yet, as we will
@@ -821,7 +821,7 @@ Typing `quit` will quit the game, but as you’ll notice, so will entering any
 other non-number input. This is suboptimal, to say the least; we want the game
 to also stop when the correct number is guessed.
 
-### Quitting After a Correct Guess
+### Quitting After a Correct Guess {#quitting-after-a-correct-guess}
 
 Let’s program the game to quit when the user wins by adding a `break` statement:
 

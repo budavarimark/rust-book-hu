@@ -81,7 +81,7 @@ Rust for potential future use:
 - `virtual`
 - `yield`
 
-### Raw Identifiers
+### Raw Identifiers {#raw-identifiers}
 
 _Raw identifiers_ are the syntax that lets you use keywords where they wouldn’t
 normally be allowed. You use a raw identifier by prefixing a keyword with `r#`.
