@@ -1,23 +1,24 @@
-# Common Programming Concepts
+# Általános programozási fogalmak
 
-This chapter covers concepts that appear in almost every programming language
-and how they work in Rust. Many programming languages have much in common at
-their core. None of the concepts presented in this chapter are unique to Rust,
-but we’ll discuss them in the context of Rust and explain the conventions
-around using them.
+Ez a fejezet olyan fogalmakat tárgyal, amelyek szinte minden programozási
+nyelvben megjelennek, és bemutatja, hogyan működnek Rustban. Sok programozási
+nyelvben nagyon sok a közös a legalapvetőbb szinten. A fejezetben bemutatott
+fogalmak közül egyik sem kizárólag a Rust sajátja, de a Rust kontextusában
+beszélünk róluk, és elmagyarázzuk a használatukhoz kapcsolódó konvenciókat.
 
-Specifically, you’ll learn about variables, basic types, functions, comments,
-and control flow. These foundations will be in every Rust program, and learning
-them early will give you a strong core to start from.
+Konkrétan a változókról, az alapvető típusokról, a függvényekről, a
+kommentekről és a vezérlési szerkezetekről lesz szó. Ezek az alapok minden Rust
+programban jelen lesznek, és ha korán megtanulod őket, erős alapot kapsz az
+induláshoz.
 
-> #### Keywords
+> #### Kulcsszavak
 >
-> The Rust language has a set of _keywords_ that are reserved for use by the
-> language only, much as in other languages. Keep in mind that you cannot use
-> these words as names of variables or functions. Most of the keywords have
-> special meanings, and you’ll be using them to do various tasks in your Rust
-> programs; a few have no current functionality associated with them but have
-> been reserved for functionality that might be added to Rust in the future. You
-> can find the list of the keywords in [Appendix A][appendix_a]<!-- ignore -->.
+> A Rust nyelvnek van egy _kulcsszó_-készlete, amelyet – sok más nyelvhez
+> hasonlóan – kizárólag a nyelv használhat. Ne feledd, hogy ezeket a szavakat
+> nem használhatod változók vagy függvények neveként. A kulcsszavak többségének
+> speciális jelentése van, és különféle feladatok elvégzésére fogod használni
+> őket a Rust programjaidban; néhányukhoz jelenleg nem tartozik funkció, de
+> foglaltak olyan képességek számára, amelyeket a jövőben adhatnak a Rusthoz. A
+> kulcsszavak listáját az [A függelékben][appendix_a]<!-- ignore --> találod.
 
 [appendix_a]: appendix-01-keywords.md

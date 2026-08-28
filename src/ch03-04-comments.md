@@ -1,19 +1,19 @@
-## Comments
+## Kommentek
 
-All programmers strive to make their code easy to understand, but sometimes
-extra explanation is warranted. In these cases, programmers leave _comments_ in
-their source code that the compiler will ignore but that people reading the
-source code may find useful.
+Minden programozó igyekszik könnyen érthetővé tenni a kódját, de néha
+szükség van némi extra magyarázatra. Ilyenkor a programozók _kommenteket_
+hagynak a forráskódban, amelyeket a fordító figyelmen kívül hagy, a
+forráskódot olvasó emberek számára viszont hasznosak lehetnek.
 
-Here’s a simple comment:
+Íme egy egyszerű komment:
 
 ```rust
 // hello, world
 ```
 
-In Rust, the idiomatic comment style starts a comment with two slashes, and the
-comment continues until the end of the line. For comments that extend beyond a
-single line, you’ll need to include `//` on each line, like this:
+Rustban az idiomatikus kommentstílus két perjellel kezdi a kommentet, és a
+komment a sor végéig tart. Az egy sornál hosszabb kommenteknél minden sorba ki
+kell tenned a `//` jelet, így:
 
 ```rust
 // So we're doing something complicated here, long enough that we need
@@ -21,25 +21,25 @@ single line, you’ll need to include `//` on each line, like this:
 // explain what's going on.
 ```
 
-Comments can also be placed at the end of lines containing code:
+A kommentek kódot tartalmazó sorok végére is kerülhetnek:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-24-comments-end-of-line/src/main.rs}}
 ```
 
-But you’ll more often see them used in this format, with the comment on a
-separate line above the code it’s annotating:
+Gyakrabban azonban ebben a formában találkozol velük: a komment külön sorban
+áll az általa magyarázott kód fölött:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-25-comments-above-line/src/main.rs}}
 ```
 
-Rust also has another kind of comment, documentation comments, which we’ll
-discuss in the [“Publishing a Crate to Crates.io”][publishing]<!-- ignore -->
-section of Chapter 14.
+A Rustban van egy másfajta komment is, a dokumentációs komment, amelyről a 14.
+fejezet [„Crate publikálása a Crates.io-ra”][publishing]<!-- ignore --> című
+alfejezetében lesz szó.
 
 [publishing]: ch14-02-publishing-to-crates-io.html

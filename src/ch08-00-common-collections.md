@@ -1,25 +1,26 @@
-# Common Collections
+# Gyakori kollekciók
 
-Rust’s standard library includes a number of very useful data structures called
-_collections_. Most other data types represent one specific value, but
-collections can contain multiple values. Unlike the built-in array and tuple
-types, the data that these collections point to is stored on the heap, which
-means the amount of data does not need to be known at compile time and can grow
-or shrink as the program runs. Each kind of collection has different
-capabilities and costs, and choosing an appropriate one for your current
-situation is a skill you’ll develop over time. In this chapter, we’ll discuss
-three collections that are used very often in Rust programs:
+A Rust standard könyvtára számos nagyon hasznos adatszerkezetet tartalmaz,
+ezeket _kollekcióknak_ nevezzük. A legtöbb más adattípus egyetlen konkrét
+értéket képvisel, a kollekciók viszont több értéket is tárolhatnak. A beépített
+tömb- és tuple-típusokkal ellentétben az adatok, amelyekre ezek a kollekciók
+mutatnak, a heap-en tárolódnak, ami azt jelenti, hogy az adatok mennyiségének
+nem kell fordítási időben ismertnek lennie, és a program futása közben nőhet
+vagy csökkenhet. Minden kollekciófajtának más a képessége és más a költsége, és
+az adott helyzethez illő kiválasztása olyan készség, amelyet idővel sajátítasz
+el. Ebben a fejezetben három olyan kollekciót tárgyalunk, amelyeket nagyon
+gyakran használnak a Rust-programokban:
 
-- A _vector_ allows you to store a variable number of values next to each other.
-- A _string_ is a collection of characters. We’ve mentioned the `String` type
-  previously, but in this chapter, we’ll talk about it in depth.
-- A _hash map_ allows you to associate a value with a specific key. It’s a
-  particular implementation of the more general data structure called a _map_.
+- A _vektor_ változó számú érték egymás melletti tárolását teszi lehetővé.
+- A _string_ karakterek kollekciója. A `String` típust korábban már említettük,
+  de ebben a fejezetben részletesen is szó lesz róla.
+- A _hash map_ segítségével egy értéket egy adott kulcshoz társíthatsz. Ez az
+  általánosabb, _map_ nevű adatszerkezet egy konkrét implementációja.
 
-To learn about the other kinds of collections provided by the standard library,
-see [the documentation][collections].
+A standard könyvtár által kínált többi kollekciófajtáról
+[a dokumentációban][collections] olvashatsz.
 
-We’ll discuss how to create and update vectors, strings, and hash maps, as well
-as what makes each special.
+Megnézzük, hogyan hozhatunk létre és frissíthetünk vektorokat, stringeket és
+hash mapeket, és azt is, mi teszi különlegessé mindegyiket.
 
 [collections]: ../std/collections/index.html

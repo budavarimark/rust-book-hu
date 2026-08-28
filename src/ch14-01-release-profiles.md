@@ -1,16 +1,17 @@
-## Customizing Builds with Release Profiles
+## A build testreszabása release profilokkal
 
-In Rust, _release profiles_ are predefined, customizable profiles with
-different configurations that allow a programmer to have more control over
-various options for compiling code. Each profile is configured independently of
-the others.
+Rustban a _release profilok_ előre definiált, testreszabható profilok
+különböző konfigurációkkal, amelyek nagyobb kontrollt adnak a programozónak a
+kód fordításának különféle beállításai fölött. Minden profil a többitől
+függetlenül konfigurálható.
 
-Cargo has two main profiles: the `dev` profile Cargo uses when you run `cargo
-build`, and the `release` profile Cargo uses when you run `cargo build
---release`. The `dev` profile is defined with good defaults for development,
-and the `release` profile has good defaults for release builds.
+A Cargónak két fő profilja van: a `dev` profil, amelyet a `cargo build`
+futtatásakor használ, és a `release` profil, amelyet a `cargo build --release`
+futtatásakor. A `dev` profil a fejlesztéshez való jó alapértelmezésekkel van
+definiálva, a `release` profilnak pedig a release buildekhez való jó
+alapértelmezései vannak.
 
-These profile names might be familiar from the output of your builds:
+Ezek a profilnevek ismerősek lehetnek a buildjeid kimenetéből:
 
 <!-- manual-regeneration
 anywhere, run:
@@ -26,15 +27,16 @@ $ cargo build --release
     Finished `release` profile [optimized] target(s) in 0.32s
 ```
 
-The `dev` and `release` are these different profiles used by the compiler.
+A `dev` és a `release` ezek a különböző profilok, amelyeket a fordító használ.
 
-Cargo has default settings for each of the profiles that apply when you haven't
-explicitly added any `[profile.*]` sections in the project’s _Cargo.toml_ file.
-By adding `[profile.*]` sections for any profile you want to customize, you
-override any subset of the default settings. For example, here are the default
-values for the `opt-level` setting for the `dev` and `release` profiles:
+A Cargónak minden profilhoz vannak alapértelmezett beállításai, amelyek akkor
+érvényesülnek, ha nem adtál hozzá kifejezetten `[profile.*]` szakaszokat a
+projekt _Cargo.toml_ fájljához. Ha bármelyik testreszabni kívánt profilhoz
+hozzáadsz egy `[profile.*]` szakaszt, felülírhatod az alapértelmezett
+beállítások tetszőleges részhalmazát. Például itt vannak az `opt-level`
+beállítás alapértelmezett értékei a `dev` és a `release` profilhoz:
 
-<span class="filename">Filename: Cargo.toml</span>
+<span class="filename">Fájlnév: Cargo.toml</span>
 
 ```toml
 [profile.dev]
@@ -44,32 +46,35 @@ opt-level = 0
 opt-level = 3
 ```
 
-The `opt-level` setting controls the number of optimizations Rust will apply to
-your code, with a range of 0 to 3. Applying more optimizations extends
-compiling time, so if you’re in development and compiling your code often,
-you’ll want fewer optimizations to compile faster even if the resultant code
-runs slower. The default `opt-level` for `dev` is therefore `0`. When you’re
-ready to release your code, it’s best to spend more time compiling. You’ll only
-compile in release mode once, but you’ll run the compiled program many times,
-so release mode trades longer compile time for code that runs faster. That is
-why the default `opt-level` for the `release` profile is `3`.
+Az `opt-level` beállítás azt szabályozza, hány optimalizációt alkalmaz a Rust a
+kódodra; az értéke 0-tól 3-ig terjedhet. A több optimalizáció alkalmazása
+megnyújtja a fordítási időt, ezért ha fejlesztés közben gyakran fordítod a
+kódodat, kevesebb optimalizációt szeretnél, hogy gyorsabban forduljon, még ha
+az eredményül kapott kód lassabban fut is. A `dev` profil alapértelmezett
+`opt-level` értéke ezért `0`. Amikor készen állsz a kódod kiadására, jobban
+megéri több időt tölteni a fordítással. Release módban csak egyszer fordítasz,
+a lefordított programot viszont sokszor futtatod, így a release mód a hosszabb
+fordítási időt cseréli el gyorsabban futó kódra. Ezért a `release` profil
+alapértelmezett `opt-level` értéke `3`.
 
-You can override a default setting by adding a different value for it in
-_Cargo.toml_. For example, if we want to use optimization level 1 in the
-development profile, we can add these two lines to our project’s _Cargo.toml_
-file:
+Egy alapértelmezett beállítást úgy írhatsz felül, hogy másik értéket adsz meg
+hozzá a _Cargo.toml_ fájlban. Ha például az 1-es optimalizációs szintet
+szeretnénk használni a fejlesztői profilban, ezt a két sort adhatjuk hozzá a
+projektünk _Cargo.toml_ fájljához:
 
-<span class="filename">Filename: Cargo.toml</span>
+<span class="filename">Fájlnév: Cargo.toml</span>
 
 ```toml
 [profile.dev]
 opt-level = 1
 ```
 
-This code overrides the default setting of `0`. Now when we run `cargo build`,
-Cargo will use the defaults for the `dev` profile plus our customization to
-`opt-level`. Because we set `opt-level` to `1`, Cargo will apply more
-optimizations than the default, but not as many as in a release build.
+Ez a kód felülírja a `0` alapértelmezett beállítást. Mostantól, amikor
+lefuttatjuk a `cargo build` parancsot, a Cargo a `dev` profil alapértelmezéseit
+használja, kiegészítve az `opt-level` testreszabásunkkal. Mivel az `opt-level`
+értékét `1`-re állítottuk, a Cargo több optimalizációt alkalmaz az
+alapértelmezettnél, de nem annyit, mint egy release buildben.
 
-For the full list of configuration options and defaults for each profile, see
-[Cargo’s documentation](https://doc.rust-lang.org/cargo/reference/profiles.html).
+A konfigurációs beállítások és az egyes profilok alapértelmezéseinek teljes
+listájáért lásd
+[a Cargo dokumentációját](https://doc.rust-lang.org/cargo/reference/profiles.html).

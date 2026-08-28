@@ -1,24 +1,25 @@
-# Error Handling
+# Hibakezelés
 
-Errors are a fact of life in software, so Rust has a number of features for
-handling situations in which something goes wrong. In many cases, Rust requires
-you to acknowledge the possibility of an error and take some action before your
-code will compile. This requirement makes your program more robust by ensuring
-that you’ll discover errors and handle them appropriately before deploying your
-code to production!
+A hibák a szoftverfejlesztés velejárói, ezért a Rust számos képességgel
+rendelkezik a hibás helyzetek kezelésére. A Rust sok esetben megköveteli, hogy
+elismerd egy hiba lehetőségét, és tegyél is valamit ellene, mielőtt a kódod
+lefordulna. Ez a követelmény robusztusabbá teszi a programodat azáltal, hogy
+biztosítja: még azelőtt felfedezed és megfelelően kezeled a hibákat, hogy éles
+környezetbe telepítenéd a kódot!
 
-Rust groups errors into two major categories: recoverable and unrecoverable
-errors. For a _recoverable error_, such as a _file not found_ error, we most
-likely just want to report the problem to the user and retry the operation.
-_Unrecoverable errors_ are always symptoms of bugs, such as trying to access a
-location beyond the end of an array, and so we want to immediately stop the
-program.
+A Rust két nagy kategóriába sorolja a hibákat: helyrehozható és helyrehozhatatlan
+hibákra. Egy _helyrehozható hiba_ (recoverable error) esetén – ilyen például a
+_fájl nem található_ hiba – jó eséllyel csak jelenteni akarjuk a problémát a
+felhasználónak, és újra megpróbálni a műveletet. A _helyrehozhatatlan hibák_
+(unrecoverable errors) mindig hibás kódra utalnak, mint például egy tömb végén
+túli helyre való hivatkozás, ezért ilyenkor azonnal le akarjuk állítani a
+programot.
 
-Most languages don’t distinguish between these two kinds of errors and handle
-both in the same way, using mechanisms such as exceptions. Rust doesn’t have
-exceptions. Instead, it has the type `Result<T, E>` for recoverable errors and
-the `panic!` macro that stops execution when the program encounters an
-unrecoverable error. This chapter covers calling `panic!` first and then talks
-about returning `Result<T, E>` values. Additionally, we’ll explore
-considerations when deciding whether to try to recover from an error or to stop
-execution.
+A legtöbb nyelv nem tesz különbséget a hibák e két fajtája között, és mindkettőt
+ugyanúgy kezeli, például kivételekkel. A Rustban nincsenek kivételek. Helyettük a
+`Result<T, E>` típus áll rendelkezésre a helyrehozható hibákhoz, valamint a
+`panic!` makró, amely leállítja a végrehajtást, ha a program helyrehozhatatlan
+hibába ütközik. Ebben a fejezetben előbb a `panic!` hívásáról lesz szó, majd a
+`Result<T, E>` értékek visszaadásáról. Emellett megvizsgáljuk azokat a
+szempontokat is, amelyek alapján eldöntheted, hogy megpróbálkozz-e egy hibából
+való felépüléssel, vagy inkább állítsd le a végrehajtást.

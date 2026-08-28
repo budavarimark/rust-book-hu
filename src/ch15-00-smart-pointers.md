@@ -1,46 +1,51 @@
-# Smart Pointers
+# Smart pointerek
 
-A pointer is a general concept for a variable that contains an address in
-memory. This address refers to, or “points at,” some other data. The most
-common kind of pointer in Rust is a reference, which you learned about in
-Chapter 4. References are indicated by the `&` symbol and borrow the value they
-point to. They don’t have any special capabilities other than referring to
-data, and they have no overhead.
+A pointer általános fogalom egy olyan változóra, amely egy memóriacímet
+tartalmaz. Ez a cím valamilyen más adatra hivatkozik, azaz „rámutat”. A Rustban
+a leggyakoribb pointerfajta a referencia, amelyről a 4. fejezetben tanultál. A
+referenciákat a `&` jel jelöli, és borrowolják azt az értéket, amelyre mutatnak.
+Az adatokra való hivatkozáson kívül semmilyen különleges képességük nincs, és
+nem járnak többletköltséggel.
 
-_Smart pointers_, on the other hand, are data structures that act like a
-pointer but also have additional metadata and capabilities. The concept of
-smart pointers isn’t unique to Rust: Smart pointers originated in C++ and exist
-in other languages as well. Rust has a variety of smart pointers defined in the
-standard library that provide functionality beyond that provided by references.
-To explore the general concept, we’ll look at a couple of different examples of
-smart pointers, including a _reference counting_ smart pointer type. This
-pointer enables you to allow data to have multiple owners by keeping track of
-the number of owners and, when no owners remain, cleaning up the data.
+A _smart pointerek_ ezzel szemben olyan adatszerkezetek, amelyek pointerként
+viselkednek, de emellett további metaadatokkal és képességekkel is
+rendelkeznek. A smart pointerek fogalma nem a Rust sajátja: a smart pointerek a
+C++-ból erednek, és más nyelvekben is léteznek. A Rust standard könyvtárában
+sokféle smart pointer található, amelyek a referenciákon túlmutató
+funkcionalitást nyújtanak. Az általános fogalom feltérképezéséhez több
+különböző példát is megnézünk smart pointerekre, köztük egy _referenciaszámláló_
+smart pointer típust. Ez a pointer lehetővé teszi, hogy egy adatnak több ownere
+legyen: nyilvántartja az ownerek számát, és amikor egy owner sem marad,
+felszabadítja az adatot.
 
-In Rust, with its concept of ownership and borrowing, there is an additional
-difference between references and smart pointers: While references only borrow
-data, in many cases smart pointers _own_ the data they point to.
+A Rustban, ahol az ownership és a borrowing fogalma is jelen van, van még egy
+különbség a referenciák és a smart pointerek között: míg a referenciák csak
+borrowolják az adatot, a smart pointerek sok esetben _birtokolják_ azt az
+adatot, amelyre mutatnak.
 
-Smart pointers are usually implemented using structs. Unlike an ordinary
-struct, smart pointers implement the `Deref` and `Drop` traits. The `Deref`
-trait allows an instance of the smart pointer struct to behave like a reference
-so that you can write your code to work with either references or smart
-pointers. The `Drop` trait allows you to customize the code that’s run when an
-instance of the smart pointer goes out of scope. In this chapter, we’ll discuss
-both of these traits and demonstrate why they’re important to smart pointers.
+A smart pointereket általában structokkal implementálják. A hétköznapi
+structokkal ellentétben a smart pointerek implementálják a `Deref` és a `Drop`
+trait-et. A `Deref` trait lehetővé teszi, hogy a smart pointer struct egy
+példánya referenciaként viselkedjen, így a kódodat úgy írhatod meg, hogy
+referenciákkal és smart pointerekkel egyaránt működjön. A `Drop` trait
+segítségével testre szabhatod azt a kódot, amely akkor fut le, amikor a smart
+pointer egy példánya kilép a hatóköréből. Ebben a fejezetben mindkét trait-ről
+szó lesz, és bemutatjuk, miért fontosak a smart pointerek szempontjából.
 
-Given that the smart pointer pattern is a general design pattern used
-frequently in Rust, this chapter won’t cover every existing smart pointer. Many
-libraries have their own smart pointers, and you can even write your own. We’ll
-cover the most common smart pointers in the standard library:
+Mivel a smart pointer minta egy általános, a Rustban gyakran használt
+tervezési minta, ez a fejezet nem tud minden létező smart pointerre kitérni.
+Sok könyvtárnak megvan a saját smart pointere, sőt, te magad is írhatsz ilyet.
+A standard könyvtár leggyakoribb smart pointereivel foglalkozunk:
 
-- `Box<T>`, for allocating values on the heap
-- `Rc<T>`, a reference counting type that enables multiple ownership
-- `Ref<T>` and `RefMut<T>`, accessed through `RefCell<T>`, a type that enforces
-  the borrowing rules at runtime instead of compile time
+- `Box<T>`, értékek lefoglalásához a heapen
+- `Rc<T>`, egy referenciaszámláló típus, amely többszörös ownershipet tesz
+  lehetővé
+- `Ref<T>` és `RefMut<T>`, amelyeket a `RefCell<T>` típuson keresztül érünk el,
+  és amely a borrowing szabályait futásidőben érvényesíti fordítási idő helyett
 
-In addition, we’ll cover the _interior mutability_ pattern where an immutable
-type exposes an API for mutating an interior value. We’ll also discuss
-reference cycles: how they can leak memory and how to prevent them.
+Ezenfelül szó lesz az _interior mutability_ mintáról, ahol egy nem módosítható
+típus olyan API-t tesz elérhetővé, amellyel egy belső érték módosítható.
+Kitérünk a referenciaciklusokra is: hogyan okozhatnak memóriaszivárgást, és
+hogyan előzhetők meg.
 
-Let’s dive in!
+Vágjunk bele!

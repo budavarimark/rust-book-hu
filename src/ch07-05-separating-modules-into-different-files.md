@@ -1,22 +1,22 @@
-## Separating Modules into Different Files
+## Modulok szétválasztása külön fájlokba
 
-So far, all the examples in this chapter defined multiple modules in one file.
-When modules get large, you might want to move their definitions to a separate
-file to make the code easier to navigate.
+Eddig a fejezet összes példája több modult definiált egyetlen fájlban. Ha a
+modulok nagyra nőnek, érdemes lehet a definícióikat külön fájlba mozgatni, hogy
+a kódban könnyebb legyen eligazodni.
 
-For example, let’s start from the code in Listing 7-17 that had multiple
-restaurant modules. We’ll extract modules into files instead of having all the
-modules defined in the crate root file. In this case, the crate root file is
-_src/lib.rs_, but this procedure also works with binary crates whose crate root
-file is _src/main.rs_.
+Induljunk ki például a 7-17. listában szereplő kódból, amely több étteremmodult
+tartalmazott. A modulokat fájlokba emeljük ki ahelyett, hogy mindet a crate
+gyökérfájljában definiálnánk. Ebben az esetben a crate gyökérfájlja a
+_src/lib.rs_, de ez az eljárás olyan binary crate-ekkel is működik, amelyek
+gyökérfájlja a _src/main.rs_.
 
-First, we’ll extract the `front_of_house` module to its own file. Remove the
-code inside the curly brackets for the `front_of_house` module, leaving only
-the `mod front_of_house;` declaration, so that _src/lib.rs_ contains the code
-shown in Listing 7-21. Note that this won’t compile until we create the
-_src/front_of_house.rs_ file in Listing 7-22.
+Először a `front_of_house` modult emeljük ki a saját fájljába. Töröld a
+`front_of_house` modul kapcsos zárójelei közötti kódot, és hagyd meg csak a
+`mod front_of_house;` deklarációt, hogy a _src/lib.rs_ a 7-21. listában látható
+kódot tartalmazza. Vedd figyelembe, hogy ez addig nem fordul le, amíg létre nem
+hozzuk a 7-22. listában szereplő _src/front_of_house.rs_ fájlt.
 
-<Listing number="7-21" file-name="src/lib.rs" caption="Declaring the `front_of_house` module whose body will be in *src/front_of_house.rs*">
+<Listing number="7-21" file-name="src/lib.rs" caption="A `front_of_house` modul deklarálása, amelynek törzse a *src/front_of_house.rs* fájlban lesz">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-21-and-22/src/lib.rs}}
@@ -24,12 +24,12 @@ _src/front_of_house.rs_ file in Listing 7-22.
 
 </Listing>
 
-Next, place the code that was in the curly brackets into a new file named
-_src/front_of_house.rs_, as shown in Listing 7-22. The compiler knows to look
-in this file because it came across the module declaration in the crate root
-with the name `front_of_house`.
+Ezután helyezd a kapcsos zárójelek között álló kódot egy új,
+_src/front_of_house.rs_ nevű fájlba, ahogy a 7-22. lista mutatja. A fordító
+tudja, hogy ebben a fájlban kell keresnie, mert a crate gyökerében találkozott a
+`front_of_house` nevű modul deklarációjával.
 
-<Listing number="7-22" file-name="src/front_of_house.rs" caption="Definitions inside the `front_of_house` module in *src/front_of_house.rs*">
+<Listing number="7-22" file-name="src/front_of_house.rs" caption="A `front_of_house` modulon belüli definíciók a *src/front_of_house.rs* fájlban">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-21-and-22/src/front_of_house.rs}}
@@ -37,22 +37,22 @@ with the name `front_of_house`.
 
 </Listing>
 
-Note that you only need to load a file using a `mod` declaration _once_ in your
-module tree. Once the compiler knows the file is part of the project (and knows
-where in the module tree the code resides because of where you’ve put the `mod`
-statement), other files in your project should refer to the loaded file’s code
-using a path to where it was declared, as covered in the [“Paths for Referring
-to an Item in the Module Tree”][paths]<!-- ignore --> section. In other words,
-`mod` is _not_ an “include” operation that you may have seen in other
-programming languages.
+Vedd figyelembe, hogy egy fájlt `mod` deklarációval csak _egyszer_ kell
+betöltened a modulfádban. Miután a fordító tudja, hogy a fájl a projekt része
+(és azt is tudja, hol helyezkedik el a kód a modulfában, mert oda tetted a `mod`
+utasítást), a projekt többi fájljának a betöltött fájl kódjára a deklarálás
+helyéhez vezető útvonallal kell hivatkoznia, ahogy azt a
+[„Útvonalak a modulfa elemeire való hivatkozáshoz”][paths]<!-- ignore --> című
+szakaszban tárgyaltuk. Más szóval a `mod` _nem_ olyan „include” művelet, amelyet
+más programozási nyelvekben láthattál.
 
-Next, we’ll extract the `hosting` module to its own file. The process is a bit
-different because `hosting` is a child module of `front_of_house`, not of the
-root module. We’ll place the file for `hosting` in a new directory that will be
-named for its ancestors in the module tree, in this case _src/front_of_house_.
+Ezután a `hosting` modult emeljük ki a saját fájljába. A folyamat kissé
+másképp néz ki, mert a `hosting` a `front_of_house` gyermekmodulja, nem pedig a
+gyökérmodulé. A `hosting` fájlját egy új könyvtárba tesszük, amelyet a
+modulfában lévő őseiről nevezünk el; ebben az esetben ez a _src/front_of_house_.
 
-To start moving `hosting`, we change _src/front_of_house.rs_ to contain only
-the declaration of the `hosting` module:
+A `hosting` áthelyezésének elkezdéséhez a _src/front_of_house.rs_ fájlt úgy
+módosítjuk, hogy csak a `hosting` modul deklarációját tartalmazza:
 
 <Listing file-name="src/front_of_house.rs">
 
@@ -62,8 +62,8 @@ the declaration of the `hosting` module:
 
 </Listing>
 
-Then, we create a _src/front_of_house_ directory and a _hosting.rs_ file to
-contain the definitions made in the `hosting` module:
+Ezután létrehozunk egy _src/front_of_house_ könyvtárat és egy _hosting.rs_
+fájlt, amely a `hosting` modulban szereplő definíciókat tartalmazza:
 
 <Listing file-name="src/front_of_house/hosting.rs">
 
@@ -73,57 +73,62 @@ contain the definitions made in the `hosting` module:
 
 </Listing>
 
-If we instead put _hosting.rs_ in the _src_ directory, the compiler would
-expect the _hosting.rs_ code to be in a `hosting` module declared in the crate
-root and not declared as a child of the `front_of_house` module. The
-compiler’s rules for which files to check for which modules’ code mean the
-directories and files more closely match the module tree.
+Ha ehelyett a _hosting.rs_ fájlt a _src_ könyvtárba tennénk, a fordító azt
+várná, hogy a _hosting.rs_ kódja a crate gyökerében deklarált `hosting` modulhoz
+tartozik, nem pedig a `front_of_house` modul gyermekeként deklarált modulhoz. A
+fordítónak azok a szabályai, amelyek megmondják, melyik modul kódját melyik
+fájlban kell keresnie, azt eredményezik, hogy a könyvtárak és a fájlok szorosan
+követik a modulfa szerkezetét.
 
-> ### Alternate File Paths {#alternate-file-paths}
+> ### Alternatív fájlútvonalak {#alternate-file-paths}
 >
-> So far we’ve covered the most idiomatic file paths the Rust compiler uses,
-> but Rust also supports an older style of file path. For a module named
-> `front_of_house` declared in the crate root, the compiler will look for the
-> module’s code in:
+> Eddig azokat a fájlútvonalakat vettük végig, amelyeket a Rust fordító
+> leginkább idiomatikusnak tekint, a Rust azonban egy régebbi stílusú
+> fájlútvonalat is támogat. A crate gyökerében deklarált `front_of_house` nevű
+> modul kódját a fordító ezeken a helyeken keresi:
 >
-> - _src/front_of_house.rs_ (what we covered)
-> - _src/front_of_house/mod.rs_ (older style, still supported path)
+> - _src/front_of_house.rs_ (amit tárgyaltunk)
+> - _src/front_of_house/mod.rs_ (régebbi stílusú, továbbra is támogatott
+>   útvonal)
 >
-> For a module named `hosting` that is a submodule of `front_of_house`, the
-> compiler will look for the module’s code in:
+> A `front_of_house` almoduljaként létező `hosting` nevű modul kódját a fordító
+> ezeken a helyeken keresi:
 >
-> - _src/front_of_house/hosting.rs_ (what we covered)
-> - _src/front_of_house/hosting/mod.rs_ (older style, still supported path)
+> - _src/front_of_house/hosting.rs_ (amit tárgyaltunk)
+> - _src/front_of_house/hosting/mod.rs_ (régebbi stílusú, továbbra is
+>   támogatott útvonal)
 >
-> If you use both styles for the same module, you’ll get a compiler error.
-> Using a mix of both styles for different modules in the same project is
-> allowed but might be confusing for people navigating your project.
+> Ha ugyanahhoz a modulhoz mindkét stílust használod, fordítási hibát kapsz.
+> Az, hogy ugyanabban a projektben különböző modulokhoz keverve használod a két
+> stílust, megengedett, de zavaró lehet azok számára, akik a projektedben
+> próbálnak eligazodni.
 >
-> The main downside to the style that uses files named _mod.rs_ is that your
-> project can end up with many files named _mod.rs_, which can get confusing
-> when you have them open in your editor at the same time.
+> A _mod.rs_ nevű fájlokat használó stílus fő hátránya, hogy a projektedben sok
+> _mod.rs_ nevű fájl keletkezhet, ami zavaró lehet, amikor egyszerre több is
+> nyitva van a szerkesztődben.
 
-We’ve moved each module’s code to a separate file, and the module tree remains
-the same. The function calls in `eat_at_restaurant` will work without any
-modification, even though the definitions live in different files. This
-technique lets you move modules to new files as they grow in size.
+Minden modul kódját külön fájlba mozgattuk, a modulfa pedig ugyanaz maradt. Az
+`eat_at_restaurant` függvényben lévő függvényhívások bármilyen módosítás nélkül
+működni fognak, noha a definíciók más fájlokban élnek. Ezzel a technikával a
+modulokat új fájlokba mozgathatod, ahogy egyre nagyobbra nőnek.
 
-Note that the `pub use crate::front_of_house::hosting` statement in
-_src/lib.rs_ also hasn’t changed, nor does `use` have any impact on what files
-are compiled as part of the crate. The `mod` keyword declares modules, and Rust
-looks in a file with the same name as the module for the code that goes into
-that module.
+Vedd figyelembe, hogy a `pub use crate::front_of_house::hosting` utasítás a
+_src/lib.rs_ fájlban szintén nem változott, és a `use` semmilyen hatással sincs
+arra, mely fájlok fordulnak le a crate részeként. A `mod` kulcsszó modulokat
+deklarál, a Rust pedig a modullal azonos nevű fájlban keresi azt a kódot, amely
+az adott modulba tartozik.
 
-## Summary
+## Összefoglalás
 
-Rust lets you split a package into multiple crates and a crate into modules so
-that you can refer to items defined in one module from another module. You can
-do this by specifying absolute or relative paths. These paths can be brought
-into scope with a `use` statement so that you can use a shorter path for
-multiple uses of the item in that scope. Module code is private by default, but
-you can make definitions public by adding the `pub` keyword.
+A Rust lehetővé teszi, hogy egy csomagot több crate-re, egy crate-et pedig
+modulokra bonts, így az egyik modulban definiált elemekre egy másik modulból is
+hivatkozhatsz. Ezt abszolút vagy relatív útvonalak megadásával teheted meg.
+Ezeket az útvonalakat egy `use` utasítással hatókörbe hozhatod, hogy rövidebb
+útvonalat használhass, ha az adott hatókörben többször hivatkozol az elemre. A
+modulok kódja alapértelmezés szerint privát, de a definíciókat a `pub` kulcsszó
+hozzáadásával nyilvánossá teheted.
 
-In the next chapter, we’ll look at some collection data structures in the
-standard library that you can use in your neatly organized code.
+A következő fejezetben a standard könyvtár néhány kollekciós adatszerkezetét
+nézzük meg, amelyeket a szépen rendszerezett kódodban használhatsz.
 
 [paths]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html

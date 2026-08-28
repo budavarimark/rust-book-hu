@@ -2,28 +2,29 @@
 
 <a id="installing-binaries-from-cratesio-with-cargo-install"></a>
 
-## Installing Binaries with `cargo install`
+## Binárisok telepítése a `cargo install` paranccsal
 
-The `cargo install` command allows you to install and use binary crates
-locally. This isn’t intended to replace system packages; it’s meant to be a
-convenient way for Rust developers to install tools that others have shared on
-[crates.io](https://crates.io/)<!-- ignore -->. Note that you can only install
-packages that have binary targets. A _binary target_ is the runnable program
-that is created if the crate has a _src/main.rs_ file or another file specified
-as a binary, as opposed to a library target that isn’t runnable on its own but
-is suitable for including within other programs. Usually, crates have
-information in the README file about whether a crate is a library, has a
-binary target, or both.
+A `cargo install` paranccsal binary crate-eket telepíthetsz és használhatsz
+helyben. Ez nem a rendszer csomagkezelőjét hivatott kiváltani; kényelmes módot
+ad a Rust-fejlesztőknek arra, hogy telepítsék azokat az eszközöket, amelyeket
+mások megosztottak a [crates.io](https://crates.io/)<!-- ignore --> oldalon. Ne
+feledd, hogy csak olyan csomagokat tudsz telepíteni, amelyeknek van bináris
+targetjük. A _bináris target_ az a futtatható program, amely akkor jön létre, ha
+a crate rendelkezik _src/main.rs_ fájllal vagy egy másik, binárisként megadott
+fájllal – szemben a library targettel, amely önmagában nem futtatható, viszont
+alkalmas arra, hogy más programokba beépítsd. A crate-ek README fájlja általában
+tartalmaz információt arról, hogy az adott crate könyvtár-e, van-e bináris
+targetje, vagy mindkettő igaz rá.
 
-All binaries installed with `cargo install` are stored in the installation
-root’s _bin_ folder. If you installed Rust using _rustup.rs_ and don’t have any
-custom configurations, this directory will be *$HOME/.cargo/bin*. Ensure that
-this directory is in your `$PATH` to be able to run programs you’ve installed
-with `cargo install`.
+A `cargo install` paranccsal telepített összes bináris a telepítési gyökér _bin_
+mappájába kerül. Ha a Rustot a _rustup.rs_ segítségével telepítetted, és nincs
+egyedi beállításod, akkor ez a könyvtár a *$HOME/.cargo/bin* lesz. Gondoskodj
+róla, hogy ez a könyvtár szerepeljen a `$PATH` változóban, hogy futtatni tudd a
+`cargo install` paranccsal telepített programokat.
 
-For example, in Chapter 12 we mentioned that there’s a Rust implementation of
-the `grep` tool called `ripgrep` for searching files. To install `ripgrep`, we
-can run the following:
+Például a 12. fejezetben említettük, hogy létezik a `grep` eszköznek egy Rust
+implementációja, a `ripgrep`, fájlokban való kereséshez. A `ripgrep`
+telepítéséhez a következőt futtathatjuk:
 
 <!-- manual-regeneration
 cargo install something you don't have, copy relevant output below
@@ -42,7 +43,8 @@ $ cargo install ripgrep
    Installed package `ripgrep v14.1.1` (executable `rg`)
 ```
 
-The second-to-last line of the output shows the location and the name of the
-installed binary, which in the case of `ripgrep` is `rg`. As long as the
-installation directory is in your `$PATH`, as mentioned previously, you can
-then run `rg --help` and start using a faster, Rustier tool for searching files!
+A kimenet utolsó előtti sora mutatja a telepített bináris helyét és nevét, ami a
+`ripgrep` esetében `rg`. Amíg a telepítési könyvtár szerepel a `$PATH`
+változóban – ahogy korábban említettük –, addig futtathatod az `rg --help`
+parancsot, és elkezdheted használni ezt a gyorsabb, rustosabb eszközt fájlok
+kereséséhez!

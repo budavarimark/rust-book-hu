@@ -19,7 +19,7 @@ def orig(path):
 
 def facts(text):
     f = {}
-    f["fences"] = re.findall(r"^\s*(`{3,}|~{3,})\s*(.*)$", text, re.M)
+    f["fences"] = re.findall(r"^[ \t]*(`{3,}|~{3,})[ \t]*(.*)$", text, re.M)
     f["includes"] = re.findall(r"\{\{#\w+\s+([^}]*)\}\}", text)
     f["listing_num"] = re.findall(r'<Listing[^>]*?number="([^"]*)"', text)
     f["listing_file"] = re.findall(r'<Listing[^>]*?file-name="([^"]*)"', text)

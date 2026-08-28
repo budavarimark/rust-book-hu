@@ -1,47 +1,49 @@
-# Foreword
+# Előszó
 
-The Rust programming language has come a long way in a few short years, from
-its creation and incubation by a small and nascent community of enthusiasts, to
-becoming one of the most loved and in-demand programming languages in the
-world. Looking back, it was inevitable that the power and promise of Rust would
-turn heads and gain a foothold in systems programming. What was not inevitable
-was the global growth in interest and innovation that permeated through open
-source communities and catalyzed wide-scale adoption across industries.
+A Rust programozási nyelv néhány rövid év alatt hosszú utat járt be: lelkes
+rajongók kicsiny, épphogy formálódó közössége hozta létre és dajkálta, mára
+pedig a világ egyik legkedveltebb és legkeresettebb programozási nyelvévé vált.
+Visszatekintve elkerülhetetlen volt, hogy a Rustban rejlő erő és ígéret
+felkeltse a figyelmet, és megvesse a lábát a rendszerprogramozásban. Ami nem
+volt elkerülhetetlen, az az érdeklődés és az innováció világméretű
+felvirágzása, amely átjárta a nyílt forráskódú közösségeket, és iparágakon
+átívelő, széles körű elterjedést indított el.
 
-At this point in time, it is easy to point to the wonderful features that Rust
-has to offer to explain this explosion in interest and adoption. Who doesn’t
-want memory safety, *and* fast performance, *and* a friendly compiler, *and*
-great tooling, among a host of other wonderful features? The Rust language you
-see today combines years of research in systems programming with the practical
-wisdom of a vibrant and passionate community. This language was designed with
-purpose and crafted with care, offering developers a tool that makes it easier
-to write safe, fast, and reliable code.
+Ezen a ponton könnyű rámutatni azokra a nagyszerű képességekre, amelyeket a
+Rust kínál, és amelyek magyarázzák az érdeklődés és az elterjedés
+robbanásszerű növekedését. Ki ne akarna memóriabiztonságot, *és* gyors
+teljesítményt, *és* barátságos fordítót, *és* remek eszközkészletet – hogy a
+sok más nagyszerű képességről már ne is beszéljünk? A Rust nyelv, amelyet ma
+látsz, a rendszerprogramozás terén végzett évek kutatásait ötvözi egy pezsgő és
+szenvedélyes közösség gyakorlati bölcsességével. Ezt a nyelvet céltudatosan
+tervezték és gondosan csiszolták, hogy olyan eszközt adjon a fejlesztők kezébe,
+amellyel könnyebb biztonságos, gyors és megbízható kódot írni.
 
-But what makes Rust truly special is its roots in empowering you, the user, to
-achieve your goals. This is a language that wants you to succeed, and the
-principle of empowerment runs through the core of the community that builds,
-maintains, and advocates for this language. Since the previous edition of this
-definitive text, Rust has further developed into a truly global and trusted
-language. The Rust Project is now robustly supported by the Rust Foundation,
-which also invests in key initiatives to ensure that Rust is secure, stable,
-and sustainable.
+Ám ami a Rustot igazán különlegessé teszi, az a gyökereiben rejlő törekvés:
+téged, a felhasználót akarja képessé tenni a céljaid elérésére. Ez a nyelv azt
+akarja, hogy sikerrel járj, és a képessé tétel elve áthatja annak a közösségnek
+a magját is, amely építi, karbantartja és képviseli ezt a nyelvet. E
+mértékadó szöveg előző kiadása óta a Rust valóban globális és megbízható
+nyelvvé fejlődött tovább. A Rust Projectet ma stabilan támogatja a Rust
+Foundation, amely olyan kulcsfontosságú kezdeményezésekbe is befektet, amelyek
+biztosítják, hogy a Rust biztonságos, stabil és fenntartható maradjon.
 
-This edition of *The Rust Programming Language* is a comprehensive update,
-reflecting the language’s evolution over the years and providing valuable new
-information. But it is not just a guide to syntax and libraries—it’s an
-invitation to join a community that values quality, performance, and thoughtful
-design. Whether you’re a seasoned developer looking to explore Rust for the
-first time or an experienced Rustacean looking to refine your skills, this
-edition offers something for everyone.
+A *The Rust Programming Language* jelen kiadása átfogó frissítés: tükrözi a
+nyelv évek során bekövetkezett fejlődését, és értékes új információkat nyújt.
+De nem pusztán a szintaxis és a könyvtárak útmutatója – meghívó is egy olyan
+közösségbe, amely nagyra becsüli a minőséget, a teljesítményt és az átgondolt
+tervezést. Akár tapasztalt fejlesztő vagy, aki most ismerkedne először a
+Rusttal, akár gyakorlott rustacean, aki tovább csiszolná a tudását, ez a kiadás
+mindenkinek tartogat valamit.
 
-The Rust journey has been one of collaboration, learning, and iteration. The
-growth of the language and its ecosystem is a direct reflection of the vibrant,
-diverse community behind it. The contributions of thousands of developers, from
-core language designers to casual contributors, are what make Rust such a
-unique and powerful tool. By picking up this book, you’re not just learning a
-new programming language—you’re joining a movement to make software better,
-safer, and more enjoyable to work with.
+A Rust útja az együttműködésről, a tanulásról és az újra meg újra nekifutásról
+szólt. A nyelv és az ökoszisztémája növekedése közvetlenül tükrözi a mögötte
+álló pezsgő, sokszínű közösséget. Fejlesztők ezreinek hozzájárulása – a nyelv
+alaptervezőitől az alkalmi közreműködőkig – teszi a Rustot ilyen egyedülálló és
+erőteljes eszközzé. Azzal, hogy kézbe vetted ezt a könyvet, nem csupán egy új
+programozási nyelvet tanulsz meg: egy mozgalomhoz csatlakozol, amelynek célja,
+hogy a szoftver jobb, biztonságosabb és élvezetesebb legyen.
 
-Welcome to the Rust community!
+Üdvözlünk a Rust közösségében!
 
-- Bec Rumbul, Executive Director of the Rust Foundation
+- Bec Rumbul, a Rust Foundation ügyvezető igazgatója

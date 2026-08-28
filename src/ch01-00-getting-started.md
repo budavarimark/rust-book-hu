@@ -1,8 +1,8 @@
-# Getting Started
+# Kezdeti lépések
 
-Let’s start your Rust journey! There’s a lot to learn, but every journey starts
-somewhere. In this chapter, we’ll discuss:
+Vágjunk bele a Rust-utadba! Sok tanulnivaló vár, de minden út valahol
+elkezdődik. Ebben a fejezetben a következőkről lesz szó:
 
-- Installing Rust on Linux, macOS, and Windows
-- Writing a program that prints `Hello, world!`
-- Using `cargo`, Rust’s package manager and build system
+- A Rust telepítése Linuxon, macOS-en és Windowson
+- Egy olyan program megírása, amely kiírja, hogy `Hello, world!`
+- A `cargo`, a Rust csomagkezelőjének és build rendszerének használata

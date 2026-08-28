@@ -1,30 +1,30 @@
-# The Rust Programming Language
+# A Rust programozási nyelv
 
-_by Steve Klabnik, Carol Nichols, and Chris Krycho, with contributions from the
-Rust Community_
+_Írta Steve Klabnik, Carol Nichols és Chris Krycho, a Rust közösség
+közreműködésével_
 
-This version of the text assumes you’re using Rust 1.97.0 (released 2026-07-09)
-or later with `edition = "2024"` in the *Cargo.toml* file of all projects to
-configure them to use Rust 2024 Edition idioms. See the [“Installation” section
-of Chapter 1][install]<!-- ignore --> for instructions on installing or
-updating Rust, and see [Appendix E][appendix-e]<!-- ignore --> for information
-on editions.
+A szöveg jelen változata feltételezi, hogy a Rust 1.97.0 (megjelent 2026-07-09)
+vagy újabb verzióját használod, és hogy minden projekted *Cargo.toml* fájljában
+szerepel az `edition = "2024"` beállítás, amely a Rust 2024 Edition idiómáit
+kapcsolja be. A Rust telepítéséről és frissítéséről az [1. fejezet „Telepítés”
+szakaszában][install]<!-- ignore --> olvashatsz, az editionökről pedig az [E
+függelékben][appendix-e]<!-- ignore --> találsz információt.
 
-The HTML format is available online at
+A HTML-formátum online elérhető a
 [https://doc.rust-lang.org/stable/book/](https://doc.rust-lang.org/stable/book/)
-and offline with installations of Rust made with `rustup`; run `rustup doc
---book` to open.
+címen, offline pedig a `rustup`-pal telepített Rust részeként; a megnyitásához
+futtasd a `rustup doc --book` parancsot.
 
-Several community [translations] are also available.
+Több közösségi [fordítás][translations] is elérhető.
 
-This text is available in [paperback and ebook format from No Starch
-Press][nsprust].
+Ez a szöveg [nyomtatott és e-könyv formátumban a No Starch Press
+gondozásában][nsprust] is kapható.
 
 [install]: ch01-01-installation.html
 [appendix-e]: appendix-05-editions.html
 [nsprust]: https://nostarch.com/rust-programming-language-3rd-edition
 [translations]: appendix-06-translation.html
 
-> **🚨 Want a more interactive learning experience? Try out a different version
-> of the Rust Book, featuring: quizzes, highlighting, visualizations, and
-> more**: <https://rust-book.cs.brown.edu>
+> **🚨 Interaktívabb tanulási élményre vágysz? Próbáld ki a Rust könyv egy másik
+> változatát, amelyben kvízek, kiemelések, vizualizációk és még sok más
+> található**: <https://rust-book.cs.brown.edu>

@@ -1,49 +1,54 @@
-# Fearless Concurrency
+# Félelem nélküli konkurencia
 
-Handling concurrent programming safely and efficiently is another of Rust’s
-major goals. _Concurrent programming_, in which different parts of a program
-execute independently, and _parallel programming_, in which different parts of
-a program execute at the same time, are becoming increasingly important as more
-computers take advantage of their multiple processors. Historically,
-programming in these contexts has been difficult and error-prone. Rust hopes to
-change that.
+A konkurens programozás biztonságos és hatékony kezelése a Rust másik fő
+célkitűzése. A _konkurens programozás_, amelyben egy program különböző részei
+egymástól függetlenül futnak, és a _párhuzamos programozás_, amelyben egy
+program különböző részei egyszerre futnak, egyre fontosabbá válnak, ahogy egyre
+több számítógép használja ki a több processzorát. Történelmileg az ilyen
+környezetekben való programozás nehéz volt és könnyen vezetett hibákhoz. A Rust
+ezen szeretne változtatni.
 
-Initially, the Rust team thought that ensuring memory safety and preventing
-concurrency problems were two separate challenges to be solved with different
-methods. Over time, the team discovered that the ownership and type systems are
-a powerful set of tools to help manage memory safety _and_ concurrency
-problems! By leveraging ownership and type checking, many concurrency errors
-are compile-time errors in Rust rather than runtime errors. Therefore, rather
-than making you spend lots of time trying to reproduce the exact circumstances
-under which a runtime concurrency bug occurs, incorrect code will refuse to
-compile and present an error explaining the problem. As a result, you can fix
-your code while you’re working on it rather than potentially after it has been
-shipped to production. We’ve nicknamed this aspect of Rust _fearless
-concurrency_. Fearless concurrency allows you to write code that is free of
-subtle bugs and is easy to refactor without introducing new bugs.
+Kezdetben a Rust csapata azt gondolta, hogy a memóriabiztonság garantálása és a
+konkurenciából fakadó problémák megelőzése két különálló kihívás, amelyeket
+eltérő módszerekkel kell megoldani. Idővel a csapat rájött, hogy az ownership-
+és a típusrendszer együtt hatékony eszközkészletet ad a memóriabiztonság _és_ a
+konkurencia problémáinak kezeléséhez! Az ownership és a típusellenőrzés
+kihasználásával a Rustban sok konkurenciahiba fordítási idejű hibává válik
+futásidejű hiba helyett. Így ahelyett, hogy rengeteg időt töltenél azoknak a
+pontos körülményeknek a reprodukálásával, amelyek között egy futásidejű
+konkurenciahiba előjön, a hibás kódot a fordító egyszerűen nem fogja lefordítani,
+és a problémát elmagyarázó hibaüzenetet ad. Ennek eredményeként a kódot még
+munka közben javíthatod, nem pedig azután, hogy már élesbe került. Ezt a
+tulajdonságát a Rustnak elneveztük _félelem nélküli konkurenciának_. A félelem
+nélküli konkurencia lehetővé teszi, hogy olyan kódot írj, amely mentes a rejtett
+hibáktól, és könnyen refaktorálható anélkül, hogy új hibákat vinnél bele.
 
-> Note: For simplicity’s sake, we’ll refer to many of the problems as
-> _concurrent_ rather than being more precise by saying _concurrent and/or
-> parallel_. For this chapter, please mentally substitute _concurrent and/or
-> parallel_ whenever we use _concurrent_. In the next chapter, where the
-> distinction matters more, we’ll be more specific.
+> Megjegyzés: az egyszerűség kedvéért sok problémára egyszerűen
+> _konkurensként_ hivatkozunk, ahelyett hogy a pontosabb _konkurens és/vagy
+> párhuzamos_ megfogalmazást használnánk. Ebben a fejezetben gondolatban
+> helyettesítsd be a _konkurens és/vagy párhuzamos_ kifejezést mindenütt, ahol
+> azt írjuk, hogy _konkurens_. A következő fejezetben, ahol a különbség
+> fontosabb, pontosabban fogalmazunk majd.
 
-Many languages are dogmatic about the solutions they offer for handling
-concurrent problems. For example, Erlang has elegant functionality for
-message-passing concurrency but has only obscure ways to share state between
-threads. Supporting only a subset of possible solutions is a reasonable
-strategy for higher-level languages because a higher-level language promises
-benefits from giving up some control to gain abstractions. However, lower-level
-languages are expected to provide the solution with the best performance in any
-given situation and have fewer abstractions over the hardware. Therefore, Rust
-offers a variety of tools for modeling problems in whatever way is appropriate
-for your situation and requirements.
+Sok nyelv dogmatikus abban, milyen megoldásokat kínál a konkurens problémák
+kezelésére. Az Erlangnak például elegáns eszközei vannak az üzenetküldésen
+alapuló konkurenciához, viszont csak nehézkes módjai vannak az állapot szálak
+közötti megosztására. A lehetséges megoldásoknak csak egy részhalmazát
+támogatni észszerű stratégia a magasabb szintű nyelvek esetében, mert egy
+magasabb szintű nyelv azzal kecsegtet, hogy némi kontrollról lemondva
+absztrakciókat nyerünk. Az alacsonyabb szintű nyelvektől viszont elvárjuk, hogy
+minden helyzetben a legjobb teljesítményt nyújtó megoldást adják, és kevesebb
+absztrakciót tegyenek a hardver fölé. Ezért a Rust sokféle eszközt kínál a
+problémák modellezésére, azon a módon, amely a te helyzetedhez és
+követelményeidhez illik.
 
-Here are the topics we’ll cover in this chapter:
+Ebben a fejezetben a következő témákat járjuk körül:
 
-- How to create threads to run multiple pieces of code at the same time
-- _Message-passing_ concurrency, where channels send messages between threads
-- _Shared-state_ concurrency, where multiple threads have access to some piece
-  of data
-- The `Sync` and `Send` traits, which extend Rust’s concurrency guarantees to
-  user-defined types as well as types provided by the standard library
+- Hogyan hozhatunk létre szálakat több kódrészlet egyidejű futtatásához
+- Az _üzenetküldésen_ alapuló konkurencia, ahol csatornák küldenek üzeneteket a
+  szálak között
+- Az _osztott állapotú_ konkurencia, ahol több szál is hozzáfér ugyanahhoz az
+  adathoz
+- A `Sync` és `Send` trait-ek, amelyek a Rust konkurenciagaranciáit kiterjesztik
+  a felhasználó által definiált típusokra is, nem csak a standard könyvtár
+  típusaira

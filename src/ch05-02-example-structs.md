@@ -1,15 +1,15 @@
-## An Example Program Using Structs
+## Példaprogram struct-okkal
 
-To understand when we might want to use structs, let’s write a program that
-calculates the area of a rectangle. We’ll start by using single variables and
-then refactor the program until we’re using structs instead.
+Hogy megértsük, mikor érdemes struct-okat használnunk, írjunk egy programot,
+amely kiszámítja egy téglalap területét. Először külön változókkal kezdjük,
+majd addig alakítjuk át a programot, amíg struct-okat nem használunk helyettük.
 
-Let’s make a new binary project with Cargo called _rectangles_ that will take
-the width and height of a rectangle specified in pixels and calculate the area
-of the rectangle. Listing 5-8 shows a short program with one way of doing
-exactly that in our project’s _src/main.rs_.
+Hozzunk létre a Cargóval egy új binary projektet _rectangles_ néven, amely
+pixelben megadott szélességet és magasságot vesz át, és kiszámítja a téglalap
+területét. Az 5-8. listában egy rövid program látható, amely pontosan ezt
+teszi a projektünk _src/main.rs_ fájljában.
 
-<Listing number="5-8" file-name="src/main.rs" caption="Calculating the area of a rectangle specified by separate width and height variables">
+<Listing number="5-8" file-name="src/main.rs" caption="Téglalap területének kiszámítása külön szélesség- és magasságváltozókkal">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-08/src/main.rs:all}}
@@ -17,34 +17,35 @@ exactly that in our project’s _src/main.rs_.
 
 </Listing>
 
-Now, run this program using `cargo run`:
+Most futtasd a programot a `cargo run` paranccsal:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-08/output.txt}}
 ```
 
-This code succeeds in figuring out the area of the rectangle by calling the
-`area` function with each dimension, but we can do more to make this code clear
-and readable.
+Ez a kód sikeresen kiszámítja a téglalap területét úgy, hogy az `area`
+függvényt hívja meg mindkét mérettel, de sokat tehetünk még azért, hogy a kód
+világosabb és olvashatóbb legyen.
 
-The issue with this code is evident in the signature of `area`:
+A kód problémája az `area` szignatúrájából derül ki:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-08/src/main.rs:here}}
 ```
 
-The `area` function is supposed to calculate the area of one rectangle, but the
-function we wrote has two parameters, and it’s not clear anywhere in our
-program that the parameters are related. It would be more readable and more
-manageable to group width and height together. We’ve already discussed one way
-we might do that in [“The Tuple Type”][the-tuple-type]<!-- ignore --> section
-of Chapter 3: by using tuples.
+Az `area` függvénynek egyetlen téglalap területét kellene kiszámítania, de a
+megírt függvénynek két paramétere van, és a programunkban sehol nem derül ki,
+hogy a paraméterek összetartoznak. Olvashatóbb és kezelhetőbb lenne a
+szélességet és a magasságot egybefogni. Az egyik lehetséges módszert már
+tárgyaltuk a 3. fejezet [„A tuple típus”][the-tuple-type]<!-- ignore -->
+szakaszában: a tuple-ök használatát.
 
-### Refactoring with Tuples
+### Átalakítás tuple-ökkel
 
-Listing 5-9 shows another version of our program that uses tuples.
+Az 5-9. listában a programunk egy másik változata látható, amely tuple-öket
+használ.
 
-<Listing number="5-9" file-name="src/main.rs" caption="Specifying the width and height of the rectangle with a tuple">
+<Listing number="5-9" file-name="src/main.rs" caption="A téglalap szélességének és magasságának megadása tuple-lel">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-09/src/main.rs}}
@@ -52,29 +53,29 @@ Listing 5-9 shows another version of our program that uses tuples.
 
 </Listing>
 
-In one way, this program is better. Tuples let us add a bit of structure, and
-we’re now passing just one argument. But in another way, this version is less
-clear: Tuples don’t name their elements, so we have to index into the parts of
-the tuple, making our calculation less obvious.
+Egyfelől ez a program jobb. A tuple-ök segítségével kapunk némi szerkezetet, és
+most már csak egyetlen argumentumot adunk át. Másfelől viszont ez a változat
+kevésbé világos: a tuple-ök nem nevezik meg az elemeiket, ezért indexeléssel
+kell elérnünk a tuple részeit, ami kevésbé teszi nyilvánvalóvá a számításunkat.
 
-Mixing up the width and height wouldn’t matter for the area calculation, but if
-we want to draw the rectangle on the screen, it would matter! We would have to
-keep in mind that `width` is the tuple index `0` and `height` is the tuple
-index `1`. This would be even harder for someone else to figure out and keep in
-mind if they were to use our code. Because we haven’t conveyed the meaning of
-our data in our code, it’s now easier to introduce errors.
+A szélesség és a magasság felcserélése a területszámításnál nem számítana, de
+ha ki akarnánk rajzolni a téglalapot a képernyőre, már számítana! Fejben kellene
+tartanunk, hogy a `width` a `0`-s, a `height` pedig az `1`-es tuple-index. Ezt
+másvalakinek még nehezebb lenne kitalálnia és fejben tartania, ha használni
+akarná a kódunkat. Mivel a kódunkban nem fejeztük ki az adataink jelentését,
+mostantól könnyebben csúszik be hiba.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="refactoring-with-structs-adding-more-meaning"></a>
 
-### Refactoring with Structs
+### Átalakítás struct-okkal
 
-We use structs to add meaning by labeling the data. We can transform the tuple
-we’re using into a struct with a name for the whole as well as names for the
-parts, as shown in Listing 5-10.
+A struct-okkal úgy adunk jelentést, hogy címkékkel látjuk el az adatokat. A
+használt tuple-t átalakíthatjuk struct-tá, amelynek neve van, és a részei is
+nevet kapnak, ahogy az 5-10. listában látható.
 
-<Listing number="5-10" file-name="src/main.rs" caption="Defining a `Rectangle` struct">
+<Listing number="5-10" file-name="src/main.rs" caption="A `Rectangle` struct definiálása">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-10/src/main.rs}}
@@ -82,39 +83,39 @@ parts, as shown in Listing 5-10.
 
 </Listing>
 
-Here, we’ve defined a struct and named it `Rectangle`. Inside the curly
-brackets, we defined the fields as `width` and `height`, both of which have
-type `u32`. Then, in `main`, we created a particular instance of `Rectangle`
-that has a width of `30` and a height of `50`.
+Itt definiáltunk egy struct-ot, és a `Rectangle` nevet adtuk neki. A kapcsos
+zárójeleken belül a `width` és a `height` mezőket definiáltuk, mindkettő `u32`
+típusú. Ezután a `main`-ben létrehoztuk a `Rectangle` egy konkrét példányát,
+amelynek szélessége `30`, magassága `50`.
 
-Our `area` function is now defined with one parameter, which we’ve named
-`rectangle`, whose type is an immutable borrow of a struct `Rectangle`
-instance. As mentioned in Chapter 4, we want to borrow the struct rather than
-take ownership of it. This way, `main` retains its ownership and can continue
-using `rect1`, which is the reason we use the `&` in the function signature and
-where we call the function.
+Az `area` függvényünk most már egyetlen paraméterrel van definiálva, amelyet
+`rectangle`-nek neveztünk el, és amelynek típusa egy `Rectangle` struct-példány
+nem módosítható borrow-ja. Ahogy a 4. fejezetben említettük, a struct-ot
+inkább borrow-olni akarjuk, mintsem átvenni az ownership-jét. Így a `main`
+megtartja az ownership-et, és továbbra is használhatja a `rect1`-et; ezért
+szerepel a `&` a függvény szignatúrájában és a függvényhívás helyén is.
 
-The `area` function accesses the `width` and `height` fields of the `Rectangle`
-instance (note that accessing fields of a borrowed struct instance does not
-move the field values, which is why you often see borrows of structs). Our
-function signature for `area` now says exactly what we mean: Calculate the area
-of `Rectangle`, using its `width` and `height` fields. This conveys that the
-width and height are related to each other, and it gives descriptive names to
-the values rather than using the tuple index values of `0` and `1`. This is a
-win for clarity.
+Az `area` függvény a `Rectangle` példány `width` és `height` mezőit éri el
+(vedd észre, hogy egy borrow-olt struct-példány mezőinek elérése nem move-olja
+a mezők értékeit, ezért látsz gyakran struct-okra vonatkozó borrow-okat). Az
+`area` szignatúrája most pontosan azt mondja ki, amit gondolunk: számítsd ki a
+`Rectangle` területét a `width` és a `height` mezője alapján. Ez kifejezi, hogy
+a szélesség és a magasság összetartozik, és beszédes neveket ad az értékeknek a
+`0` és `1` tuple-indexek helyett. Ez egyértelmű nyereség az érthetőség
+szempontjából.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="adding-useful-functionality-with-derived-traits"></a>
 
-### Adding Functionality with Derived Traits
+### Funkcionalitás hozzáadása derive-olt trait-ekkel
 
-It’d be useful to be able to print an instance of `Rectangle` while we’re
-debugging our program and see the values for all its fields. Listing 5-11 tries
-using the [`println!` macro][println]<!-- ignore --> as we have used in
-previous chapters. This won’t work, however.
+Hasznos lenne, ha a program hibakeresése közben ki tudnánk írni egy `Rectangle`
+példányt, és látnánk az összes mezőjének értékét. Az 5-11. lista a
+[`println!` makróval][println]<!-- ignore --> próbálkozik, ahogyan azt a
+korábbi fejezetekben is tettük. Ez azonban nem fog működni.
 
-<Listing number="5-11" file-name="src/main.rs" caption="Attempting to print a `Rectangle` instance">
+<Listing number="5-11" file-name="src/main.rs" caption="Kísérlet egy `Rectangle` példány kiírására">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-11/src/main.rs}}
@@ -122,53 +123,55 @@ previous chapters. This won’t work, however.
 
 </Listing>
 
-When we compile this code, we get an error with this core message:
+Amikor lefordítjuk ezt a kódot, a következő lényegi üzenetet tartalmazó hibát
+kapjuk:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-11/output.txt:3}}
 ```
 
-The `println!` macro can do many kinds of formatting, and by default, the curly
-brackets tell `println!` to use formatting known as `Display`: output intended
-for direct end user consumption. The primitive types we’ve seen so far
-implement `Display` by default because there’s only one way you’d want to show
-a `1` or any other primitive type to a user. But with structs, the way
-`println!` should format the output is less clear because there are more
-display possibilities: Do you want commas or not? Do you want to print the
-curly brackets? Should all the fields be shown? Due to this ambiguity, Rust
-doesn’t try to guess what we want, and structs don’t have a provided
-implementation of `Display` to use with `println!` and the `{}` placeholder.
+A `println!` makró sokféle formázásra képes, és alapértelmezés szerint a kapcsos
+zárójelek azt mondják a `println!`-nek, hogy a `Display` néven ismert formázást
+használja: ez a közvetlenül a végfelhasználónak szánt kimenet. Az eddig látott
+primitív típusok alapból implementálják a `Display`-t, mert egy `1`-est vagy
+bármely más primitív típust csak egyféleképpen szeretnél megmutatni a
+felhasználónak. A struct-oknál viszont kevésbé egyértelmű, hogyan formázza a
+`println!` a kimenetet, mert több megjelenítési lehetőség is van: kellenek
+vesszők vagy sem? Ki akarod íratni a kapcsos zárójeleket? Minden mező
+látszódjon? E kétértelműség miatt a Rust nem próbálja kitalálni, mit akarunk,
+és a struct-okhoz nincs kész `Display` implementáció, amit a `println!`-lel és
+a `{}` helyőrzővel használhatnánk.
 
-If we continue reading the errors, we’ll find this helpful note:
+Ha tovább olvassuk a hibaüzeneteket, ezt a hasznos megjegyzést találjuk:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-11/output.txt:9:10}}
 ```
 
-Let’s try it! The `println!` macro call will now look like `println!("rect1 is
-{rect1:?}");`. Putting the specifier `:?` inside the curly brackets tells
-`println!` we want to use an output format called `Debug`. The `Debug` trait
-enables us to print our struct in a way that is useful for developers so that
-we can see its value while we’re debugging our code.
+Próbáljuk ki! A `println!` makróhívás most így fog kinézni: `println!("rect1 is
+{rect1:?}");`. A kapcsos zárójeleken belülre tett `:?` specifikátor azt mondja
+a `println!`-nek, hogy a `Debug` nevű kimeneti formátumot szeretnénk használni.
+A `Debug` trait lehetővé teszi, hogy a struct-unkat a fejlesztők számára
+hasznos módon írjuk ki, így a kód hibakeresése közben láthatjuk az értékét.
 
-Compile the code with this change. Drat! We still get an error:
+Fordítsd le a kódot ezzel a változtatással. A csudába! Még mindig hibát kapunk:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/output-only-01-debug/output.txt:3}}
 ```
 
-But again, the compiler gives us a helpful note:
+De a fordító megint hasznos megjegyzést ad:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/output-only-01-debug/output.txt:9:10}}
 ```
 
-Rust _does_ include functionality to print out debugging information, but we
-have to explicitly opt in to make that functionality available for our struct.
-To do that, we add the outer attribute `#[derive(Debug)]` just before the
-struct definition, as shown in Listing 5-12.
+A Rust _tartalmaz_ olyan képességet, amellyel hibakeresési információt lehet
+kiírni, de kifejezetten kérnünk kell, hogy ez a képesség elérhető legyen a
+struct-unk számára. Ehhez a `#[derive(Debug)]` külső attribútumot tesszük
+közvetlenül a struct definíciója elé, ahogy az 5-12. listában látható.
 
-<Listing number="5-12" file-name="src/main.rs" caption="Adding the attribute to derive the `Debug` trait and printing the `Rectangle` instance using debug formatting">
+<Listing number="5-12" file-name="src/main.rs" caption="A `Debug` trait derive-olását kérő attribútum hozzáadása és a `Rectangle` példány kiírása debug formázással">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-12/src/main.rs}}
@@ -176,73 +179,73 @@ struct definition, as shown in Listing 5-12.
 
 </Listing>
 
-Now when we run the program, we won’t get any errors, and we’ll see the
-following output:
+Ha most futtatjuk a programot, nem kapunk hibát, és a következő kimenetet
+látjuk:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-12/output.txt}}
 ```
 
-Nice! It’s not the prettiest output, but it shows the values of all the fields
-for this instance, which would definitely help during debugging. When we have
-larger structs, it’s useful to have output that’s a bit easier to read; in
-those cases, we can use `{:#?}` instead of `{:?}` in the `println!` string. In
-this example, using the `{:#?}` style will output the following:
+Remek! Nem ez a legszebb kimenet, de megmutatja a példány összes mezőjének
+értékét, ami hibakeresés közben mindenképpen segít. Nagyobb struct-oknál
+hasznos, ha a kimenet kicsit könnyebben olvasható; ilyenkor a `println!`
+sztringben a `{:?}` helyett a `{:#?}` alakot használhatjuk. Ebben a példában a
+`{:#?}` stílus a következőt írja ki:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/output-only-02-pretty-debug/output.txt}}
 ```
 
-Another way to print out a value using the `Debug` format is to use the [`dbg!`
-macro][dbg]<!-- ignore -->, which takes ownership of an expression (as opposed
-to `println!`, which takes a reference), prints the file and line number of
-where that `dbg!` macro call occurs in your code along with the resultant value
-of that expression, and returns ownership of the value.
+Egy érték `Debug` formátumú kiírásának másik módja a [`dbg!`
+makró][dbg]<!-- ignore -->, amely átveszi egy kifejezés ownership-jét (szemben
+a `println!`-lel, amely referenciát vesz át), kiírja annak a fájlnak a nevét és
+sorszámát, ahol az a `dbg!` makróhívás a kódodban szerepel, a kifejezés
+eredményével együtt, majd visszaadja az érték ownership-jét.
 
-> Note: Calling the `dbg!` macro prints to the standard error console stream
-> (`stderr`), as opposed to `println!`, which prints to the standard output
-> console stream (`stdout`). We’ll talk more about `stderr` and `stdout` in the
-> [“Redirecting Errors to Standard Error” section in Chapter
-> 12][err]<!-- ignore -->.
+> Megjegyzés: a `dbg!` makró hívása a standard hibakimenetre (`stderr`) ír,
+> szemben a `println!`-lel, amely a standard kimenetre (`stdout`) ír. A
+> `stderr`-ről és a `stdout`-ról bővebben a 12. fejezet [„Hibák átirányítása a
+> standard hibakimenetre”][err]<!-- ignore --> szakaszában lesz szó.
 
-Here’s an example where we’re interested in the value that gets assigned to the
-`width` field, as well as the value of the whole struct in `rect1`:
+Íme egy példa, amelyben a `width` mezőhöz rendelt érték, valamint a `rect1`-ben
+lévő teljes struct értéke érdekel minket:
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/no-listing-05-dbg-macro/src/main.rs}}
 ```
 
-We can put `dbg!` around the expression `30 * scale` and, because `dbg!`
-returns ownership of the expression’s value, the `width` field will get the
-same value as if we didn’t have the `dbg!` call there. We don’t want `dbg!` to
-take ownership of `rect1`, so we use a reference to `rect1` in the next call.
-Here’s what the output of this example looks like:
+A `dbg!`-t rátehetjük a `30 * scale` kifejezésre, és mivel a `dbg!` visszaadja
+a kifejezés értékének ownership-jét, a `width` mező ugyanazt az értéket kapja,
+mintha nem lenne ott a `dbg!` hívás. Azt nem szeretnénk, hogy a `dbg!` átvegye
+a `rect1` ownership-jét, ezért a következő hívásban a `rect1` egy referenciáját
+használjuk. Így néz ki ennek a példának a kimenete:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/no-listing-05-dbg-macro/output.txt}}
 ```
 
-We can see the first bit of output came from _src/main.rs_ line 10 where we’re
-debugging the expression `30 * scale`, and its resultant value is `60` (the
-`Debug` formatting implemented for integers is to print only their value). The
-`dbg!` call on line 14 of _src/main.rs_ outputs the value of `&rect1`, which is
-the `Rectangle` struct. This output uses the pretty `Debug` formatting of the
-`Rectangle` type. The `dbg!` macro can be really helpful when you’re trying to
-figure out what your code is doing!
+Látható, hogy a kimenet első része a _src/main.rs_ 10. sorából származik, ahol
+a `30 * scale` kifejezést vizsgáljuk, és az eredménye `60` (az egészekre
+implementált `Debug` formázás csak az értéküket írja ki). A _src/main.rs_ 14.
+sorában lévő `dbg!` hívás a `&rect1` értékét írja ki, ami a `Rectangle` struct.
+Ez a kimenet a `Rectangle` típus szép `Debug` formázását használja. A `dbg!`
+makró nagyon hasznos tud lenni, amikor azt próbálod kideríteni, mit is csinál
+a kódod!
 
-In addition to the `Debug` trait, Rust has provided a number of traits for us
-to use with the `derive` attribute that can add useful behavior to our custom
-types. Those traits and their behaviors are listed in [Appendix C][app-c]<!--
-ignore -->. We’ll cover how to implement these traits with custom behavior as
-well as how to create your own traits in Chapter 10. There are also many
-attributes other than `derive`; for more information, see [the “Attributes”
-section of the Rust Reference][attributes].
+A `Debug` trait mellett a Rust számos további trait-et biztosít, amelyeket a
+`derive` attribútummal használhatunk, és amelyek hasznos viselkedést adnak a
+saját típusainkhoz. Ezeket a trait-eket és a viselkedésüket a [C
+függelék][app-c]<!-- ignore --> sorolja fel. A 10. fejezetben lesz szó arról,
+hogyan implementálhatod ezeket a trait-eket saját viselkedéssel, és hogyan
+hozhatsz létre saját trait-eket. A `derive`-on kívül sok más attribútum is van;
+további információért lásd a Rust Reference [„Attributes”
+szakaszát][attributes].
 
-Our `area` function is very specific: It only computes the area of rectangles.
-It would be helpful to tie this behavior more closely to our `Rectangle` struct
-because it won’t work with any other type. Let’s look at how we can continue to
-refactor this code by turning the `area` function into an `area` method
-defined on our `Rectangle` type.
+Az `area` függvényünk nagyon speciális: kizárólag téglalapok területét számítja
+ki. Hasznos lenne, ha ezt a viselkedést szorosabban a `Rectangle` struct-unkhoz
+kötnénk, mivel semmilyen más típussal nem működik. Nézzük meg, hogyan
+alakíthatjuk tovább ezt a kódot úgy, hogy az `area` függvényből a `Rectangle`
+típusunkon definiált `area` metódus legyen.
 
 [the-tuple-type]: ch03-02-data-types.html#the-tuple-type
 [app-c]: appendix-03-derivable-traits.md

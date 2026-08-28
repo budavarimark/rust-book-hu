@@ -1,14 +1,18 @@
-# More About Cargo and Crates.io
+# Még többet a Cargóról és a Crates.io-ról
 
-So far, we’ve used only the most basic features of Cargo to build, run, and
-test our code, but it can do a lot more. In this chapter, we’ll discuss some of
-its other, more advanced features to show you how to do the following:
+Eddig csak a Cargo legalapvetőbb képességeit használtuk a kódunk buildeléséhez,
+futtatásához és teszteléséhez, pedig sokkal többre képes. Ebben a fejezetben
+néhány további, fejlettebb képességét tárgyaljuk, hogy megmutassuk, hogyan
+teheted meg a következőket:
 
-- Customize your build through release profiles.
-- Publish libraries on [crates.io](https://crates.io/)<!-- ignore -->.
-- Organize large projects with workspaces.
-- Install binaries from [crates.io](https://crates.io/)<!-- ignore -->.
-- Extend Cargo using custom commands.
+- Testreszabhatod a buildet a release profilokon keresztül.
+- Publikálhatsz könyvtárakat a [crates.io](https://crates.io/)<!-- ignore -->
+  oldalon.
+- Nagy projekteket szervezhetsz workspace-ekkel.
+- Telepíthetsz binárisokat a [crates.io](https://crates.io/)<!-- ignore -->
+  oldalról.
+- Kiterjesztheted a Cargót egyedi parancsokkal.
 
-Cargo can do even more than the functionality we cover in this chapter, so for
-a full explanation of all its features, see [its documentation](https://doc.rust-lang.org/cargo/).
+A Cargo még annál is többre képes, mint amit ebben a fejezetben tárgyalunk,
+ezért az összes képességének teljes leírásáért lásd
+[a dokumentációját](https://doc.rust-lang.org/cargo/).
