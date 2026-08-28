@@ -151,7 +151,7 @@ két elemre korlátozza az iterációt. A `ThreadPool` a `main` végén kikerül
 hatókörből, és lefut a `drop` implementáció.
 
 Indítsd el a szervert a `cargo run` paranccsal, és küldj három kérést. A harmadik
-kérésnek hibára kell futnia, a termináldban pedig valami ehhez hasonló kimenetet
+kérésnek hibára kell futnia, a terminálodban pedig valami ehhez hasonló kimenetet
 kell látnod:
 
 <!-- manual-regeneration
