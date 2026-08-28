@@ -118,7 +118,8 @@ Ha megpróbáljuk lefordítani ezt a kódot, a következő típushibát kapjuk:
 
 A hiba javításához a tuple egy vagy több értékét figyelmen kívül hagyhatnánk a
 `_` vagy a `..` használatával, ahogy azt az [„Értékek figyelmen kívül
-hagyása egy mintában”][ignoring-values-in-a-pattern]<!-- ignore --> szakaszban látni fogod.
+hagyása egy mintában”][ignoring-values-in-a-pattern]<!-- ignore -->
+szakaszban látni fogod.
 Ha a gond az, hogy túl sok változó van a mintában, a megoldás az, hogy a típusok
 összeillesztéséhez változókat távolítunk el, amíg a változók száma meg nem
 egyezik a tuple elemeinek számával.
