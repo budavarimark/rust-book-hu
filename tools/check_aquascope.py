@@ -12,7 +12,7 @@ Használat:
 Környezet: a szkript magától megkeresi a bin/ könyvtárat és a nightly
 toolchaint (lásd ci/aquascope-setup.sh).
 """
-import os, re, sys, glob, shutil, subprocess, tempfile
+import html, json, os, re, sys, glob, shutil, subprocess, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLCHAIN = os.environ.get("AQUASCOPE_TOOLCHAIN", "nightly-2026-05-01")
@@ -62,8 +62,30 @@ def build(chapters, workdir):
     open(os.path.join(src, "SUMMARY.md"), "w", encoding="utf-8").write("\n".join(summary) + "\n")
     r = subprocess.run(["mdbook", "build"], cwd=workdir, env=env(),
                        capture_output=True, text=True)
-    ok = r.returncode == 0 and "ERROR" not in r.stderr
-    return ok, (r.stderr or "") + (r.stdout or "")
+    log = (r.stderr or "") + (r.stdout or "")
+    if r.returncode != 0 or "ERROR" in r.stderr:
+        return False, log
+    # Az Aquascope némán üres elemzést is adhat (pl. rosszul escape-elt
+    # `#[derive(...)]` esetén); ilyenkor az ábra üresen jelenne meg.
+    for n in range(len(chapters)):
+        page = os.path.join(workdir, "book", f"b{n}.html")
+        if not os.path.exists(page):
+            return False, log + f"\nHiányzó kimenet: b{n}.html"
+        text = open(page, encoding="utf-8").read()
+        found = re.findall(r'data-responses="([^"]*)"', text)
+        if not found:
+            return False, log + f"\nA(z) {n}. blokkhoz nem készült ábra."
+        for raw in found:
+            try:
+                data = json.loads(html.unescape(raw))
+            except ValueError:
+                return False, log + f"\nA(z) {n}. blokk elemzése olvashatatlan."
+            if not data or any(not v for v in data.values()):
+                return False, log + (
+                    f"\nA(z) {n}. blokk elemzése üres: {json.dumps(data)[:120]}. "
+                    "Gyakori ok: a `#[derive(...)]` sort `##[derive(...)]` "
+                    "alakban kell írni, különben rejtett sorként csonkul.")
+    return True, log
 
 
 def main():

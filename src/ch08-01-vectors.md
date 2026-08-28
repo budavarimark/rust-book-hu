@@ -67,6 +67,23 @@ kulcsszóval módosíthatóvá kell tennünk, ahogy azt a 3. fejezetben tárgyal
 A belé helyezett számok mind `i32` típusúak, és ezt a Rust kikövetkezteti az
 adatokból, így nincs szükségünk a `Vec<i32>` annotációra.
 
+Az alábbi ábrán az látszik, hol tárolja a vektor az elemeit. A `v` maga a
+stacken él, és egy pointert, egy hosszt meg egy kapacitást tárol; az elemek
+pedig a heapen, egymás mellett kapnak helyet. Az `L1` pontban a vektor még
+üres, az `L2` pontban két, az `L3` pontban négy elem van a heapen: minden
+`push` hívás ide teszi be a következő értéket, és ha elfogy a hely, a vektor
+nagyobb heapterületet foglal magának.
+
+```aquascope,interpreter
+#fn main() {
+let mut v: Vec<i32> = Vec::new();`[]`
+v.push(5);
+v.push(6);`[]`
+v.push(7);
+v.push(8);`[]`
+#}
+```
+
 ### Vektorelemek olvasása
 
 Kétféleképpen hivatkozhatunk egy vektorban tárolt értékre: indexeléssel vagy a
@@ -90,6 +107,17 @@ használjuk, mert a vektorokat számokkal indexeljük, nullától kezdve. Az `&`
 a `[]` használatával referenciát kapunk az adott indexen lévő elemre. Amikor a
 `get` metódust használjuk úgy, hogy az indexet argumentumként adjuk át, egy
 `Option<&T>`-t kapunk, amelyet a `match`-csel használhatunk.
+
+Az `&v[2]` nem másolatot készít az értékről, hanem referenciát ad a vektor
+heapen lévő elemére. Az ábra `L2` pontjában jól látszik, hogy a `third` nyila
+a heapbeli tömb harmadik rekeszébe mutat:
+
+```aquascope,interpreter,horizontal
+#fn main() {
+let v = vec![1, 2, 3, 4, 5];`[]`
+let third: &i32 = &v[2];`[]`
+#}
+```
 
 A Rust azért biztosít kétféle módot egy elem hivatkozására, hogy megválaszthasd,
 hogyan viselkedjen a program, amikor a meglévő elemek tartományán kívüli
@@ -155,6 +183,21 @@ tárolva van. Ebben az esetben az első elemre mutató referencia felszabadítot
 memóriára mutatna. A borrowing-szabályok megakadályozzák, hogy a programok
 ilyen helyzetbe kerüljenek.
 
+A fordítási idejű ábra ugyanezt a jogosultságok nyelvén mondja el. Amikor a
+`&v[0]` létrehozza a `first` referenciát, `v` elveszíti a **W** és az **O**
+jogosultságát, és amíg `first` életben van, nem is kapja vissza őket. A
+`v.push(6)` hívásnak viszont **W** jogosultságra lenne szüksége `v`-re, ezért
+az ábra ott pirossal jelzi a hiányt:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+#fn main() {
+let mut v = vec![1, 2, 3, 4, 5];
+let first = &v[0];
+v.push(6);
+println!("The first element is: {first}");
+#}
+```
+
 > Megjegyzés: A `Vec<T>` típus implementációs részleteiről bővebben lásd a
 > [„The Rustonomicon”][nomicon] című írást.
 
@@ -198,6 +241,19 @@ beszúrni vagy eltávolítani a 8-7. és a 8-8. lista `for` ciklusainak
 törzsében, olyan fordítási hibát kapnánk, mint amilyet a 8-6. lista kódjánál
 kaptunk. A vektorra mutató referencia, amelyet a `for` ciklus tart,
 megakadályozza az egész vektor egyidejű módosítását.
+
+Az alábbi ábra megmutatja, miért. A `for i in &v` sor a ciklus teljes idejére
+elveszi `v`-től a **W** és az **O** jogosultságot, ezért a ciklus törzsében
+álló `v.push(*i)` hívásnál pirosan jelenik meg a hiányzó **W**:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+#fn main() {
+let mut v = vec![100, 32, 57];
+for i in &v {
+    v.push(*i);
+}
+#}
+```
 
 ### Enum használata többféle típus tárolására
 
@@ -260,6 +316,18 @@ Amikor a vektor eldobódik, az összes tartalma is eldobódik, ami azt jelenti,
 hogy az általa tárolt egész számok felszabadulnak. A borrow checker biztosítja,
 hogy a vektor tartalmára mutató bármely referenciát csak addig használjuk, amíg
 maga a vektor érvényes.
+
+Az alábbi ábrán a blokk lezárása helyett egy explicit `drop` hívás zárja le a
+vektor életét, de a hatás ugyanaz: az `L1` pontban a négy elem még a heapen
+van, az `L2` pontban viszont – miután `v` eldobódott – a heap már üres, `v`
+pedig kiszürkülve látszik:
+
+```aquascope,interpreter,horizontal
+#fn main() {
+let v = vec![1, 2, 3, 4];`[]`
+drop(v);`[]`
+#}
+```
 
 Térjünk át a következő kollekciótípusra: a `String`-re!
 
