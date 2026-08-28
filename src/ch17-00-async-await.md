@@ -60,9 +60,10 @@ az operációs rendszer nem lát.
 Ha például egy fájlletöltéseket kezelő eszközt építünk, olyan programot
 szeretnénk írni, amelyben az egyik letöltés elindítása nem fagyasztja be a
 felhasználói felületet, és a felhasználók egyszerre több letöltést is
-elindíthatnak. A hálózattal való kommunikációhoz használt operációsrendszer-API-k
-közül azonban sok _blokkoló_; vagyis addig akadályozzák a program haladását,
-amíg az általuk feldolgozott adatok teljesen készen nem állnak.
+elindíthatnak. A hálózattal való kommunikációhoz használt
+operációsrendszer-API-k közül azonban sok _blokkoló_; vagyis addig akadályozzák
+a program haladását, amíg az általuk feldolgozott adatok teljesen készen nem
+állnak.
 
 > Megjegyzés: ha belegondolsz, a függvényhívások _többsége_ így működik. A
 > _blokkoló_ kifejezést azonban általában olyan függvényhívásokra tartjuk fenn,

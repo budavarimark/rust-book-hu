@@ -253,8 +253,8 @@ szálnak, hogy az adatokat átmozgassuk, és így az új szál birtokolja őket.
 szálakról és arról, miért érdemes használni őket, a 16. fejezetben, a
 konkurencia tárgyalásakor lesz részletesen szó, de most nézzük meg röviden,
 hogyan indíthatunk új szálat egy olyan closure-rel, amelynek szüksége van a
-`move` kulcsszóra. A 13-6. lista a 13-4. listát mutatja úgy módosítva, hogy a vektort
-egy új szálban írja ki, ne pedig a fő szálban.
+`move` kulcsszóra. A 13-6. lista a 13-4. listát mutatja úgy módosítva, hogy a
+vektort egy új szálban írja ki, ne pedig a fő szálban.
 
 <Listing number="13-6" file-name="src/main.rs" caption="A `move` használata arra, hogy a szálhoz tartozó closure átvegye a `list` ownershipjét">
 

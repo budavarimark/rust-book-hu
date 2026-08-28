@@ -39,8 +39,9 @@ Rustban rövidek, gyakran mindössze egyetlen betűből állnak, a Rust
 típuselnevezési konvenciója pedig az UpperCamelCase. A `T` a _type_ rövidítése,
 és a legtöbb Rust-programozó alapértelmezett választása.
 
-Amikor egy paramétert használunk a függvény törzsében, a paraméter nevét deklarálnunk
-kell a szignatúrában, hogy a fordító tudja, mit jelent az a név. Hasonlóképpen,
+Amikor egy paramétert használunk a függvény törzsében, a paraméter nevét
+deklarálnunk kell a szignatúrában, hogy a fordító tudja, mit jelent az a név.
+Hasonlóképpen,
 amikor egy típusparaméter-nevet használunk egy függvényszignatúrában, a
 típusparaméter nevét deklarálnunk kell, mielőtt használnánk. A generikus
 `largest` függvény definiálásához a típusnév-deklarációkat csúcsos zárójelek,
@@ -76,9 +77,9 @@ Ha most rögtön lefordítjuk ezt a kódot, ezt a hibát kapjuk:
 
 A súgószöveg megemlíti a `std::cmp::PartialOrd`-ot, ami egy trait; a trait-ekről
 a következő szakaszban lesz szó. Egyelőre elég annyit tudni, hogy ez a hiba azt
-állítja: a `largest` törzse nem működik minden lehetséges típusra, ami `T` lehet.
-Mivel a törzsben `T` típusú értékeket akarunk összehasonlítani, csak olyan
-típusokat használhatunk, amelyek értékei rendezhetők. Az összehasonlítások
+állítja: a `largest` törzse nem működik minden lehetséges típusra, ami a `T`
+lehet. Mivel a törzsben `T` típusú értékeket akarunk összehasonlítani, csak
+olyan típusokat használhatunk, amelyek értékei rendezhetők. Az összehasonlítások
 lehetővé tételére a standard könyvtárban ott van a `std::cmp::PartialOrd` trait,
 amelyet implementálhatsz a típusaidon (erről a traitről bővebben a C.
 függelékben). A 10-5. listázás javításához követhetjük a súgószöveg javaslatát,
@@ -334,5 +335,5 @@ A generikus `Option<T>` helyére a fordító által létrehozott specifikus
 definíciók kerülnek. Mivel a Rust a generikus kódot olyan kóddá fordítja, amely
 minden példányban megadja a típust, semmilyen futásidejű költséget nem fizetünk
 a generikusok használatáért. Amikor a kód lefut, ugyanúgy teljesít, mintha
-minden definíciót kézzel másoltunk volna le. A monomorfizáció folyamata rendkívül
-hatékonnyá teszi a Rust generikusait futásidőben.
+minden definíciót kézzel másoltunk volna le. A monomorfizáció folyamata
+rendkívül hatékonnyá teszi a Rust generikusait futásidőben.

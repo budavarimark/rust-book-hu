@@ -1,22 +1,25 @@
-# Advanced Features
+# Haladó nyelvi elemek
 
-By now, you’ve learned the most commonly used parts of the Rust programming
-language. Before we do one more project, in Chapter 21, we’ll look at a few
-aspects of the language you might run into every once in a while but may not
-use every day. You can use this chapter as a reference for when you encounter
-any unknowns. The features covered here are useful in very specific situations.
-Although you might not reach for them often, we want to make sure you have a
-grasp of all the features Rust has to offer.
+Mostanra megismerted a Rust programozási nyelv leggyakrabban használt részeit.
+Mielőtt a 21. fejezetben belevágnánk még egy projektbe, nézzünk meg néhány
+olyan aspektusát a nyelvnek, amellyel időnként találkozhatsz, de valószínűleg
+nem használod mindennap. Ezt a fejezetet referenciaként használhatod, amikor
+valami ismeretlenbe ütközöl. Az itt bemutatott képességek nagyon konkrét
+helyzetekben hasznosak. Bár lehet, hogy nem nyúlsz hozzájuk gyakran, szeretnénk
+biztosra menni, hogy a Rust minden képességét átlátod.
 
-In this chapter, we’ll cover:
+Ebben a fejezetben a következőket vesszük sorra:
 
-- Unsafe Rust: How to opt out of some of Rust’s guarantees and take
-  responsibility for manually upholding those guarantees
-- Advanced traits: Associated types, default type parameters, fully qualified
-  syntax, supertraits, and the newtype pattern in relation to traits
-- Advanced types: More about the newtype pattern, type aliases, the never type,
-  and dynamically sized types
-- Advanced functions and closures: Function pointers and returning closures
-- Macros: Ways to define code that defines more code at compile time
+- Unsafe Rust: hogyan mondhatsz le a Rust egyes garanciáiról, és hogyan
+  vállalhatod magadra a felelősséget azok kézi betartásáért
+- Haladó trait-ek: asszociált típusok, alapértelmezett típusparaméterek,
+  teljesen minősített szintaxis, supertrait-ek és a newtype minta a trait-ekhez
+  kapcsolódóan
+- Haladó típusok: még több a newtype mintáról, típusaliasok, a never típus és a
+  dinamikusan méretezett típusok
+- Haladó függvények és closure-ök: függvénypointerek és closure-ök visszaadása
+- Makrók: módszerek olyan kód definiálására, amely fordítási időben további
+  kódot definiál
 
-It’s a panoply of Rust features with something for everyone! Let’s dive in!
+Ez a Rust képességeinek olyan tárháza, amelyben mindenki talál valamit! Vágjunk
+bele!

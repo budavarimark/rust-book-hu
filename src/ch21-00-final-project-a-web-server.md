@@ -1,41 +1,41 @@
-# Final Project: Building a Multithreaded Web Server
+# Záróprojekt: többszálú webszerver építése
 
-It’s been a long journey, but we’ve reached the end of the book. In this
-chapter, we’ll build one more project together to demonstrate some of the
-concepts we covered in the final chapters, as well as recap some earlier
-lessons.
+Hosszú út áll mögöttünk, de a könyv végéhez értünk. Ebben a fejezetben még egy
+projektet készítünk el közösen, hogy bemutassunk néhányat az utolsó fejezetek
+fogalmai közül, és felelevenítsünk néhány korábbi leckét is.
 
-For our final project, we’ll make a web server that says “Hello!” and looks like
-Figure 21-1 in a web browser.
+A záróprojektünkben olyan webszervert készítünk, amely „Hello!”-t mond, és a
+böngészőben úgy néz ki, ahogy azt a 21-1. ábra mutatja.
 
-Here is our plan for building the web server:
+Íme a tervünk a webszerver felépítéséhez:
 
-1. Learn a bit about TCP and HTTP.
-2. Listen for TCP connections on a socket.
-3. Parse a small number of HTTP requests.
-4. Create a proper HTTP response.
-5. Improve the throughput of our server with a thread pool.
+1. Ismerkedjünk meg egy kicsit a TCP-vel és a HTTP-vel.
+2. Figyeljük a TCP-kapcsolatokat egy socketen.
+3. Elemezzünk néhány egyszerű HTTP-kérést.
+4. Készítsünk szabályos HTTP-választ.
+5. Javítsuk a szerverünk átbocsátóképességét egy thread pool segítségével.
 
-<img alt="Screenshot of a web browser visiting the address 127.0.0.1:8080 displaying a webpage with the text content “Hello! Hi from Rust”" src="img/trpl21-01.png" class="center" style="width: 50%;" />
+<img alt="Képernyőkép egy böngészőről, amely a 127.0.0.1:8080 címet nyitotta meg, és egy weboldalt jelenít meg a „Hello! Hi from Rust” szöveges tartalommal" src="img/trpl21-01.png" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 21-1: Our final shared project</span>
+<span class="caption">21-1. ábra: A záró közös projektünk</span>
 
-Before we get started, we should mention two details. First, the method we’ll
-use won’t be the best way to build a web server with Rust. Community members
-have published a number of production-ready crates available at
-[crates.io](https://crates.io/) that provide more complete web server and
-thread pool implementations than we’ll build. However, our intention in this
-chapter is to help you learn, not to take the easy route. Because Rust is a
-systems programming language, we can choose the level of abstraction we want to
-work with and can go to a lower level than is possible or practical in other
-languages.
+Mielőtt belevágnánk, két dolgot érdemes megemlíteni. Először is: az általunk
+használt módszer nem a legjobb mód arra, hogy Rusttal webszervert építsünk. A
+közösség tagjai számos, éles használatra kész crate-et publikáltak a
+[crates.io](https://crates.io/) oldalon, amelyek az itt megépítettnél jóval
+teljesebb webszerver- és thread pool-implementációkat kínálnak. A célunk
+ebben a fejezetben azonban az, hogy tanulj, nem az, hogy a könnyebbik utat
+válasszuk. Mivel a Rust rendszerprogramozási nyelv, mi választhatjuk meg, hogy
+milyen absztrakciós szinten szeretnénk dolgozni, és mélyebbre mehetünk, mint
+ami más nyelvekben lehetséges vagy praktikus.
 
-Second, we will not be using async and await here. Building a thread pool is a
-big enough challenge on its own, without adding in building an async runtime!
-However, we will note how async and await might be applicable to some of the
-same problems we will see in this chapter. Ultimately, as we noted back in
-Chapter 17, many async runtimes use thread pools for managing their work.
+Másodszor: itt nem használunk asyncot és awaitet. Egy thread pool megépítése
+önmagában is elég nagy kihívás, nem is beszélve arról, ha még egy async
+runtime-ot is építenénk hozzá! Azt viszont jelezni fogjuk, hogy az async és az
+await hogyan lenne alkalmazható néhány olyan problémára, amellyel ebben a
+fejezetben találkozunk. Végső soron pedig, ahogy a 17. fejezetben már
+megjegyeztük, sok async runtime maga is thread poolokkal kezeli a munkáját.
 
-We’ll therefore write the basic HTTP server and thread pool manually so that
-you can learn the general ideas and techniques behind the crates you might use
-in the future.
+Az alap HTTP-szervert és a thread poolt tehát kézzel írjuk meg, hogy
+megismerhesd azokat az általános elgondolásokat és technikákat, amelyek a
+később használt crate-ek mögött állnak.

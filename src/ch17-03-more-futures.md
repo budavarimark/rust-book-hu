@@ -3,26 +3,28 @@
 
 <a id="yielding"></a>
 
-### Yielding Control to the Runtime
+### A vezérlés visszaadása a runtime-nak
 
-Recall from the [“Our First Async Program”][async-program]<!-- ignore -->
-section that at each await point, Rust gives a runtime a chance to pause the
-task and switch to another one if the future being awaited isn’t ready. The
-inverse is also true: Rust _only_ pauses async blocks and hands control back to
-a runtime at an await point. Everything between await points is synchronous.
+Az [„Az első async programunk”][async-program]<!-- ignore --> szakaszból
+emlékezhetsz rá, hogy minden await pontnál a Rust lehetőséget ad a runtime-nak
+arra, hogy szüneteltesse a taskot, és átváltson egy másikra, ha a bevárt future
+még nem áll készen. Ennek a fordítottja is igaz: a Rust _kizárólag_ await
+pontnál szünetelteti az async blokkokat, és adja vissza a vezérlést a
+runtime-nak. Az await pontok között minden szinkron módon fut.
 
-That means if you do a bunch of work in an async block without an await point,
-that future will block any other futures from making progress. You may sometimes
-hear this referred to as one future _starving_ other futures. In some cases,
-that may not be a big deal. However, if you are doing some kind of expensive
-setup or long-running work, or if you have a future that will keep doing some
-particular task indefinitely, you’ll need to think about when and where to hand
-control back to the runtime.
+Ez azt jelenti, hogy ha egy async blokkban await pont nélkül végzel el egy
+csomó munkát, az a future megakadályozza a többi future előrehaladását. Erre
+néha úgy hivatkoznak, hogy az egyik future _kiéhezteti_ a többit. Bizonyos
+esetekben ez nem nagy baj. Ha viszont valamilyen költséges előkészítést vagy
+hosszan futó munkát végzel, esetleg van egy future-öd, amely a végtelenségig
+folytat egy adott feladatot, át kell gondolnod, mikor és hol adod vissza a
+vezérlést a runtime-nak.
 
-Let’s simulate a long-running operation to illustrate the starvation problem,
-then explore how to solve it. Listing 17-14 introduces a `slow` function.
+Szimuláljunk egy hosszan futó műveletet, hogy szemléltessük a kiéheztetés
+problémáját, aztán nézzük meg, hogyan oldható meg. A 17-14. listában bemutatunk
+egy `slow` függvényt.
 
-<Listing number="17-14" caption="Using `thread::sleep` to simulate slow operations" file-name="src/main.rs">
+<Listing number="17-14" caption="A `thread::sleep` használata lassú műveletek szimulálására" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-14/src/main.rs:slow}}
@@ -30,15 +32,15 @@ then explore how to solve it. Listing 17-14 introduces a `slow` function.
 
 </Listing>
 
-This code uses `std::thread::sleep` instead of `trpl::sleep` so that calling
-`slow` will block the current thread for some number of milliseconds. We can
-use `slow` to stand in for real-world operations that are both long-running and
-blocking.
+Ez a kód a `trpl::sleep` helyett a `std::thread::sleep` függvényt használja,
+így a `slow` hívása néhány ezredmásodpercre blokkolja az aktuális szálat. A
+`slow` így olyan valós műveleteket helyettesíthet, amelyek egyszerre hosszan
+futók és blokkolók.
 
-In Listing 17-15, we use `slow` to emulate doing this kind of CPU-bound work in
-a pair of futures.
+A 17-15. listában a `slow` segítségével két future-ben szimulálunk ilyen
+CPU-igényes munkát.
 
-<Listing number="17-15" caption="Calling the `slow` function to simulate slow operations" file-name="src/main.rs">
+<Listing number="17-15" caption="A `slow` függvény hívása lassú műveletek szimulálására" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-15/src/main.rs:slow-futures}}
@@ -46,8 +48,9 @@ a pair of futures.
 
 </Listing>
 
-Each future hands control back to the runtime only _after_ carrying out a bunch
-of slow operations. If you run this code, you will see this output:
+Mindkét future csak _azután_ adja vissza a vezérlést a runtime-nak, hogy
+elvégzett egy csomó lassú műveletet. Ha lefuttatod ezt a kódot, a következő
+kimenetet fogod látni:
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-15/
@@ -68,22 +71,23 @@ copy just the output
 'a' finished.
 ```
 
-As with Listing 17-5 where we used `trpl::select` to race futures fetching two
-URLs, `select` still finishes as soon as `a` is done. There’s no interleaving
-between the calls to `slow` in the two futures, though. The `a` future does all
-of its work until the `trpl::sleep` call is awaited, then the `b` future does
-all of its work until its own `trpl::sleep` call is awaited, and finally the
-`a` future completes. To allow both futures to make progress between their slow
-tasks, we need await points so we can hand control back to the runtime. That
-means we need something we can await!
+Ahogy a 17-5. listában, ahol a `trpl::select` hívással versenyeztettünk két
+URL-t letöltő future-t, a `select` most is azonnal befejeződik, amint az `a`
+elkészül. A két future `slow` hívásai között viszont nincs átlapolódás. Az `a`
+future elvégzi az összes munkáját addig, amíg be nem várja a `trpl::sleep`
+hívást, ezután a `b` future végzi el az összes munkáját a saját `trpl::sleep`
+hívásának bevárásáig, végül pedig az `a` future fejeződik be. Ahhoz, hogy a két
+future a lassú feladatai között is haladni tudjon, await pontokra van
+szükségünk, hogy visszaadhassuk a vezérlést a runtime-nak. Vagyis kell valami,
+amit bevárhatunk!
 
-We can already see this kind of handoff happening in Listing 17-15: if we
-removed the `trpl::sleep` at the end of the `a` future, it would complete
-without the `b` future running _at all_. Let’s try using the `trpl::sleep`
-function as a starting point for letting operations switch off making progress,
-as shown in Listing 17-16.
+Ezt a fajta átadást már a 17-15. listában is látjuk: ha eltávolítanánk az `a`
+future végéről a `trpl::sleep` hívást, akkor úgy fejeződne be, hogy a `b`
+future _egyáltalán_ nem futna. Próbáljuk meg kiindulásként a `trpl::sleep`
+függvényt használni arra, hogy a műveletek felváltva haladhassanak, ahogy azt a
+17-16. lista mutatja.
 
-<Listing number="17-16" caption="Using `trpl::sleep` to let operations switch off making progress" file-name="src/main.rs">
+<Listing number="17-16" caption="A `trpl::sleep` használata, hogy a műveletek felváltva haladhassanak" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-16/src/main.rs:here}}
@@ -91,8 +95,8 @@ as shown in Listing 17-16.
 
 </Listing>
 
-We’ve added `trpl::sleep` calls with await points between each call to `slow`.
-Now the two futures’ work is interleaved:
+Minden `slow` hívás közé beszúrtunk egy await ponttal rendelkező
+`trpl::sleep` hívást. A két future munkája így már átlapolódik:
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-16
@@ -112,18 +116,18 @@ copy just the output
 'a' finished.
 ```
 
-The `a` future still runs for a bit before handing off control to `b`, because
-it calls `slow` before ever calling `trpl::sleep`, but after that the futures
-swap back and forth each time one of them hits an await point. In this case, we
-have done that after every call to `slow`, but we could break up the work in
-whatever way makes the most sense to us.
+Az `a` future még mindig fut egy darabig, mielőtt átadná a vezérlést a `b`-nek,
+mert a `slow`-ot hívja meg előbb, és csak utána a `trpl::sleep`-et, de ezután a
+future-ök oda-vissza váltogatják egymást minden alkalommal, amikor valamelyikük
+await ponthoz ér. Most ezt minden `slow` hívás után megtettük, de a munkát
+bárhogyan feldarabolhatnánk, ahogy nekünk a leginkább értelmes.
 
-We don’t really want to _sleep_ here, though: we want to make progress as fast
-as we can. We just need to hand back control to the runtime. We can do that
-directly, using the `trpl::yield_now` function. In Listing 17-17, we replace
-all those `trpl::sleep` calls with `trpl::yield_now`.
+Valójában azonban nem _aludni_ szeretnénk itt: a lehető leggyorsabban akarunk
+haladni. Csupán vissza kell adnunk a vezérlést a runtime-nak. Ezt közvetlenül
+is megtehetjük a `trpl::yield_now` függvénnyel. A 17-17. listában az összes
+`trpl::sleep` hívást `trpl::yield_now`-ra cseréljük.
 
-<Listing number="17-17" caption="Using `yield_now` to let operations switch off making progress" file-name="src/main.rs">
+<Listing number="17-17" caption="A `yield_now` használata, hogy a műveletek felváltva haladhassanak" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-17/src/main.rs:yields}}
@@ -131,42 +135,44 @@ all those `trpl::sleep` calls with `trpl::yield_now`.
 
 </Listing>
 
-This code is both clearer about the actual intent and can be significantly
-faster than using `sleep`, because timers such as the one used by `sleep` often
-have limits on how granular they can be. The version of `sleep` we are using,
-for example, will always sleep for at least a millisecond, even if we pass it a
-`Duration` of one nanosecond. Again, modern computers are _fast_: they can do a
-lot in one millisecond!
+Ez a kód egyszerre világosabban fejezi ki a valódi szándékot, és jelentősen
+gyorsabb is lehet, mint a `sleep` használata, mert az olyan időzítőknek, mint
+amilyet a `sleep` használ, gyakran korlátozott a felbontásuk. Az általunk
+használt `sleep` verzió például mindig legalább egy ezredmásodpercig alszik,
+még akkor is, ha egy nanoszekundumos `Duration` értéket adunk át neki. Ne
+feledd, a modern számítógépek _gyorsak_: egy ezredmásodperc alatt is sok
+mindent el tudnak végezni!
 
-This means that async can be useful even for compute-bound tasks, depending on
-what else your program is doing, because it provides a useful tool for
-structuring the relationships between different parts of the program (but at a
-cost of the overhead of the async state machine). This is a form of
-_cooperative multitasking_, where each future has the power to determine when
-it hands over control via await points. Each future therefore also has the
-responsibility to avoid blocking for too long. In some Rust-based embedded
-operating systems, this is the _only_ kind of multitasking!
+Ez azt jelenti, hogy az async még számításigényes feladatoknál is hasznos
+lehet, attól függően, mi mást csinál a programod, mert hasznos eszközt ad a
+program különböző részei közötti kapcsolatok strukturálásához (cserébe viszont
+ott van az async állapotgép többletköltsége). Ez a _kooperatív multitaszking_
+egy formája, amelyben minden future maga dönti el, mikor adja át a vezérlést az
+await pontokon keresztül. Ezért minden future felelőssége az is, hogy ne
+blokkoljon túl sokáig. Néhány Rust-alapú beágyazott operációs rendszerben ez a
+multitaszking _egyetlen_ formája!
 
-In real-world code, you won’t usually be alternating function calls with await
-points on every single line, of course. While yielding control in this way is
-relatively inexpensive, it’s not free. In many cases, trying to break up a
-compute-bound task might make it significantly slower, so sometimes it’s better
-for _overall_ performance to let an operation block briefly. Always
-measure to see what your code’s actual performance bottlenecks are. The
-underlying dynamic is important to keep in mind, though, if you _are_ seeing a
-lot of work happening in serial that you expected to happen concurrently!
+A valós kódban persze általában nem fogsz minden egyes sorban függvényhívásokat
+és await pontokat váltogatni. Bár a vezérlés ilyen módon való átadása
+viszonylag olcsó, nem ingyenes. Sok esetben egy számításigényes feladat
+feldarabolása jelentősen lassabbá teheti azt, így néha az _összteljesítmény_
+szempontjából jobb, ha hagyjuk, hogy egy művelet rövid ideig blokkoljon. Mindig
+mérj, hogy kiderüljön, valójában hol vannak a kódod teljesítménybeli szűk
+keresztmetszetei. Az alapul szolgáló működést viszont fontos szem előtt
+tartani, ha azt tapasztalod, hogy sok minden sorosan fut, amiről azt hitted,
+konkurensen fog!
 
-### Building Our Own Async Abstractions {#building-our-own-async-abstractions}
+### Saját async absztrakciók építése {#building-our-own-async-abstractions}
 
-We can also compose futures together to create new patterns. For example, we can
-build a `timeout` function with async building blocks we already have. When
-we’re done, the result will be another building block we could use to create
-still more async abstractions.
+A future-öket egymással kombinálva új mintákat is létrehozhatunk. Például
+felépíthetünk egy `timeout` függvényt a már meglévő async építőelemekből. Ha
+elkészülünk, az eredmény maga is egy újabb építőelem lesz, amellyel további
+async absztrakciókat hozhatunk létre.
 
-Listing 17-18 shows how we would expect this `timeout` to work with a slow
-future.
+A 17-18. lista mutatja, hogyan várnánk el ennek a `timeout`-nak a működését egy
+lassú future-rel.
 
-<Listing number="17-18" caption="Using our imagined `timeout` to run a slow operation with a time limit" file-name="src/main.rs">
+<Listing number="17-18" caption="Az elképzelt `timeout` használata egy lassú művelet időkorlátos futtatására" file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-18/src/main.rs:here}}
@@ -174,23 +180,23 @@ future.
 
 </Listing>
 
-Let’s implement this! To begin, let’s think about the API for `timeout`:
+Implementáljuk hát! Kezdésként gondoljuk át a `timeout` API-ját:
 
-- It needs to be an async function itself so we can await it.
-- Its first parameter should be a future to run. We can make it generic to allow
-  it to work with any future.
-- Its second parameter will be the maximum time to wait. If we use a `Duration`,
-  that will make it easy to pass along to `trpl::sleep`.
-- It should return a `Result`. If the future completes successfully, the
-  `Result` will be `Ok` with the value produced by the future. If the timeout
-  elapses first, the `Result` will be `Err` with the duration that the timeout
-  waited for.
+- Magának is async függvénynek kell lennie, hogy bevárhassuk.
+- Az első paramétere a futtatandó future legyen. Generikussá tehetjük, hogy
+  bármilyen future-rel működjön.
+- A második paramétere a maximális várakozási idő lesz. Ha `Duration` típust
+  használunk, azt könnyen továbbadhatjuk a `trpl::sleep`-nek.
+- `Result` értékkel kell visszatérnie. Ha a future sikeresen befejeződik, a
+  `Result` egy `Ok` lesz, benne a future által előállított értékkel. Ha előbb
+  telik le az időkorlát, a `Result` egy `Err` lesz, benne azzal az
+  időtartammal, ameddig az időkorlát várt.
 
-Listing 17-19 shows this declaration.
+A 17-19. lista mutatja ezt a deklarációt.
 
 <!-- This is not tested because it intentionally does not compile. -->
 
-<Listing number="17-19" caption="Defining the signature of `timeout`" file-name="src/main.rs">
+<Listing number="17-19" caption="A `timeout` szignatúrájának definiálása" file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-19/src/main.rs:declaration}}
@@ -198,15 +204,16 @@ Listing 17-19 shows this declaration.
 
 </Listing>
 
-That satisfies our goals for the types. Now let’s think about the _behavior_ we
-need: we want to race the future passed in against the duration. We can use
-`trpl::sleep` to make a timer future from the duration, and use `trpl::select`
-to run that timer with the future the caller passes in.
+Ez kielégíti a típusokkal kapcsolatos céljainkat. Most gondoljuk át a szükséges
+_viselkedést_: versenyeztetni akarjuk a kapott future-t az időtartammal. A
+`trpl::sleep` segítségével időzítő future-t készíthetünk az időtartamból, a
+`trpl::select` hívással pedig futtathatjuk ezt az időzítőt a hívó által átadott
+future-rel együtt.
 
-In Listing 17-20, we implement `timeout` by matching on the result of awaiting
-`trpl::select`.
+A 17-20. listában úgy implementáljuk a `timeout`-ot, hogy mintaillesztést
+végzünk a `trpl::select` bevárásának eredményén.
 
-<Listing number="17-20" caption="Defining `timeout` with `select` and `sleep`" file-name="src/main.rs">
+<Listing number="17-20" caption="A `timeout` definiálása a `select` és a `sleep` segítségével" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-20/src/main.rs:implementation}}
@@ -214,36 +221,40 @@ In Listing 17-20, we implement `timeout` by matching on the result of awaiting
 
 </Listing>
 
-The implementation of `trpl::select` is not fair: it always polls arguments in
-the order in which they are passed (other `select` implementations will
-randomly choose which argument to poll first). Thus, we pass `future_to_try` to
-`select` first so it gets a chance to complete even if `max_time` is a very
-short duration. If `future_to_try` finishes first, `select` will return `Left`
-with the output from `future_to_try`. If `timer` finishes first, `select` will
-return `Right` with the timer’s output of `()`.
+A `trpl::select` implementációja nem fair: az argumentumokat mindig abban a
+sorrendben pollozza, ahogyan átadták őket (más `select` implementációk
+véletlenszerűen választják ki, melyik argumentumot pollozzák először). Ezért a
+`future_to_try`-t adjuk át elsőként a `select`-nek, hogy akkor is legyen esélye
+befejeződni, ha a `max_time` nagyon rövid időtartam. Ha a `future_to_try`
+fejeződik be előbb, a `select` egy `Left` értéket ad vissza a `future_to_try`
+kimenetével. Ha az időzítő fejeződik be előbb, a `select` egy `Right` értéket
+ad vissza az időzítő `()` kimenetével.
 
-If the `future_to_try` succeeds and we get a `Left(output)`, we return
-`Ok(output)`. If the sleep timer elapses instead and we get a `Right(())`, we
-ignore the `()` with `_` and return `Err(max_time)` instead.
+Ha a `future_to_try` sikerrel jár, és `Left(output)` értéket kapunk,
+`Ok(output)` értékkel térünk vissza. Ha ehelyett az alvási időzítő jár le, és
+`Right(())` értéket kapunk, akkor a `()` értéket figyelmen kívül hagyjuk egy
+`_` mintával, és `Err(max_time)` értékkel térünk vissza.
 
-With that, we have a working `timeout` built out of two other async helpers. If
-we run our code, it will print the failure mode after the timeout:
+Ezzel készen is van egy működő `timeout`, amelyet két másik async segédelemből
+építettünk fel. Ha lefuttatjuk a kódunkat, az időkorlát letelte után kiírja a
+hibaágat:
 
 ```text
 Failed after 2 seconds
 ```
 
-Because futures compose with other futures, you can build really powerful tools
-using smaller async building blocks. For example, you can use this same
-approach to combine timeouts with retries, and in turn use those with
-operations such as network calls (such as those in Listing 17-5).
+Mivel a future-ök kombinálhatók más future-ökkel, kisebb async építőelemekből
+igazán erőteljes eszközöket állíthatsz össze. Ugyanezzel a megközelítéssel
+kombinálhatod például az időkorlátokat az újrapróbálkozásokkal, azokat pedig
+olyan műveletekkel, mint a hálózati hívások (például a 17-5. listában látottak).
 
-In practice, you’ll usually work directly with `async` and `await`, and
-secondarily with functions such as `select` and macros such as the `join!`
-macro to control how the outermost futures are executed.
+A gyakorlatban általában közvetlenül az `async` és az `await` kulcsszavakkal
+fogsz dolgozni, másodsorban pedig olyan függvényekkel, mint a `select`, és
+olyan makrókkal, mint a `join!`, hogy szabályozd a legkülső future-ök
+futtatását.
 
-We’ve now seen a number of ways to work with multiple futures at the same time.
-Up next, we’ll look at how we can work with multiple futures in a sequence over
-time with _streams_.
+Már számos módot láttunk arra, hogyan dolgozhatunk több future-rel egyszerre. A
+következőkben azt nézzük meg, hogyan dolgozhatunk időben egymás után következő
+future-ök sorozatával a _stream_-ek segítségével.
 
 [async-program]: ch17-01-futures-and-syntax.html#our-first-async-program

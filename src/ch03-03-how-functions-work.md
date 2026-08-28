@@ -68,11 +68,11 @@ a `println!` makró `5`-öt tesz oda, ahol a formátumstringben az `x`-et
 tartalmazó kapcsoszárójel-pár állt.
 
 A függvényszignatúrákban _kötelező_ deklarálnod minden paraméter típusát. Ez
-tudatos döntés a Rust tervezésében: a függvénydefiníciókban megkövetelt
-típusannotációk miatt a fordítónak szinte sosem kell máshol is használnod őket
-a kódban ahhoz, hogy kiderüljön, melyik típusra gondolsz. A fordító
-hasznosabb hibaüzeneteket is tud adni, ha tudja, milyen típusokat vár a
-függvény.
+tudatos döntés a Rust tervezésében: mivel a függvénydefiníciókban kötelező a
+típusannotáció, a fordítónak szinte sosem kell a kód más pontjain is
+típusannotációt kérned ahhoz, hogy kiderüljön, melyik típusra gondolsz. A
+fordító hasznosabb hibaüzeneteket is tud adni, ha tudja, milyen típusokat vár
+a függvény.
 
 Ha több paramétert definiálsz, vesszővel válaszd el a paraméterdeklarációkat,
 így:

@@ -1,4 +1,4 @@
-# Appendix
+# Függelék
 
-The following sections contain reference material you may find useful in your
-Rust journey.
+Az alábbi szakaszok olyan referenciaanyagot tartalmaznak, amely hasznos lehet a
+Rust-utad során.

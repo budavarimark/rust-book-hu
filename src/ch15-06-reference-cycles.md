@@ -1,21 +1,21 @@
-## Reference Cycles Can Leak Memory
+## A referenciaciklusok memóriaszivárgást okozhatnak
 
-Rust’s memory safety guarantees make it difficult, but not impossible, to
-accidentally create memory that is never cleaned up (known as a _memory leak_).
-Preventing memory leaks entirely is not one of Rust’s guarantees, meaning
-memory leaks are memory safe in Rust. We can see that Rust allows memory leaks
-by using `Rc<T>` and `RefCell<T>`: It’s possible to create references where
-items refer to each other in a cycle. This creates memory leaks because the
-reference count of each item in the cycle will never reach 0, and the values
-will never be dropped.
+A Rust memóriabiztonsági garanciái megnehezítik – de nem teszik lehetetlenné –,
+hogy véletlenül soha meg nem tisztított memóriát hozz létre (ezt nevezzük
+_memóriaszivárgásnak_). A memóriaszivárgás teljes megakadályozása nem tartozik
+a Rust garanciái közé, vagyis a memóriaszivárgás Rustban memóriabiztonságos.
+Azt, hogy a Rust megengedi a memóriaszivárgást, az `Rc<T>` és a `RefCell<T>`
+használatával láthatjuk: lehetséges olyan referenciákat létrehozni, amelyekben
+az elemek körkörösen hivatkoznak egymásra. Ez memóriaszivárgást okoz, mert a
+ciklusban lévő elemek referenciaszámlálója soha nem éri el a 0-t, és az értékek
+soha nem semmisülnek meg.
 
-### Creating a Reference Cycle
+### Referenciaciklus létrehozása
 
-Let’s look at how a reference cycle might happen and how to prevent it,
-starting with the definition of the `List` enum and a `tail` method in Listing
-15-25.
+Nézzük meg, hogyan alakulhat ki referenciaciklus, és hogyan előzhető meg;
+kezdjük a `List` enum és egy `tail` metódus definíciójával a 15-25. listában.
 
-<Listing number="15-25" file-name="src/main.rs" caption="A cons list definition that holds a `RefCell<T>` so that we can modify what a `Cons` variant is referring to">
+<Listing number="15-25" file-name="src/main.rs" caption="Egy cons list definíció, amely `RefCell<T>`-t tárol, hogy módosítani tudjuk, mire hivatkozik egy `Cons` variáns">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-25/src/main.rs:here}}
@@ -23,20 +23,21 @@ starting with the definition of the `List` enum and a `tail` method in Listing
 
 </Listing>
 
-We’re using another variation of the `List` definition from Listing 15-5. The
-second element in the `Cons` variant is now `RefCell<Rc<List>>`, meaning that
-instead of having the ability to modify the `i32` value as we did in Listing
-15-24, we want to modify the `List` value a `Cons` variant is pointing to.
-We’re also adding a `tail` method to make it convenient for us to access the
-second item if we have a `Cons` variant.
+A 15-5. listában szereplő `List` definíció egy újabb változatát használjuk. A
+`Cons` variáns második eleme mostantól `RefCell<Rc<List>>`, ami azt jelenti,
+hogy ahelyett, hogy az `i32` értéket tudnánk módosítani, ahogy a 15-24. listában
+tettük, azt a `List` értéket akarjuk módosítani, amelyre egy `Cons` variáns
+mutat. Hozzáadunk egy `tail` metódust is, hogy kényelmesen elérhessük a második
+elemet, ha van egy `Cons` variánsunk.
 
-In Listing 15-26, we’re adding a `main` function that uses the definitions in
-Listing 15-25. This code creates a list in `a` and a list in `b` that points to
-the list in `a`. Then, it modifies the list in `a` to point to `b`, creating a
-reference cycle. There are `println!` statements along the way to show what the
-reference counts are at various points in this process.
+A 15-26. listában hozzáadunk egy `main` függvényt, amely a 15-25. lista
+definícióit használja. Ez a kód létrehoz egy listát `a`-ban, és egy listát
+`b`-ben, amely az `a`-ban lévő listára mutat. Ezután módosítja az `a`-ban lévő
+listát, hogy `b`-re mutasson, ezzel referenciaciklust hozva létre. Útközben
+`println!` utasítások mutatják, hogy a folyamat különböző pontjain mennyi a
+referenciaszámláló értéke.
 
-<Listing number="15-26" file-name="src/main.rs" caption="Creating a reference cycle of two `List` values pointing to each other">
+<Listing number="15-26" file-name="src/main.rs" caption="Két, egymásra mutató `List` értékből álló referenciaciklus létrehozása">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-26/src/main.rs:here}}
@@ -44,133 +45,139 @@ reference counts are at various points in this process.
 
 </Listing>
 
-We create an `Rc<List>` instance holding a `List` value in the variable `a`
-with an initial list of `5, Nil`. We then create an `Rc<List>` instance holding
-another `List` value in the variable `b` that contains the value `10` and
-points to the list in `a`.
+Létrehozunk egy `Rc<List>` példányt, amely egy `List` értéket tárol az `a`
+változóban, kezdetben az `5, Nil` listával. Ezután létrehozunk egy `Rc<List>`
+példányt, amely egy másik `List` értéket tárol a `b` változóban; ez a `10`
+értéket tartalmazza, és az `a`-ban lévő listára mutat.
 
-We modify `a` so that it points to `b` instead of `Nil`, creating a cycle. We
-do that by using the `tail` method to get a reference to the
-`RefCell<Rc<List>>` in `a`, which we put in the variable `link`. Then, we use
-the `borrow_mut` method on the `RefCell<Rc<List>>` to change the value inside
-from an `Rc<List>` that holds a `Nil` value to the `Rc<List>` in `b`.
+Módosítjuk `a`-t úgy, hogy a `Nil` helyett `b`-re mutasson, ezzel ciklust
+hozunk létre. Ezt úgy tesszük meg, hogy a `tail` metódussal referenciát kérünk
+az `a`-ban lévő `RefCell<Rc<List>>`-re, amelyet a `link` változóba teszünk.
+Ezután a `RefCell<Rc<List>>` `borrow_mut` metódusával megváltoztatjuk a benne
+lévő értéket: a `Nil` értéket tároló `Rc<List>` helyett a `b`-ben lévő
+`Rc<List>`-re.
 
-When we run this code, keeping the last `println!` commented out for the
-moment, we’ll get this output:
+Ha lefuttatjuk ezt a kódot, egyelőre kikommentezve hagyva az utolsó `println!`-t,
+ezt a kimenetet kapjuk:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-26/output.txt}}
 ```
 
-The reference count of the `Rc<List>` instances in both `a` and `b` is 2 after
-we change the list in `a` to point to `b`. At the end of `main`, Rust drops the
-variable `b`, which decreases the reference count of the `b` `Rc<List>`
-instance from 2 to 1. The memory that `Rc<List>` has on the heap won’t be
-dropped at this point because its reference count is 1, not 0. Then, Rust drops
-`a`, which decreases the reference count of the `a` `Rc<List>` instance from 2
-to 1 as well. This instance’s memory can’t be dropped either, because the other
-`Rc<List>` instance still refers to it. The memory allocated to the list will
-remain uncollected forever. To visualize this reference cycle, we’ve created
-the diagram in Figure 15-4.
+Az `a`-ban és a `b`-ben lévő `Rc<List>` példányok referenciaszámlálója egyaránt
+2, miután az `a`-ban lévő listát úgy változtattuk meg, hogy `b`-re mutasson. A
+`main` végén a Rust megsemmisíti a `b` változót, ami a `b`-beli `Rc<List>`
+példány referenciaszámlálóját 2-ről 1-re csökkenti. Az a memória, amelyet az
+`Rc<List>` a heapen foglal, ezen a ponton nem szabadul fel, mert a
+referenciaszámlálója 1, nem 0. Ezután a Rust megsemmisíti `a`-t, ami az
+`a`-beli `Rc<List>` példány referenciaszámlálóját szintén 2-ről 1-re csökkenti.
+Ennek a példánynak a memóriája sem szabadulhat fel, mert a másik `Rc<List>`
+példány továbbra is hivatkozik rá. A listának lefoglalt memória örökre
+felszabadítatlan marad. Hogy szemléltessük ezt a referenciaciklust, elkészítettük
+a 15-4. ábrát.
 
-<img alt="A rectangle labeled 'a' that points to a rectangle containing the integer 5. A rectangle labeled 'b' that points to a rectangle containing the integer 10. The rectangle containing 5 points to the rectangle containing 10, and the rectangle containing 10 points back to the rectangle containing 5, creating a cycle." src="img/trpl15-04.svg" class="center" />
+<img alt="Egy 'a' címkéjű téglalap, amely egy 5 egész számot tartalmazó téglalapra mutat. Egy 'b' címkéjű téglalap, amely egy 10 egész számot tartalmazó téglalapra mutat. Az 5-öt tartalmazó téglalap a 10-et tartalmazó téglalapra mutat, a 10-et tartalmazó téglalap pedig vissza az 5-öt tartalmazó téglalapra, így ciklus jön létre." src="img/trpl15-04.svg" class="center" />
 
-<span class="caption">Figure 15-4: A reference cycle of lists `a` and `b`
-pointing to each other</span>
+<span class="caption">15-4. ábra: Az egymásra mutató `a` és `b` listákból álló
+referenciaciklus</span>
 
-If you uncomment the last `println!` and run the program, Rust will try to
-print this cycle with `a` pointing to `b` pointing to `a` and so forth until it
-overflows the stack.
+Ha kikommentezed az utolsó `println!`-t, és lefuttatod a programot, a Rust
+megpróbálja kiírni ezt a ciklust, ahol `a` mutat `b`-re, az `a`-ra, és így
+tovább, amíg túl nem csordul a stack.
 
-Compared to a real-world program, the consequences of creating a reference
-cycle in this example aren’t very dire: Right after we create the reference
-cycle, the program ends. However, if a more complex program allocated lots of
-memory in a cycle and held onto it for a long time, the program would use more
-memory than it needed and might overwhelm the system, causing it to run out of
-available memory.
+Egy valós programhoz képest egy referenciaciklus létrehozásának a
+következményei ebben a példában nem túl súlyosak: közvetlenül a
+referenciaciklus létrehozása után a program véget ér. Ha azonban egy
+összetettebb program sok memóriát foglalna le egy ciklusban, és azt hosszú
+ideig tartaná, a program több memóriát használna a szükségesnél, és
+túlterhelhetné a rendszert, kifogyasztva azt az elérhető memóriából.
 
-Creating reference cycles is not easily done, but it’s not impossible either.
-If you have `RefCell<T>` values that contain `Rc<T>` values or similar nested
-combinations of types with interior mutability and reference counting, you must
-ensure that you don’t create cycles; you can’t rely on Rust to catch them.
-Creating a reference cycle would be a logic bug in your program that you should
-use automated tests, code reviews, and other software development practices to
-minimize.
+Referenciaciklusokat nem könnyű létrehozni, de nem is lehetetlen. Ha vannak
+olyan `RefCell<T>` értékeid, amelyek `Rc<T>` értékeket tartalmaznak, vagy
+hasonló, egymásba ágyazott, interior mutabilityt és referenciaszámlálást
+használó típuskombinációid, neked kell gondoskodnod arról, hogy ne hozz létre
+ciklusokat; nem támaszkodhatsz arra, hogy a Rust majd elkapja őket. Egy
+referenciaciklus létrehozása logikai hiba lenne a programodban, amelyet
+automatizált tesztekkel, kódellenőrzésekkel és más szoftverfejlesztési
+gyakorlatokkal érdemes minimalizálni.
 
-Another solution for avoiding reference cycles is reorganizing your data
-structures so that some references express ownership and some references don’t.
-As a result, you can have cycles made up of some ownership relationships and
-some non-ownership relationships, and only the ownership relationships affect
-whether or not a value can be dropped. In Listing 15-25, we always want `Cons`
-variants to own their list, so reorganizing the data structure isn’t possible.
-Let’s look at an example using graphs made up of parent nodes and child nodes
-to see when non-ownership relationships are an appropriate way to prevent
-reference cycles.
+A referenciaciklusok elkerülésének egy másik megoldása az adatszerkezeteid
+átszervezése úgy, hogy egyes referenciák ownershipet fejezzenek ki, mások pedig
+ne. Ennek eredményeként lehetnek olyan ciklusaid, amelyek részben
+ownership-kapcsolatokból, részben nem ownership jellegű kapcsolatokból állnak,
+és csak az ownership-kapcsolatok befolyásolják, hogy egy érték megsemmisíthető-e.
+A 15-25. listában mindig azt akarjuk, hogy a `Cons` variánsok birtokolják a
+listájukat, ezért az adatszerkezet átszervezése nem lehetséges. Nézzünk meg egy
+példát szülő- és gyerekcsomópontokból álló gráfokkal, hogy lássuk, mikor
+alkalmas megoldás a nem ownership jellegű kapcsolat a referenciaciklusok
+megelőzésére.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="preventing-reference-cycles-turning-an-rct-into-a-weakt"></a>
 
-### Preventing Reference Cycles Using `Weak<T>`
+### Referenciaciklusok megelőzése `Weak<T>` használatával
 
-So far, we’ve demonstrated that calling `Rc::clone` increases the
-`strong_count` of an `Rc<T>` instance, and an `Rc<T>` instance is only cleaned
-up if its `strong_count` is 0. You can also create a weak reference to the
-value within an `Rc<T>` instance by calling `Rc::downgrade` and passing a
-reference to the `Rc<T>`. *Strong references* are how you can share ownership
-of an `Rc<T>` instance. *Weak references* don’t express an ownership
-relationship, and their count doesn’t affect when an `Rc<T>` instance is
-cleaned up. They won’t cause a reference cycle, because any cycle involving
-some weak references will be broken once the strong reference count of values
-involved is 0.
+Eddig azt mutattuk be, hogy az `Rc::clone` hívása növeli egy `Rc<T>` példány
+`strong_count`-ját, és hogy egy `Rc<T>` példány csak akkor tisztul meg, ha a
+`strong_count`-ja 0. Létrehozhatsz gyenge (weak) referenciát is egy `Rc<T>`
+példányon belüli értékre, ha meghívod az `Rc::downgrade`-et, és átadsz neki egy
+referenciát az `Rc<T>`-re. Az *erős referenciákkal* tudod megosztani egy `Rc<T>`
+példány ownershipjét. A *gyenge referenciák* nem fejeznek ki
+ownership-kapcsolatot, és a számuk nem befolyásolja, mikor tisztul meg egy
+`Rc<T>` példány. Nem okoznak referenciaciklust, mert minden olyan ciklus,
+amelyben gyenge referenciák is szerepelnek, megszakad, amint az érintett értékek
+erős referenciaszámlálója 0 lesz.
 
-When you call `Rc::downgrade`, you get a smart pointer of type `Weak<T>`.
-Instead of increasing the `strong_count` in the `Rc<T>` instance by 1, calling
-`Rc::downgrade` increases the `weak_count` by 1. The `Rc<T>` type uses
-`weak_count` to keep track of how many `Weak<T>` references exist, similar to
-`strong_count`. The difference is the `weak_count` doesn’t need to be 0 for the
-`Rc<T>` instance to be cleaned up.
+Amikor meghívod az `Rc::downgrade`-et, egy `Weak<T>` típusú smart pointert
+kapsz. Az `Rc::downgrade` hívása nem az `Rc<T>` példány `strong_count`-ját
+növeli 1-gyel, hanem a `weak_count`-ot. Az `Rc<T>` típus a `weak_count`
+segítségével tartja nyilván, hány `Weak<T>` referencia létezik, hasonlóan a
+`strong_count`-hoz. A különbség az, hogy a `weak_count`-nak nem kell 0-nak
+lennie ahhoz, hogy az `Rc<T>` példány megtisztuljon.
 
-Because the value that `Weak<T>` references might have been dropped, to do
-anything with the value that a `Weak<T>` is pointing to you must make sure the
-value still exists. Do this by calling the `upgrade` method on a `Weak<T>`
-instance, which will return an `Option<Rc<T>>`. You’ll get a result of `Some`
-if the `Rc<T>` value has not been dropped yet and a result of `None` if the
-`Rc<T>` value has been dropped. Because `upgrade` returns an `Option<Rc<T>>`,
-Rust will ensure that the `Some` case and the `None` case are handled, and
-there won’t be an invalid pointer.
+Mivel az az érték, amelyre a `Weak<T>` hivatkozik, lehet, hogy már megsemmisült,
+ahhoz, hogy bármit kezdj azzal az értékkel, amelyre egy `Weak<T>` mutat, meg
+kell bizonyosodnod arról, hogy az érték még létezik. Ezt úgy teheted meg, hogy
+meghívod az `upgrade` metódust egy `Weak<T>` példányon, amely egy
+`Option<Rc<T>>`-t ad vissza. `Some` eredményt kapsz, ha az `Rc<T>` érték még nem
+semmisült meg, és `None` eredményt, ha az `Rc<T>` érték már megsemmisült. Mivel
+az `upgrade` egy `Option<Rc<T>>`-t ad vissza, a Rust gondoskodik arról, hogy
+mind a `Some`, mind a `None` esetet kezeld, így nem lesz érvénytelen pointer.
 
-As an example, rather than using a list whose items know only about the next
-item, we’ll create a tree whose items know about their child items _and_ their
-parent items.
+Példaként ahelyett, hogy olyan listát használnánk, amelynek az elemei csak a
+következő elemről tudnak, olyan fát hozunk létre, amelynek az elemei ismerik a
+gyerekelemeiket _és_ a szülőelemüket is.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="creating-a-tree-data-structure-a-node-with-child-nodes"></a>
 
-#### Creating a Tree Data Structure
+#### Fa adatszerkezet létrehozása
 
-To start, we’ll build a tree with nodes that know about their child nodes.
-We’ll create a struct named `Node` that holds its own `i32` value as well as
-references to its child `Node` values:
+Először olyan fát építünk, amelynek a csomópontjai ismerik a
+gyerekcsomópontjaikat. Létrehozunk egy `Node` nevű structot, amely a saját `i32`
+értékét, valamint a gyerek `Node` értékeire mutató referenciákat tárolja:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-27/src/main.rs:here}}
 ```
 
-We want a `Node` to own its children, and we want to share that ownership with
-variables so that we can access each `Node` in the tree directly. To do this,
-we define the `Vec<T>` items to be values of type `Rc<Node>`. We also want to
-modify which nodes are children of another node, so we have a `RefCell<T>` in
-`children` around the `Vec<Rc<Node>>`.
+Azt akarjuk, hogy egy `Node` birtokolja a gyerekeit, és ezt az ownershipet
+változókkal is meg akarjuk osztani, hogy a fa minden `Node`-jához közvetlenül
+hozzáférhessünk. Ehhez a `Vec<T>` elemeit `Rc<Node>` típusú értékeknek
+definiáljuk. Azt is módosítani akarjuk, hogy mely csomópontok gyerekei egy másik
+csomópontnak, ezért a `children` mezőben egy `RefCell<T>` van a
+`Vec<Rc<Node>>` körül.
 
-Next, we’ll use our struct definition and create one `Node` instance named
-`leaf` with the value `3` and no children, and another instance named `branch`
-with the value `5` and `leaf` as one of its children, as shown in Listing 15-27.
+Ezután a struct definíciónkat használva létrehozunk egy `leaf` nevű `Node`
+példányt a `3` értékkel és gyerekek nélkül, valamint egy másik, `branch` nevű
+példányt az `5` értékkel, amelynek `leaf` az egyik gyereke – ahogy azt a 15-27.
+lista mutatja.
 
-<Listing number="15-27" file-name="src/main.rs" caption="Creating a `leaf` node with no children and a `branch` node with `leaf` as one of its children">
+<Listing number="15-27" file-name="src/main.rs" caption="Egy gyerekek nélküli `leaf` csomópont és egy `branch` csomópont létrehozása, amelynek `leaf` az egyik gyereke">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-27/src/main.rs:there}}
@@ -178,42 +185,44 @@ with the value `5` and `leaf` as one of its children, as shown in Listing 15-27.
 
 </Listing>
 
-We clone the `Rc<Node>` in `leaf` and store that in `branch`, meaning the
-`Node` in `leaf` now has two owners: `leaf` and `branch`. We can get from
-`branch` to `leaf` through `branch.children`, but there’s no way to get from
-`leaf` to `branch`. The reason is that `leaf` has no reference to `branch` and
-doesn’t know they’re related. We want `leaf` to know that `branch` is its
-parent. We’ll do that next.
+Klónozzuk a `leaf`-ben lévő `Rc<Node>`-ot, és eltároljuk a `branch`-ben, ami azt
+jelenti, hogy a `leaf`-ben lévő `Node`-nak most két ownere van: `leaf` és
+`branch`. A `branch`-től eljuthatunk a `leaf`-hez a `branch.children`
+segítségével, de a `leaf`-től nem juthatunk el a `branch`-hez. Ennek az az oka,
+hogy a `leaf`-nek nincs referenciája a `branch`-re, és nem tud arról, hogy
+kapcsolatban állnak. Azt szeretnénk, hogy a `leaf` tudja, hogy a `branch` a
+szülője. Ezt tesszük meg a következőkben.
 
-#### Adding a Reference from a Child to Its Parent
+#### Referencia hozzáadása a gyerektől a szülőjéhez
 
-To make the child node aware of its parent, we need to add a `parent` field to
-our `Node` struct definition. The trouble is in deciding what the type of
-`parent` should be. We know it can’t contain an `Rc<T>`, because that would
-create a reference cycle with `leaf.parent` pointing to `branch` and
-`branch.children` pointing to `leaf`, which would cause their `strong_count`
-values to never be 0.
+Ahhoz, hogy a gyerekcsomópont tudjon a szülőjéről, hozzá kell adnunk egy
+`parent` mezőt a `Node` struct definíciójához. A gond az, hogy el kell
+döntenünk, mi legyen a `parent` típusa. Tudjuk, hogy nem tartalmazhat `Rc<T>`-t,
+mert az referenciaciklust hozna létre, ahol a `leaf.parent` a `branch`-re, a
+`branch.children` pedig a `leaf`-re mutatna, aminek következtében a
+`strong_count` értékük soha nem lenne 0.
 
-Thinking about the relationships another way, a parent node should own its
-children: If a parent node is dropped, its child nodes should be dropped as
-well. However, a child should not own its parent: If we drop a child node, the
-parent should still exist. This is a case for weak references!
+Ha másképp gondolunk a kapcsolatokra: egy szülőcsomópontnak birtokolnia kell a
+gyerekeit – ha egy szülőcsomópont megsemmisül, a gyerekcsomópontjainak is meg
+kell semmisülniük. Egy gyereknek viszont nem szabad birtokolnia a szülőjét: ha
+megsemmisítünk egy gyerekcsomópontot, a szülőnek továbbra is léteznie kell. Ez
+a gyenge referenciák esete!
 
-So, instead of `Rc<T>`, we’ll make the type of `parent` use `Weak<T>`,
-specifically a `RefCell<Weak<Node>>`. Now our `Node` struct definition looks
-like this:
+Így az `Rc<T>` helyett a `parent` típusa `Weak<T>`-t fog használni, pontosabban
+`RefCell<Weak<Node>>`-ot. A `Node` struct definíciónk mostantól így néz ki:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-28/src/main.rs:here}}
 ```
 
-A node will be able to refer to its parent node but doesn’t own its parent. In
-Listing 15-28, we update `main` to use this new definition so that the `leaf`
-node will have a way to refer to its parent, `branch`.
+Egy csomópont képes lesz hivatkozni a szülőcsomópontjára, de nem birtokolja a
+szülőjét. A 15-28. listában frissítjük a `main`-t, hogy ezt az új definíciót
+használja, így a `leaf` csomópontnak lesz módja hivatkozni a szülőjére, a
+`branch`-re.
 
-<Listing number="15-28" file-name="src/main.rs" caption="A `leaf` node with a weak reference to its parent node, `branch`">
+<Listing number="15-28" file-name="src/main.rs" caption="Egy `leaf` csomópont, amelynek gyenge referenciája van a szülőcsomópontjára, a `branch`-re">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-28/src/main.rs:there}}
@@ -221,30 +230,30 @@ node will have a way to refer to its parent, `branch`.
 
 </Listing>
 
-Creating the `leaf` node looks similar to Listing 15-27 with the exception of
-the `parent` field: `leaf` starts out without a parent, so we create a new,
-empty `Weak<Node>` reference instance.
+A `leaf` csomópont létrehozása hasonlóan néz ki, mint a 15-27. listában, a
+`parent` mező kivételével: a `leaf` szülő nélkül indul, ezért egy új, üres
+`Weak<Node>` referenciapéldányt hozunk létre.
 
-At this point, when we try to get a reference to the parent of `leaf` by using
-the `upgrade` method, we get a `None` value. We see this in the output from the
-first `println!` statement:
+Ezen a ponton, amikor az `upgrade` metódussal próbálunk referenciát szerezni a
+`leaf` szülőjére, `None` értéket kapunk. Ezt látjuk az első `println!` utasítás
+kimenetében:
 
 ```text
 leaf parent = None
 ```
 
-When we create the `branch` node, it will also have a new `Weak<Node>`
-reference in the `parent` field because `branch` doesn’t have a parent node. We
-still have `leaf` as one of the children of `branch`. Once we have the `Node`
-instance in `branch`, we can modify `leaf` to give it a `Weak<Node>` reference
-to its parent. We use the `borrow_mut` method on the `RefCell<Weak<Node>>` in
-the `parent` field of `leaf`, and then we use the `Rc::downgrade` function to
-create a `Weak<Node>` reference to `branch` from the `Rc<Node>` in `branch`.
+Amikor létrehozzuk a `branch` csomópontot, annak is új `Weak<Node>` referenciája
+lesz a `parent` mezőben, mert a `branch`-nek nincs szülőcsomópontja. A `leaf`
+továbbra is a `branch` egyik gyereke. Miután megvan a `branch`-ben lévő `Node`
+példány, módosíthatjuk a `leaf`-et, hogy `Weak<Node>` referenciát adjunk neki a
+szülőjére. A `leaf` `parent` mezőjében lévő `RefCell<Weak<Node>>`-on meghívjuk a
+`borrow_mut` metódust, majd az `Rc::downgrade` függvénnyel `Weak<Node>`
+referenciát hozunk létre a `branch`-re a `branch`-ben lévő `Rc<Node>`-ból.
 
-When we print the parent of `leaf` again, this time we’ll get a `Some` variant
-holding `branch`: Now `leaf` can access its parent! When we print `leaf`, we
-also avoid the cycle that eventually ended in a stack overflow like we had in
-Listing 15-26; the `Weak<Node>` references are printed as `(Weak)`:
+Amikor újra kiírjuk a `leaf` szülőjét, ezúttal egy `branch`-et tároló `Some`
+variánst kapunk: a `leaf` mostantól hozzáfér a szülőjéhez! Amikor kiírjuk a
+`leaf`-et, azt a ciklust is elkerüljük, amely a 15-26. listában végül stack
+overflowhoz vezetett; a `Weak<Node>` referenciák `(Weak)` alakban jelennek meg:
 
 ```text
 leaf parent = Some(Node { value: 5, parent: RefCell { value: (Weak) },
@@ -252,19 +261,19 @@ children: RefCell { value: [Node { value: 3, parent: RefCell { value: (Weak) },
 children: RefCell { value: [] } }] } })
 ```
 
-The lack of infinite output indicates that this code didn’t create a reference
-cycle. We can also tell this by looking at the values we get from calling
-`Rc::strong_count` and `Rc::weak_count`.
+A végtelen kimenet hiánya azt jelzi, hogy ez a kód nem hozott létre
+referenciaciklust. Ezt abból is megállapíthatjuk, ha megnézzük az
+`Rc::strong_count` és az `Rc::weak_count` hívásától kapott értékeket.
 
-#### Visualizing Changes to `strong_count` and `weak_count`
+#### A `strong_count` és a `weak_count` változásainak szemléltetése
 
-Let’s look at how the `strong_count` and `weak_count` values of the `Rc<Node>`
-instances change by creating a new inner scope and moving the creation of
-`branch` into that scope. By doing so, we can see what happens when `branch` is
-created and then dropped when it goes out of scope. The modifications are shown
-in Listing 15-29.
+Nézzük meg, hogyan változik az `Rc<Node>` példányok `strong_count` és
+`weak_count` értéke: ehhez létrehozunk egy új belső hatókört, és abba helyezzük
+át a `branch` létrehozását. Így láthatjuk, mi történik, amikor a `branch`
+létrejön, majd megsemmisül, amint kilép a hatóköréből. A módosításokat a 15-29.
+lista mutatja.
 
-<Listing number="15-29" file-name="src/main.rs" caption="Creating `branch` in an inner scope and examining strong and weak reference counts">
+<Listing number="15-29" file-name="src/main.rs" caption="A `branch` létrehozása egy belső hatókörben, valamint az erős és gyenge referenciaszámlálók vizsgálata">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-29/src/main.rs:here}}
@@ -272,52 +281,54 @@ in Listing 15-29.
 
 </Listing>
 
-After `leaf` is created, its `Rc<Node>` has a strong count of 1 and a weak
-count of 0. In the inner scope, we create `branch` and associate it with
-`leaf`, at which point when we print the counts, the `Rc<Node>` in `branch`
-will have a strong count of 1 and a weak count of 1 (for `leaf.parent` pointing
-to `branch` with a `Weak<Node>`). When we print the counts in `leaf`, we’ll see
-it will have a strong count of 2 because `branch` now has a clone of the
-`Rc<Node>` of `leaf` stored in `branch.children` but will still have a weak
-count of 0.
+Miután a `leaf` létrejött, az `Rc<Node>`-jának erős számlálója 1, gyenge
+számlálója 0. A belső hatókörben létrehozzuk a `branch`-et, és összekapcsoljuk a
+`leaf`-fel; ezen a ponton, amikor kiírjuk a számlálókat, a `branch`-ben lévő
+`Rc<Node>` erős számlálója 1, gyenge számlálója pedig 1 lesz (mert a
+`leaf.parent` egy `Weak<Node>`-dal a `branch`-re mutat). Amikor a `leaf`
+számlálóit írjuk ki, látni fogjuk, hogy az erős számlálója 2, mert a `branch`
+mostantól a `leaf` `Rc<Node>`-jának egy klónját tárolja a `branch.children`-ben,
+a gyenge számlálója viszont továbbra is 0.
 
-When the inner scope ends, `branch` goes out of scope and the strong count of
-the `Rc<Node>` decreases to 0, so its `Node` is dropped. The weak count of 1
-from `leaf.parent` has no bearing on whether or not `Node` is dropped, so we
-don’t get any memory leaks!
+Amikor a belső hatókör véget ér, a `branch` kilép a hatóköréből, és az
+`Rc<Node>` erős számlálója 0-ra csökken, így a `Node`-ja megsemmisül. A
+`leaf.parent`-től származó 1-es gyenge számláló nem befolyásolja, hogy a `Node`
+megsemmisül-e, így nem keletkezik memóriaszivárgás!
 
-If we try to access the parent of `leaf` after the end of the scope, we’ll get
-`None` again. At the end of the program, the `Rc<Node>` in `leaf` has a strong
-count of 1 and a weak count of 0 because the variable `leaf` is now the only
-reference to the `Rc<Node>` again.
+Ha a hatókör vége után próbáljuk elérni a `leaf` szülőjét, ismét `None`-t
+kapunk. A program végén a `leaf`-ben lévő `Rc<Node>` erős számlálója 1, gyenge
+számlálója 0, mert a `leaf` változó megint az egyetlen referencia az
+`Rc<Node>`-ra.
 
-All of the logic that manages the counts and value dropping is built into
-`Rc<T>` and `Weak<T>` and their implementations of the `Drop` trait. By
-specifying that the relationship from a child to its parent should be a
-`Weak<T>` reference in the definition of `Node`, you’re able to have parent
-nodes point to child nodes and vice versa without creating a reference cycle
-and memory leaks.
+A számlálókat és az értékek megsemmisítését kezelő teljes logika be van építve
+az `Rc<T>`-be és a `Weak<T>`-be, valamint a `Drop` trait implementációikba.
+Azzal, hogy a `Node` definíciójában a gyerektől a szülőhöz vezető kapcsolatot
+`Weak<T>` referenciának adod meg, elérheted, hogy a szülőcsomópontok a
+gyerekcsomópontokra mutassanak és fordítva, anélkül hogy referenciaciklus és
+memóriaszivárgás jönne létre.
 
-## Summary
+## Összefoglalás
 
-This chapter covered how to use smart pointers to make different guarantees and
-trade-offs from those Rust makes by default with regular references. The
-`Box<T>` type has a known size and points to data allocated on the heap. The
-`Rc<T>` type keeps track of the number of references to data on the heap so
-that the data can have multiple owners. The `RefCell<T>` type with its interior
-mutability gives us a type that we can use when we need an immutable type but
-need to change an inner value of that type; it also enforces the borrowing
-rules at runtime instead of at compile time.
+Ez a fejezet arról szólt, hogyan használhatók a smart pointerek arra, hogy más
+garanciákat és kompromisszumokat adjanak, mint amilyeneket a Rust
+alapértelmezés szerint a közönséges referenciákkal biztosít. A `Box<T>` típus
+ismert méretű, és a heapen lefoglalt adatokra mutat. Az `Rc<T>` típus
+nyilvántartja, hány referencia mutat a heapen lévő adatokra, így az adatoknak
+több ownere is lehet. A `RefCell<T>` típus az interior mutabilityjével olyan
+típust ad a kezünkbe, amelyet akkor használhatunk, amikor nem módosítható
+típusra van szükségünk, de a típus egy belső értékét meg kell változtatnunk;
+emellett a borrowing-szabályokat futásidőben érvényesíti fordítási idő helyett.
 
-Also discussed were the `Deref` and `Drop` traits, which enable a lot of the
-functionality of smart pointers. We explored reference cycles that can cause
-memory leaks and how to prevent them using `Weak<T>`.
+Szó volt a `Deref` és a `Drop` trait-ekről is, amelyek a smart pointerek
+funkcionalitásának nagy részét lehetővé teszik. Megvizsgáltuk a
+memóriaszivárgást okozó referenciaciklusokat, és azt, hogyan előzhetők meg a
+`Weak<T>` segítségével.
 
-If this chapter has piqued your interest and you want to implement your own
-smart pointers, check out [“The Rustonomicon”][nomicon] for more useful
-information.
+Ha ez a fejezet felkeltette az érdeklődésedet, és saját smart pointereket
+szeretnél implementálni, nézd meg a [„The Rustonomicon”][nomicon] című művet
+további hasznos információkért.
 
-Next, we’ll talk about concurrency in Rust. You’ll even learn about a few new
-smart pointers.
+Ezután a Rust konkurenciájáról lesz szó. Néhány új smart pointert is meg fogsz
+ismerni.
 
 [nomicon]: ../nomicon/index.html
