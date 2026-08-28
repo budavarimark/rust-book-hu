@@ -2,16 +2,16 @@
 
 A legegyszerűbb smart pointer a box, amelynek típusát `Box<T>` alakban írjuk. A
 _boxok_ lehetővé teszik, hogy az adatot a stack helyett a heapen tárold. A
-stacken csak a heapen lévő adatra mutató pointer marad. A stack és a heap közötti
-különbség felelevenítéséhez lapozz vissza a 4. fejezethez.
+stacken csak a heapen lévő adatra mutató pointer marad. A stack és a heap
+közötti különbség felelevenítéséhez lapozz vissza a 4. fejezethez.
 
 A boxok nem járnak teljesítménybeli többletköltséggel azon kívül, hogy az
 adatukat a stack helyett a heapen tárolják. Ugyanakkor sok extra képességük
 sincs. Leggyakrabban ezekben a helyzetekben fogod használni őket:
 
-- Amikor olyan típusod van, amelynek a mérete fordítási időben nem ismerhető meg,
-  és ilyen típusú értéket szeretnél használni olyan környezetben, amely pontos
-  méretet vár
+- Amikor olyan típusod van, amelynek a mérete fordítási időben nem ismerhető
+  meg, és ilyen típusú értéket szeretnél használni olyan környezetben, amely
+  pontos méretet vár
 - Amikor nagy mennyiségű adatod van, és át szeretnéd adni az ownershipet, de
   biztosítani szeretnéd, hogy az adat eközben ne másolódjon
 - Amikor birtokolni szeretnél egy értéket, és csak az számít, hogy egy adott
@@ -19,10 +19,10 @@ sincs. Leggyakrabban ezekben a helyzetekben fogod használni őket:
 
 Az első helyzetet a [„Rekurzív típusok engedélyezése
 boxokkal”](#enabling-recursive-types-with-boxes)<!-- ignore --> szakaszban
-mutatjuk be. A második esetben nagy mennyiségű adat ownershipjének átadása sokáig
-tarthat, mert az adat ide-oda másolódik a stacken. Hogy ebben a helyzetben
-javítsuk a teljesítményt, a nagy mennyiségű adatot egy boxban a heapen
-tárolhatjuk. Ekkor csak a kevés pointeradat másolódik a stacken, míg a
+mutatjuk be. A második esetben nagy mennyiségű adat ownershipjének átadása
+sokáig tarthat, mert az adat ide-oda másolódik a stacken. Hogy ebben a
+helyzetben javítsuk a teljesítményt, a nagy mennyiségű adatot egy boxban a
+heapen tárolhatjuk. Ekkor csak a kevés pointeradat másolódik a stacken, míg a
 hivatkozott adat egy helyben marad a heapen. A harmadik esetet _trait
 object_-nek nevezik, és a 18. fejezet [„Trait objectek használata közös
 viselkedés absztrahálására”][trait-objects]<!-- ignore --> című szakasza teljes
@@ -55,13 +55,13 @@ A `b` változót úgy definiáljuk, hogy egy `Box` értékét vegye fel, amely a
 szöveget írja ki; ebben az esetben ugyanúgy férhetünk hozzá a boxban lévő
 adathoz, ahogy akkor tennénk, ha ez az adat a stacken lenne. Mint minden
 birtokolt érték, a box is felszabadul, amikor kilép a hatóköréből – ahogy a `b`
-teszi a `main` végén. A felszabadítás egyaránt vonatkozik magára a boxra (amely a
-stacken van tárolva) és az adatra, amelyre mutat (amely a heapen van tárolva).
+teszi a `main` végén. A felszabadítás egyaránt vonatkozik magára a boxra (amely
+a stacken van tárolva) és az adatra, amelyre mutat (amely a heapen van tárolva).
 
 Egyetlen érték heapre helyezése nem túl hasznos, ezért a boxokat önmagukban
-ilyen módon nem fogod gyakran használni. Az olyan értékeket, mint egyetlen `i32`,
-a legtöbb helyzetben helyénvalóbb a stacken tartani, ahol alapértelmezés szerint
-tárolódnak. Nézzünk meg egy olyan esetet, ahol a boxok olyan típusok
+ilyen módon nem fogod gyakran használni. Az olyan értékeket, mint egyetlen
+`i32`, a legtöbb helyzetben helyénvalóbb a stacken tartani, ahol alapértelmezés
+szerint tárolódnak. Nézzünk meg egy olyan esetet, ahol a boxok olyan típusok
 definiálását teszik lehetővé, amelyeket boxok nélkül nem definiálhatnánk.
 
 ### Rekurzív típusok engedélyezése boxokkal {#enabling-recursive-types-with-boxes}
@@ -87,11 +87,11 @@ bonyolultabb helyzetekbe kerülsz.
 #### A cons lista megértése
 
 A _cons lista_ olyan adatszerkezet, amely a Lisp programozási nyelvből és annak
-dialektusaiból származik, egymásba ágyazott párokból épül fel, és a láncolt lista
-Lisp-beli megfelelője. A nevét a Lisp `cons` függvényéről kapta (a _construct
-function_ rövidítése), amely két argumentumából egy új párt hoz létre. Ha a
-`cons`-t egy olyan páron hívjuk meg, amely egy értékből és egy másik párból áll,
-rekurzív párokból felépülő cons listákat állíthatunk össze.
+dialektusaiból származik, egymásba ágyazott párokból épül fel, és a láncolt
+lista Lisp-beli megfelelője. A nevét a Lisp `cons` függvényéről kapta (a
+_construct function_ rövidítése), amely két argumentumából egy új párt hoz
+létre. Ha a `cons`-t egy olyan páron hívjuk meg, amely egy értékből és egy másik
+párból áll, rekurzív párokból felépülő cons listákat állíthatunk össze.
 
 Például itt van egy cons lista pszeudokódos ábrázolása, amely az `1, 2, 3`
 listát tartalmazza, minden párt zárójelbe téve:
@@ -142,8 +142,8 @@ kódjához hasonlóan nézne ki.
 
 </Listing>
 
-Az első `Cons` érték az `1`-et és egy másik `List` értéket tartalmaz. Ez a `List`
-érték egy újabb `Cons` érték, amely a `2`-t és egy másik `List` értéket
+Az első `Cons` érték az `1`-et és egy másik `List` értéket tartalmaz. Ez a
+`List` érték egy újabb `Cons` érték, amely a `2`-t és egy másik `List` értéket
 tartalmaz. Ez a `List` érték még egy `Cons` érték, amely a `3`-at és egy `List`
 értéket tartalmaz, amely végül `Nil`, vagyis az a nem rekurzív variáns, amely a
 lista végét jelzi.
@@ -163,8 +163,8 @@ A hiba szerint ez a típus „végtelen méretű”. Ennek az az oka, hogy a `Li
 egy olyan varianssal definiáltuk, amely rekurzív: közvetlenül önmagának egy
 másik értékét tartalmazza. Ennek eredményeként a Rust nem tudja kitalálni,
 mennyi helyre van szüksége egy `List` érték tárolásához. Bontsuk elemeire, miért
-kapjuk ezt a hibát. Először nézzük meg, hogyan dönti el a Rust, mennyi helyre van
-szüksége egy nem rekurzív típusú érték tárolásához.
+kapjuk ezt a hibát. Először nézzük meg, hogyan dönti el a Rust, mennyi helyre
+van szüksége egy nem rekurzív típusú érték tárolásához.
 
 #### Nem rekurzív típus méretének kiszámítása
 
@@ -186,12 +186,12 @@ tárolása elfoglalna.
 Ezzel szemben nézzük meg, mi történik, amikor a Rust megpróbálja meghatározni,
 mennyi helyre van szüksége egy olyan rekurzív típusnak, mint a `List` enum a
 15-2. listában. A fordító azzal kezdi, hogy megnézi a `Cons` variánst, amely egy
-`i32` és egy `List` típusú értéket tartalmaz. Ezért a `Cons`-nak annyi helyre van
-szüksége, amennyi egy `i32` mérete plusz egy `List` mérete. Annak
+`i32` és egy `List` típusú értéket tartalmaz. Ezért a `Cons`-nak annyi helyre
+van szüksége, amennyi egy `i32` mérete plusz egy `List` mérete. Annak
 kiderítéséhez, mennyi memóriát igényel a `List` típus, a fordító megnézi a
-variánsokat, kezdve a `Cons` varianssal. A `Cons` variáns egy `i32` és egy `List`
-típusú értéket tartalmaz, és ez a folyamat a végtelenségig folytatódik, ahogy azt
-a 15-1. ábra mutatja.
+variánsokat, kezdve a `Cons` varianssal. A `Cons` variáns egy `i32` és egy
+`List` típusú értéket tartalmaz, és ez a folyamat a végtelenségig folytatódik,
+ahogy azt a 15-1. ábra mutatja.
 
 <img alt="Egy végtelen Cons lista: egy „Cons” feliratú téglalap két kisebb téglalapra osztva. Az első kisebb téglalapban az „i32” felirat áll, a második kisebb téglalapban pedig a „Cons” felirat és a külső „Cons” téglalap egy kisebb változata. A „Cons” téglalapok egyre kisebb és kisebb változatokat tartalmaznak önmagukból, egészen addig, amíg a legkisebb, még kényelmesen látható téglalapban egy végtelenjel áll, jelezve, hogy ez az ismétlődés örökké folytatódik." src="img/trpl15-01.svg" class="center" style="width: 50%;" />
 
@@ -222,14 +222,14 @@ Ebben a javaslatban az _indirekció_ azt jelenti, hogy ahelyett, hogy az érték
 közvetlenül tárolnánk, változtassuk meg az adatszerkezetet úgy, hogy közvetetten
 tárolja az értéket: az érték helyett egy rá mutató pointert tároljon.
 
-Mivel a `Box<T>` egy pointer, a Rust mindig tudja, mennyi helyre van szüksége egy
-`Box<T>`-nek: egy pointer mérete nem változik attól függően, mennyi adatra mutat.
-Ez azt jelenti, hogy a `Cons` variánsba egy `Box<T>`-t tehetünk közvetlenül egy
-másik `List` érték helyett. A `Box<T>` a következő `List` értékre fog mutatni,
-amely a heapen lesz, nem pedig a `Cons` variánson belül. Fogalmilag még mindig
-egy listánk van, amelyet más listákat tartalmazó listákból hoztunk létre, de ez
-az implementáció most már inkább arra hasonlít, mintha az elemeket egymás mellé,
-nem pedig egymásba helyeznénk.
+Mivel a `Box<T>` egy pointer, a Rust mindig tudja, mennyi helyre van szüksége
+egy `Box<T>`-nek: egy pointer mérete nem változik attól függően, mennyi adatra
+mutat. Ez azt jelenti, hogy a `Cons` variánsba egy `Box<T>`-t tehetünk
+közvetlenül egy másik `List` érték helyett. A `Box<T>` a következő `List`
+értékre fog mutatni, amely a heapen lesz, nem pedig a `Cons` variánson belül.
+Fogalmilag még mindig egy listánk van, amelyet más listákat tartalmazó listákból
+hoztunk létre, de ez az implementáció most már inkább arra hasonlít, mintha az
+elemeket egymás mellé, nem pedig egymásba helyeznénk.
 
 A 15-2. listában szereplő `List` enum definícióját és a `List` 15-3. listabeli
 használatát a 15-5. lista kódjára módosíthatjuk, amely már le fog fordulni.
@@ -245,10 +245,10 @@ használatát a 15-5. lista kódjára módosíthatjuk, amely már le fog forduln
 A `Cons` variánsnak egy `i32` méretére, plusz a box pointeradatának tárolásához
 szükséges helyre van szüksége. A `Nil` variáns nem tárol értéket, ezért kevesebb
 helyet igényel a stacken, mint a `Cons` variáns. Most már tudjuk, hogy bármely
-`List` érték egy `i32` méretét plusz egy box pointeradatának méretét foglalja el.
-A box használatával megtörtük a végtelen, rekurzív láncot, így a fordító ki tudja
-számítani, mekkora helyre van szüksége egy `List` érték tárolásához. A 15-2. ábra
-mutatja, hogyan néz ki most a `Cons` variáns.
+`List` érték egy `i32` méretét plusz egy box pointeradatának méretét foglalja
+el. A box használatával megtörtük a végtelen, rekurzív láncot, így a fordító ki
+tudja számítani, mekkora helyre van szüksége egy `List` érték tárolásához. A
+15-2. ábra mutatja, hogyan néz ki most a `Cons` variáns.
 
 <img alt="Egy „Cons” feliratú téglalap két kisebb téglalapra osztva. Az első kisebb téglalapban az „i32” felirat áll, a második kisebb téglalapban pedig a „Box” felirat, benne egy belső téglalappal, amelyben az „usize” felirat áll, ami a box pointerének véges méretét jelképezi." src="img/trpl15-02.svg" class="center" />
 
@@ -267,7 +267,7 @@ amely lehetővé teszi, hogy a `Box<T>` értékeket referenciaként kezeljük. A
 egy `Box<T>` érték kilép a hatóköréből, a `Drop` trait implementációja miatt a
 heapen lévő adat is felszabadul, amelyre a box mutat. Ez a két trait még
 fontosabb lesz a többi smart pointer típus által nyújtott funkcionalitásban,
-amelyekről a fejezet hátralévő részében lesz szó. Nézzük meg részletesebben ezt a
-két trait-et.
+amelyekről a fejezet hátralévő részében lesz szó. Nézzük meg részletesebben ezt
+a két trait-et.
 
 [trait-objects]: ch18-02-trait-objects.html#using-trait-objects-to-abstract-over-shared-behavior

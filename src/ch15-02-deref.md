@@ -27,10 +27,10 @@ dolgozzunk.
 
 ### A referencia követése az értékig
 
-A közönséges referencia is pointertípus, és a pointerre úgy is gondolhatunk, mint
-egy nyílra, amely egy máshol tárolt értékre mutat. A 15-6. listában létrehozunk
-egy referenciát egy `i32` értékre, majd a dereferáló operátorral követjük a
-referenciát az értékig.
+A közönséges referencia is pointertípus, és a pointerre úgy is gondolhatunk,
+mint egy nyílra, amely egy máshol tárolt értékre mutat. A 15-6. listában
+létrehozunk egy referenciát egy `i32` értékre, majd a dereferáló operátorral
+követjük a referenciát az értékig.
 
 <Listing number="15-6" file-name="src/main.rs" caption="A dereferáló operátor használata egy `i32` értékre mutató referencia követéséhez">
 
@@ -42,14 +42,14 @@ referenciát az értékig.
 
 Az `x` változó az `5` `i32` értéket tartalmazza. Az `y`-t egy `x`-re mutató
 referenciával tesszük egyenlővé. Állíthatjuk, hogy `x` egyenlő `5`-tel. Ha
-azonban az `y`-ban lévő értékről akarunk állítást tenni, akkor a `*y` alakot kell
-használnunk, hogy kövessük a referenciát addig az értékig, amelyre mutat (innen
-a _dereferálás_ elnevezés), így a fordító a tényleges értéket tudja
+azonban az `y`-ban lévő értékről akarunk állítást tenni, akkor a `*y` alakot
+kell használnunk, hogy kövessük a referenciát addig az értékig, amelyre mutat
+(innen a _dereferálás_ elnevezés), így a fordító a tényleges értéket tudja
 összehasonlítani. Miután dereferáltuk az `y`-t, hozzáférünk ahhoz az egész
 értékhez, amelyre az `y` mutat, és amelyet összehasonlíthatunk `5`-tel.
 
-Ha ehelyett az `assert_eq!(5, y);` sort próbálnánk megírni, ezt a fordítási hibát
-kapnánk:
+Ha ehelyett az `assert_eq!(5, y);` sort próbálnánk megírni, ezt a fordítási
+hibát kapnánk:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/output-only-01-comparing-to-reference/output.txt}}
@@ -145,10 +145,10 @@ implementáljuk a `Deref` trait-et.
 Ahogy a 10. fejezet [„Trait implementálása egy típuson”][impl-trait]<!-- ignore
 --> című szakaszában tárgyaltuk, egy trait implementálásához a trait által
 megkövetelt metódusok implementációját kell megadnunk. A standard könyvtár által
-biztosított `Deref` trait egyetlen, `deref` nevű metódus implementálását követeli
-meg, amely borrowolja a `self`-et, és a belső adatra mutató referenciával tér
-vissza. A 15-10. lista a `Deref` egy implementációját tartalmazza, amelyet a
-`MyBox<T>` definíciójához adhatunk hozzá.
+biztosított `Deref` trait egyetlen, `deref` nevű metódus implementálását
+követeli meg, amely borrowolja a `self`-et, és a belső adatra mutató
+referenciával tér vissza. A 15-10. lista a `Deref` egy implementációját
+tartalmazza, amelyet a `MyBox<T>` definíciójához adhatunk hozzá.
 
 <Listing number="15-10" file-name="src/main.rs" caption="A `Deref` implementálása a `MyBox<T>`-n">
 
@@ -163,21 +163,21 @@ számára. Az asszociált típusok egy kissé más módját jelentik a generikus
 paraméterek deklarálásának, de egyelőre nem kell velük foglalkoznod; a 20.
 fejezetben részletesebben is szó lesz róluk.
 
-A `deref` metódus törzsét a `&self.0` kifejezéssel töltjük ki, hogy a `deref` egy
-referenciát adjon vissza arra az értékre, amelyhez a `*` operátorral szeretnénk
-hozzáférni; emlékezz vissza az 5. fejezet [„Különböző típusok létrehozása tuple
-structokkal”][tuple-structs]<!-- ignore --> című szakaszára, ahol arról volt szó,
-hogy a `.0` egy tuple struct első értékéhez fér hozzá. A 15-9. listában szereplő
-`main` függvény, amely a `*` operátort hívja meg a `MyBox<T>` értéken, immár
-lefordul, és az állítások teljesülnek!
+A `deref` metódus törzsét a `&self.0` kifejezéssel töltjük ki, hogy a `deref`
+egy referenciát adjon vissza arra az értékre, amelyhez a `*` operátorral
+szeretnénk hozzáférni; emlékezz vissza az 5. fejezet [„Különböző típusok
+létrehozása tuple structokkal”][tuple-structs]<!-- ignore --> című szakaszára,
+ahol arról volt szó, hogy a `.0` egy tuple struct első értékéhez fér hozzá. A
+15-9. listában szereplő `main` függvény, amely a `*` operátort hívja meg a
+`MyBox<T>` értéken, immár lefordul, és az állítások teljesülnek!
 
 A `Deref` trait nélkül a fordító csak a `&` referenciákat tudja dereferálni. A
 `deref` metódus adja meg a fordítónak azt a képességet, hogy fogjon egy
 tetszőleges, `Deref`-et implementáló típusú értéket, és meghívja rajta a `deref`
 metódust, hogy olyan referenciát kapjon, amelyet már tud dereferálni.
 
-Amikor a 15-9. listában beírtuk a `*y`-t, a Rust a színfalak mögött valójában ezt
-a kódot futtatta:
+Amikor a 15-9. listában beírtuk a `*y`-t, a Rust a színfalak mögött valójában
+ezt a kódot futtatta:
 
 ```rust,ignore
 *(y.deref())
@@ -191,17 +191,17 @@ dereferálásra cseréli, hogy ne kelljen azon gondolkodnunk, meg kell-e hívnun
 
 Annak, hogy a `deref` metódus egy értékre mutató referenciával tér vissza, és
 hogy a `*(y.deref())` kifejezésben a zárójelen kívüli egyszerű dereferálás
-továbbra is szükséges, az ownership rendszerhez van köze. Ha a `deref` metódus az
-értékre mutató referencia helyett közvetlenül az értéket adná vissza, akkor az
-érték kimozdulna (move) a `self`-ből. Ebben az esetben – és a legtöbb esetben,
-amikor a dereferáló operátort használjuk – nem szeretnénk átvenni a `MyBox<T>`
-belsejében lévő érték ownershipjét.
+továbbra is szükséges, az ownership rendszerhez van köze. Ha a `deref` metódus
+az értékre mutató referencia helyett közvetlenül az értéket adná vissza, akkor
+az érték kimozdulna (move) a `self`-ből. Ebben az esetben – és a legtöbb
+esetben, amikor a dereferáló operátort használjuk – nem szeretnénk átvenni a
+`MyBox<T>` belsejében lévő érték ownershipjét.
 
 Vedd észre, hogy a `*` operátort minden alkalommal, amikor egy `*`-ot használunk
 a kódunkban, csak egyszer cseréli le a `deref` metódus hívása, majd a `*`
 operátor hívása. Mivel a `*` operátor helyettesítése nem rekurzálódik a
-végtelenségig, végül `i32` típusú adatot kapunk, ami megfelel a 15-9. listában az
-`assert_eq!`-ben szereplő `5`-nek.
+végtelenségig, végül `i32` típusú adatot kapunk, ami megfelel a 15-9. listában
+az `assert_eq!`-ben szereplő `5`-nek.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -258,8 +258,8 @@ Itt a `hello` függvényt a `&m` argumentummal hívjuk meg, amely egy
 `MyBox<String>` értékre mutató referencia. Mivel a 15-10. listában
 implementáltuk a `Deref` trait-et a `MyBox<T>`-n, a Rust a `deref` hívásával a
 `&MyBox<String>`-et `&String`-gé tudja alakítani. A standard könyvtár biztosítja
-a `Deref` egy implementációját a `String`-en, amely egy string slice-t ad vissza;
-ez megtalálható a `Deref` API-dokumentációjában. A Rust ismét meghívja a
+a `Deref` egy implementációját a `String`-en, amely egy string slice-t ad
+vissza; ez megtalálható a `Deref` API-dokumentációjában. A Rust ismét meghívja a
 `deref`-et, hogy a `&String`-ből `&str` legyen, ami megfelel a `hello` függvény
 definíciójának.
 

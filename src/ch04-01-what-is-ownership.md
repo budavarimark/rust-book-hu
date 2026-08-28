@@ -22,11 +22,11 @@ adatszerkezetre összpontosítanak: a sztringekre.
 
 > ### A stack és a heap {#the-stack-and-the-heap}
 >
-> Sok programozási nyelvben nem kell túl gyakran a stackkel és a heappel
+> Sok programozási nyelvben nem kell túl gyakran a stack-kel és a heap-pel
 > foglalkoznod. Egy olyan rendszerprogramozási nyelvben azonban, mint a Rust, az,
-> hogy egy érték a stacken vagy a heapen van-e, befolyásolja a nyelv
+> hogy egy érték a stack-en vagy a heap-en van-e, befolyásolja a nyelv
 > viselkedését, és azt is, miért kell bizonyos döntéseket meghoznod. Az ownership
-> egyes részeit a fejezet későbbi részében a stackhez és a heaphez viszonyítva
+> egyes részeit a fejezet későbbi részében a stack-hez és a heap-hez viszonyítva
 > mutatjuk be, ezért itt egy rövid magyarázat következik felkészülésképpen.
 >
 > A stack és a heap egyaránt a kódod számára futásidőben elérhető memória része,
@@ -36,32 +36,32 @@ adatszerkezetre összpontosítanak: a sztringekre.
 > egy tányérhalomra: amikor újabb tányérokat teszel hozzá, a halom tetejére
 > helyezed őket, és amikor tányérra van szükséged, a tetejéről veszel el egyet. A
 > halom közepéről vagy aljáról tányért betenni vagy kivenni nem menne ilyen
-> jól! Az adat hozzáadását _a stackre helyezésnek (push)_, az adat eltávolítását
-> pedig _a stackről levételnek (pop)_ nevezzük. Minden, a stacken tárolt adatnak
+> jól! Az adat hozzáadását _a stack-re helyezésnek (push)_, az adat eltávolítását
+> pedig _a stack-ről levételnek (pop)_ nevezzük. Minden, a stack-en tárolt adatnak
 > ismert, rögzített méretűnek kell lennie. Az olyan adatot, amelynek a mérete
-> fordítási időben ismeretlen, vagy amelynek a mérete változhat, a heapen kell
+> fordítási időben ismeretlen, vagy amelynek a mérete változhat, a heap-en kell
 > tárolni.
 >
-> A heap kevésbé rendezett: amikor adatot teszel a heapre, egy bizonyos mennyiségű
+> A heap kevésbé rendezett: amikor adatot teszel a heap-re, egy bizonyos mennyiségű
 > helyet kérsz. A memóriafoglaló (allokátor) talál egy elég nagy üres helyet a
-> heapen, megjelöli használtként, és visszaad egy _pointert_, amely az adott hely
-> címe. Ezt a folyamatot _a heapen való lefoglalásnak_ nevezzük, és néha csak
-> _lefoglalásként_ rövidítjük (az értékek stackre helyezését nem tekintjük
-> lefoglalásnak). Mivel a heapre mutató pointer ismert, rögzített méretű, a
-> pointert a stacken tárolhatod, de amikor a tényleges adatra van szükséged, a
+> heap-en, megjelöli használtként, és visszaad egy _pointert_, amely az adott hely
+> címe. Ezt a folyamatot _a heap-en való lefoglalásnak_ nevezzük, és néha csak
+> _lefoglalásként_ rövidítjük (az értékek stack-re helyezését nem tekintjük
+> lefoglalásnak). Mivel a heap-re mutató pointer ismert, rögzített méretű, a
+> pointert a stack-en tárolhatod, de amikor a tényleges adatra van szükséged, a
 > pointert követned kell. Gondolj arra, amikor egy étteremben leültetnek. Amikor
 > belépsz, megmondod, hányan vagytok, a hostess pedig talál egy üres asztalt,
 > ahová mindenki elfér, és odavezet titeket. Ha valaki később érkezik a
 > társaságból, megkérdezheti, hová ültettek titeket, hogy megtaláljon.
 >
-> A stackre helyezés gyorsabb, mint a heapen való lefoglalás, mert az
+> A stack-re helyezés gyorsabb, mint a heap-en való lefoglalás, mert az
 > allokátornak sosem kell helyet keresnie az új adat tárolásához; az a hely mindig
-> a stack teteje. Ehhez képest a heapen való helyfoglalás több munkát igényel,
+> a stack teteje. Ehhez képest a heap-en való helyfoglalás több munkát igényel,
 > mert az allokátornak először találnia kell egy elég nagy helyet az adat
 > tárolásához, majd nyilvántartást kell vezetnie a következő foglalás
 > előkészítéséhez.
 >
-> A heapen lévő adat elérése általában lassabb, mint a stacken lévőé, mert oda
+> A heap-en lévő adat elérése általában lassabb, mint a stack-en lévőé, mert oda
 > egy pointert követve jutsz el. A mai processzorok gyorsabbak, ha kevesebbet
 > ugrálnak a memóriában. Folytatva a hasonlatot, képzelj el egy pincért az
 > étteremben, aki sok asztaltól vesz fel rendelést. A leghatékonyabb, ha egy
@@ -69,20 +69,20 @@ adatszerkezetre összpontosítanak: a sztringekre.
 > felvenne egy rendelést az A asztalnál, majd egyet a B asztalnál, aztán megint
 > egyet A-nál, majd megint egyet B-nél, az sokkal lassabb folyamat lenne. Ehhez
 > hasonlóan a processzor általában jobban végzi a dolgát, ha olyan adaton
-> dolgozik, amely közel van más adatokhoz (mint a stacken), nem pedig távolabb
-> (mint ahogy az a heapen lehet).
+> dolgozik, amely közel van más adatokhoz (mint a stack-en), nem pedig távolabb
+> (mint ahogy az a heap-en lehet).
 >
 > Amikor a kódod meghív egy függvényt, a függvénynek átadott értékek (beleértve
-> adott esetben a heapen lévő adatra mutató pointereket is) és a függvény lokális
-> változói a stackre kerülnek. Amikor a függvény véget ér, ezek az értékek
-> lekerülnek a stackről.
+> adott esetben a heap-en lévő adatra mutató pointereket is) és a függvény lokális
+> változói a stack-re kerülnek. Amikor a függvény véget ér, ezek az értékek
+> lekerülnek a stack-ről.
 >
-> Annak nyilvántartása, hogy a kód mely részei milyen adatot használnak a heapen,
-> a heapen lévő adatduplikációk minimalizálása, valamint a heapen lévő nem
+> Annak nyilvántartása, hogy a kód mely részei milyen adatot használnak a heap-en,
+> a heap-en lévő adatduplikációk minimalizálása, valamint a heap-en lévő nem
 > használt adat kitakarítása, hogy ne fogyj ki a helyből – ezek mind olyan
 > problémák, amelyeket az ownership old meg. Ha egyszer megérted az ownership-et,
-> nem kell majd túl gyakran a stackkel és a heappel foglalkoznod. Az viszont, ha
-> tudod, hogy az ownership fő célja a heapen lévő adat kezelése, segíthet
+> nem kell majd túl gyakran a stack-kel és a heap-pel foglalkoznod. Az viszont, ha
+> tudod, hogy az ownership fő célja a heap-en lévő adat kezelése, segíthet
 > megmagyarázni, miért éppen úgy működik, ahogy.
 
 ### Az ownership szabályai
@@ -90,7 +90,7 @@ adatszerkezetre összpontosítanak: a sztringekre.
 Először nézzük meg az ownership szabályait. Tartsd észben ezeket a szabályokat,
 miközben végigmegyünk az őket szemléltető példákon:
 
-- A Rustban minden értéknek van egy _ownere_.
+- A Rustban minden értéknek van egy _owner_-e.
 - Egyszerre csak egy owner lehet.
 - Amikor az owner kilép a hatóköréből, az érték eldobásra kerül.
 
@@ -137,10 +137,10 @@ bevezetjük a `String` típust.
 Az ownership szabályainak szemléltetéséhez egy olyan adattípusra van szükségünk,
 amely bonyolultabb azoknál, amelyeket a 3. fejezet [„Adattípusok”][data-types]<!-- ignore -->
 című szakaszában tárgyaltunk. A korábban tárgyalt típusok ismert méretűek, a
-stacken tárolhatók, és lekerülnek a stackről, amikor a hatókörük véget ér,
+stack-en tárolhatók, és lekerülnek a stack-ről, amikor a hatókörük véget ér,
 továbbá gyorsan és egyszerűen másolhatók egy új, független példány
 létrehozásához, ha a kód egy másik részének ugyanazt az értéket kell használnia
-egy másik hatókörben. Mi azonban olyan adatot szeretnénk megnézni, amely a heapen
+egy másik hatókörben. Mi azonban olyan adatot szeretnénk megnézni, amely a heap-en
 tárolódik, és fel akarjuk fedezni, honnan tudja a Rust, mikor kell kitakarítania
 ezt az adatot – a `String` típus pedig kiváló példa erre.
 
@@ -156,7 +156,7 @@ alkalmasak, amelyben szöveget szeretnénk használni. Az egyik ok, hogy nem
 módosíthatók. A másik, hogy nem minden sztringérték ismerhető meg akkor, amikor a
 kódunkat írjuk: mi van például akkor, ha a felhasználó bemenetét szeretnénk venni
 és eltárolni? Ilyen helyzetekre való a Rustban a `String` típus. Ez a típus a
-heapen lefoglalt adatot kezel, és így olyan mennyiségű szöveget tud tárolni,
+heap-en lefoglalt adatot kezel, és így olyan mennyiségű szöveget tud tárolni,
 amely fordítási időben ismeretlen a számunkra. Egy `String` értéket a `from`
 függvénnyel hozhatsz létre egy sztringliterálból, így:
 
@@ -193,7 +193,7 @@ változhat.
 
 A `String` típusnál ahhoz, hogy módosítható, növelhető szövegdarabot
 támogassunk, fordítási időben ismeretlen mennyiségű memóriát kell lefoglalnunk a
-heapen a tartalom tárolására. Ez a következőket jelenti:
+heap-en a tartalom tárolására. Ez a következőket jelenti:
 
 - A memóriát futásidőben kell kérnünk a memóriafoglalótól.
 - Szükségünk van egy módra, amellyel ezt a memóriát visszaadjuk az allokátornak,
@@ -235,7 +235,7 @@ zárójelnél.
 
 Ennek a mintának mélyreható hatása van arra, ahogyan a Rust-kódot írjuk. Most még
 egyszerűnek tűnhet, de a kód viselkedése váratlan lehet bonyolultabb
-helyzetekben, amikor azt szeretnénk, hogy több változó használja a heapen
+helyzetekben, amikor azt szeretnénk, hogy több változó használja a heap-en
 lefoglalt adatunkat. Nézzünk meg most néhányat ezek közül a helyzetek közül.
 
 <!-- Old headings. Do not remove or links may break. -->
@@ -259,7 +259,7 @@ Valószínűleg ki tudjuk találni, mit csinál ez: „Kösd az `5` értéket `x
 aztán készíts másolatot az `x`-ben lévő értékről, és kösd azt `y`-hoz.” Most két
 változónk van, `x` és `y`, és mindkettő `5`-tel egyenlő. Valóban ez történik,
 mert az egész számok egyszerű, ismert és rögzített méretű értékek, és ez a két
-`5` érték a stackre kerül.
+`5` érték a stack-re kerül.
 
 Most nézzük meg a `String` változatot:
 
@@ -274,13 +274,13 @@ ugyanaz: vagyis a második sor másolatot készít az `s1`-ben lévő értékrő
 Nézd meg a 4-1. ábrát, hogy lásd, mi történik a `String` értékkel a színfalak
 mögött. Egy `String` három részből áll, amelyeket a bal oldal mutat: egy
 pointerből, amely a sztring tartalmát tároló memóriára mutat, egy hosszból és egy
-kapacitásból. Ez az adatcsoport a stacken tárolódik. A jobb oldalon a heapen lévő
+kapacitásból. Ez az adatcsoport a stack-en tárolódik. A jobb oldalon a heap-en lévő
 memória látható, amely a tartalmat tárolja.
 
-<img alt="Két táblázat: az első táblázat az s1 stacken lévő ábrázolását
+<img alt="Két táblázat: az első táblázat az s1 stack-en lévő ábrázolását
 tartalmazza, amely a hosszából (5), a kapacitásából (5) és egy pointerből áll,
 amely a második táblázat első értékére mutat. A második táblázat a sztringadat
-heapen lévő ábrázolását tartalmazza, bájtról bájtra." src="img/trpl04-01.svg" class="center"
+heap-en lévő ábrázolását tartalmazza, bájtról bájtra." src="img/trpl04-01.svg" class="center"
 style="width: 50%;" />
 
 <span class="caption">4-1. ábra: Egy `"hello"` értéket tartalmazó, `s1`-hez
@@ -293,32 +293,32 @@ számít, de nem ebben az összefüggésben, ezért egyelőre nyugodtan figyelme
 hagyhatjuk a kapacitást.
 
 Amikor `s1`-et `s2`-höz rendeljük, a `String` adatai másolódnak, vagyis lemásoljuk
-a pointert, a hosszt és a kapacitást, amelyek a stacken vannak. Nem másoljuk le a
-heapen lévő adatot, amelyre a pointer hivatkozik. Más szóval a memóriabeli
+a pointert, a hosszt és a kapacitást, amelyek a stack-en vannak. Nem másoljuk le a
+heap-en lévő adatot, amelyre a pointer hivatkozik. Más szóval a memóriabeli
 adatábrázolás a 4-2. ábrán láthatóhoz hasonlóan néz ki.
 
 <img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
-a stacken, és mindkettő ugyanarra a sztringadatra mutat a heapen."
+a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en."
 src="img/trpl04-02.svg" class="center" style="width: 50%;" />
 
 <span class="caption">4-2. ábra: Az `s2` változó memóriabeli ábrázolása, amely az
 `s1` pointerének, hosszának és kapacitásának másolatát tartalmazza</span>
 
 Az ábrázolás _nem_ úgy néz ki, mint a 4-3. ábra, amely azt mutatja, hogyan
-festene a memória, ha a Rust a heapen lévő adatot is lemásolná. Ha a Rust ezt
+festene a memória, ha a Rust a heap-en lévő adatot is lemásolná. Ha a Rust ezt
 tenné, az `s2 = s1` művelet futásidejű teljesítmény szempontjából nagyon
-költséges lehetne, ha a heapen lévő adat nagy méretű volna.
+költséges lehetne, ha a heap-en lévő adat nagy méretű volna.
 
-<img alt="Négy táblázat: két táblázat az s1 és s2 stacken lévő adatait
-ábrázolja, és mindegyik a heapen lévő saját sztringadat-másolatára mutat."
+<img alt="Négy táblázat: két táblázat az s1 és s2 stack-en lévő adatait
+ábrázolja, és mindegyik a heap-en lévő saját sztringadat-másolatára mutat."
 src="img/trpl04-03.svg" class="center" style="width: 50%;" />
 
 <span class="caption">4-3. ábra: Egy másik lehetőség arra, mit tehetne az `s2 =
-s1`, ha a Rust a heapen lévő adatot is lemásolná</span>
+s1`, ha a Rust a heap-en lévő adatot is lemásolná</span>
 
 Korábban azt mondtuk, hogy amikor egy változó kilép a hatóköréből, a Rust
 automatikusan meghívja a `drop` függvényt, és kitakarítja az adott változóhoz
-tartozó heapmemóriát. A 4-2. ábrán viszont mindkét adatpointer ugyanarra a helyre
+tartozó heap-en lévő memóriát. A 4-2. ábrán viszont mindkét adatpointer ugyanarra a helyre
 mutat. Ez probléma: amikor `s2` és `s1` kilép a hatóköréből, mindkettő ugyanazt a
 memóriát próbálja majd felszabadítani. Ezt _double free_ hibának nevezzük, és ez
 az egyik korábban említett memóriabiztonsági hiba. A memória kétszeri
@@ -349,8 +349,8 @@ másolatnak, hanem _move_-nak nevezzük. Ebben a példában azt mondanánk, hogy
 _move_-olva lett `s2`-be. Tehát valójában az történik, amit a 4-4. ábra mutat.
 
 <img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
-a stacken, és mindkettő ugyanarra a sztringadatra mutat a heapen. Az s1 táblázat
-szürkített, mert s1 már nem érvényes; a heapen lévő adat csak s2-n keresztül
+a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en. Az s1 táblázat
+szürkített, mert s1 már nem érvényes; a heap-en lévő adat csak s2-n keresztül
 érhető el." src="img/trpl04-04.svg" class="center" style="width:
 50%;" />
 
@@ -379,11 +379,11 @@ kódot:
 
 Először deklarálunk egy `s` változót, és egy `"hello"` értékű `String` értékhez
 kötjük. Ezután azonnal létrehozunk egy új, `"ahoy"` értékű `String` értéket, és
-azt rendeljük `s`-hez. Ezen a ponton már semmi nem hivatkozik az eredeti, heapen
+azt rendeljük `s`-hez. Ezen a ponton már semmi nem hivatkozik az eredeti, heap-en
 lévő értékre. A 4-5. ábra a stack és a heap adatait szemlélteti ekkor:
 
-<img alt="Egy táblázat, amely a stacken lévő sztringértéket ábrázolja, és a
-heapen lévő második sztringadatra (ahoy) mutat, míg az eredeti sztringadat
+<img alt="Egy táblázat, amely a stack-en lévő sztringértéket ábrázolja, és a
+heap-en lévő második sztringadatra (ahoy) mutat, míg az eredeti sztringadat
 (hello) szürkített, mert már nem érhető el."
 src="img/trpl04-05.svg" class="center" style="width: 50%;" />
 
@@ -400,8 +400,8 @@ Az eredeti sztring így azonnal kilép a hatóköréből. A Rust lefuttatja rajt
 
 #### Változók és adatok kölcsönhatása: clone {#variables-and-data-interacting-with-clone}
 
-Ha _tényleg_ mélymásolatot szeretnénk készíteni a `String` heapen lévő adatáról,
-nem csak a stacken lévő adatáról, használhatunk egy elterjedt metódust, a `clone`
+Ha _tényleg_ mélymásolatot szeretnénk készíteni a `String` heap-en lévő adatáról,
+nem csak a stack-en lévő adatáról, használhatunk egy elterjedt metódust, a `clone`
 metódust. A metódusszintaxist az 5. fejezetben tárgyaljuk, de mivel a metódusok
 sok programozási nyelvben megszokott elemek, valószínűleg találkoztál már velük.
 
@@ -412,13 +412,13 @@ sok programozási nyelvben megszokott elemek, valószínűleg találkoztál már
 ```
 
 Ez remekül működik, és explicit módon azt a viselkedést eredményezi, amelyet a
-4-3. ábra mutat, ahol a heapen lévő adat _valóban_ másolódik.
+4-3. ábra mutat, ahol a heap-en lévő adat _valóban_ másolódik.
 
 Amikor egy `clone` hívást látsz, tudod, hogy valamilyen tetszőleges kód fut le,
 és az a kód költséges lehet. Ez egy vizuális jelzés arról, hogy valami más
 történik.
 
-#### Csak a stacken lévő adat: `Copy` {#stack-only-data-copy}
+#### Csak a stack-en lévő adat: `Copy` {#stack-only-data-copy}
 
 Van még egy dolog, amiről eddig nem beszéltünk. Ez az egész számokat használó kód
 – amelynek egy részét a 4-2. listában láttuk – működik és érvényes:
@@ -431,7 +431,7 @@ Ez a kód azonban ellentmondani látszik annak, amit épp most tanultunk: nincs
 `clone` hívásunk, `x` mégis érvényes, és nem lett `y`-ba move-olva.
 
 Ennek az az oka, hogy az olyan típusok, mint az egész számok, amelyeknek a mérete
-fordítási időben ismert, teljes egészében a stacken tárolódnak, így a tényleges
+fordítási időben ismert, teljes egészében a stack-en tárolódnak, így a tényleges
 értékek másolatai gyorsan elkészíthetők. Ez azt jelenti, hogy semmi okunk nem
 lenne megakadályozni, hogy `x` érvényes maradjon azután, hogy létrehoztuk az `y`
 változót. Más szóval itt nincs különbség a mély és a sekély másolás között, így a
@@ -439,33 +439,33 @@ változót. Más szóval itt nincs különbség a mély és a sekély másolás 
 hagyhatjuk.
 
 A Rustban van egy speciális annotáció, a `Copy` trait, amelyet olyan típusokra
-helyezhetünk, amelyek a stacken tárolódnak, ahogy az egész számok is (a
+helyezhetünk, amelyek a stack-en tárolódnak, ahogy az egész számok is (a
 trait-ekről bővebben a [10. fejezetben][traits]<!-- ignore --> lesz szó). Ha egy
-típus implementálja a `Copy` traitet, az azt használó változók nem move-olódnak,
+típus implementálja a `Copy` trait-et, az azt használó változók nem move-olódnak,
 hanem egyszerűen másolódnak, így egy másik változóhoz való hozzárendelés után is
 érvényesek maradnak.
 
 A Rust nem engedi, hogy egy típust `Copy` annotációval lássunk el, ha a típus
-vagy annak bármely része implementálta a `Drop` traitet. Ha a típusnak valami
+vagy annak bármely része implementálta a `Drop` trait-et. Ha a típusnak valami
 speciálisra van szüksége akkor, amikor az érték kilép a hatóköréből, és mi
 ellátjuk azt a típust a `Copy` annotációval, fordítási idejű hibát kapunk. Ha
 szeretnéd megtudni, hogyan add hozzá a `Copy` annotációt a saját típusodhoz a
 trait implementálásához, lásd a C függelék [„Származtatható
 trait-ek”][derivable-traits]<!-- ignore --> című részét.
 
-Mely típusok implementálják tehát a `Copy` traitet? A biztonság kedvéért
+Mely típusok implementálják tehát a `Copy` trait-et? A biztonság kedvéért
 megnézheted az adott típus dokumentációját, de általános szabályként bármely
-egyszerű skalárértékekből álló csoport implementálhatja a `Copy` traitet, és
+egyszerű skalárértékekből álló csoport implementálhatja a `Copy` trait-et, és
 semmi olyan nem implementálhatja, ami memóriafoglalást igényel, vagy valamilyen
-erőforrás. Íme néhány olyan típus, amely implementálja a `Copy` traitet:
+erőforrás. Íme néhány olyan típus, amely implementálja a `Copy` trait-et:
 
 - Az összes egész típus, például az `u32`.
 - A logikai típus, a `bool`, `true` és `false` értékekkel.
 - Az összes lebegőpontos típus, például az `f64`.
 - A karaktertípus, a `char`.
 - A tuple-ök, ha csak olyan típusokat tartalmaznak, amelyek szintén
-  implementálják a `Copy` traitet. Például az `(i32, i32)` implementálja a
-  `Copy` traitet, az `(i32, String)` viszont nem.
+  implementálják a `Copy` trait-et. Például az `(i32, i32)` implementálja a
+  `Copy` trait-et, az `(i32, String)` viszont nem.
 
 ### Az ownership és a függvények
 
@@ -504,7 +504,7 @@ hasonló kommentekkel.
 </Listing>
 
 Egy változó ownership-je minden alkalommal ugyanezt a mintát követi: ha egy
-értéket egy másik változóhoz rendelünk, az move-olódik. Amikor egy heapen lévő
+értéket egy másik változóhoz rendelünk, az move-olódik. Amikor egy heap-en lévő
 adatot tartalmazó változó kilép a hatóköréből, az értéket a `drop` takarítja ki,
 hacsak az adat ownership-je nem került át egy másik változóhoz.
 

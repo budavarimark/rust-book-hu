@@ -64,9 +64,9 @@ A hibaüzenet szerint az `x` változó „does not live long enough”, vagyis n
 elég sokáig. Ennek az az oka, hogy az `x` kikerül a hatóköréből, amikor a belső
 hatókör a 7. sorban véget ér. Az `r` viszont a külső hatókörben még érvényes;
 mivel a hatóköre nagyobb, azt mondjuk, hogy „tovább él”. Ha a Rust megengedné,
-hogy ez a kód működjön, az `r` olyan memóriára hivatkozna, amelyet felszabadított
-a rendszer, amikor az `x` kikerült a hatóköréből, és semmi sem működne rendesen,
-amit az `r`-rel próbálnánk csinálni. Hogyan állapítja meg tehát a Rust, hogy ez
+hogy ez a kód működjön, az `r` olyan memóriára hivatkozna, amelyet
+felszabadított a rendszer, amikor az `x` kikerült a hatóköréből, és semmi sem
+működne rendesen, amit az `r`-rel próbálnánk csinálni. Hogyan állapítja meg tehát a Rust, hogy ez
 a kód érvénytelen? A borrow checkert használja hozzá.
 
 ### A borrow checker
@@ -264,9 +264,9 @@ visszaadott referenciát ugyanazzal az `'a` lifetime-paraméterrel jelöltük, a
 visszaadott referencia is az `x` és az `y` lifetime-jai közül a rövidebb
 hosszáig lesz érvényes.
 
-Nézzük meg, hogyan korlátozzák a lifetime-jelölések a `longest` függvényt: adjunk
-át neki olyan referenciákat, amelyeknek eltérő a konkrét lifetime-juk. A 10-22.
-lista egy egyszerű példa erre.
+Nézzük meg, hogyan korlátozzák a lifetime-jelölések a `longest` függvényt:
+adjunk át neki olyan referenciákat, amelyeknek eltérő a konkrét lifetime-juk. A
+10-22. lista egy egyszerű példa erre.
 
 <Listing number="10-22" file-name="src/main.rs" caption="A `longest` függvény használata olyan `String` értékekre mutató referenciákkal, amelyeknek eltérő a konkrét lifetime-juk">
 

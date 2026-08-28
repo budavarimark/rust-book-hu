@@ -13,10 +13,11 @@ kimeneti könyvtáron osztoznak. Hozzunk létre egy projektet workspace
 használatával – szándékosan egyszerű kódot írunk, hogy a workspace szerkezetére
 tudjunk koncentrálni. Egy workspace-t többféleképpen is fel lehet építeni, ezért
 csak egy elterjedt megoldást mutatunk be. A workspace-ünk egy binárist és két
-könyvtárat fog tartalmazni. A bináris, amely a fő funkcionalitást nyújtja majd, a
-két könyvtártól fog függeni. Az egyik könyvtár egy `add_one` függvényt, a másik
-egy `add_two` függvényt biztosít. Ez a három crate ugyanannak a workspace-nek
-lesz a része. Kezdjük azzal, hogy létrehozunk egy új könyvtárat a workspace-nek:
+könyvtárat fog tartalmazni. A bináris, amely a fő funkcionalitást nyújtja majd,
+a két könyvtártól fog függeni. Az egyik könyvtár egy `add_one` függvényt, a
+másik egy `add_two` függvényt biztosít. Ez a három crate ugyanannak a
+workspace-nek lesz a része. Kezdjük azzal, hogy létrehozunk egy új könyvtárat a
+workspace-nek:
 
 ```console
 $ mkdir add
@@ -76,14 +77,14 @@ _add_ könyvtárban lévő fájloknak így kell kinézniük:
 
 A workspace-nek egyetlen _target_ könyvtára van a legfelső szinten, amelybe a
 lefordított artifactok kerülnek; az `adder` csomagnak nincs saját _target_
-könyvtára. Még ha az _adder_ könyvtárból futtatnánk is a `cargo build` parancsot,
-a lefordított artifactok akkor is az _add/target_ könyvtárba kerülnének, nem
-pedig az _add/adder/target_ könyvtárba. A Cargo azért így alakítja ki a _target_
-könyvtárat egy workspace-ben, mert a workspace crate-jei szándékoltan egymástól
-függenek. Ha minden crate-nek saját _target_ könyvtára volna, mindegyik crate-nek
-újra kellene fordítania a workspace összes többi crate-jét, hogy az artifactok a
-saját _target_ könyvtárába kerüljenek. Egyetlen _target_ könyvtáron osztozva a
-crate-ek elkerülhetik a fölösleges újraépítést.
+könyvtára. Még ha az _adder_ könyvtárból futtatnánk is a `cargo build`
+parancsot, a lefordított artifactok akkor is az _add/target_ könyvtárba
+kerülnének, nem pedig az _add/adder/target_ könyvtárba. A Cargo azért így
+alakítja ki a _target_ könyvtárat egy workspace-ben, mert a workspace crate-jei
+szándékoltan egymástól függenek. Ha minden crate-nek saját _target_ könyvtára
+volna, mindegyik crate-nek újra kellene fordítania a workspace összes többi
+crate-jét, hogy az artifactok a saját _target_ könyvtárába kerüljenek. Egyetlen
+_target_ könyvtáron osztozva a crate-ek elkerülhetik a fölösleges újraépítést.
 
 ### A workspace második csomagjának létrehozása
 
@@ -113,7 +114,8 @@ A legfelső szintű _Cargo.toml_ mostantól tartalmazza az _add_one_ útvonalat 
 {{#include ../listings/ch14-more-about-cargo/no-listing-02-workspace-with-two-crates/add/Cargo.toml}}
 ```
 
-Az _add_ könyvtáradban most már ezeknek a könyvtáraknak és fájloknak kell lenniük:
+Az _add_ könyvtáradban most már ezeknek a könyvtáraknak és fájloknak kell
+lenniük:
 
 ```text
 ├── Cargo.lock
@@ -206,15 +208,15 @@ crate-től függ.
 ### Függés külső csomagtól
 
 Figyeld meg, hogy a workspace-nek csak egyetlen _Cargo.lock_ fájlja van a
-legfelső szinten, nem pedig minden crate könyvtárában külön-külön. Ez biztosítja,
-hogy minden crate ugyanazt a verziót használja az összes függőségből. Ha
-felvesszük a `rand` csomagot az _adder/Cargo.toml_ és az _add_one/Cargo.toml_
-fájlokba, a Cargo mindkettőt a `rand` egyetlen verziójára oldja fel, és ezt
-rögzíti az egyetlen _Cargo.lock_ fájlban. Ha a workspace minden crate-je
-ugyanazokat a függőségeket használja, akkor a crate-ek mindig kompatibilisek
-lesznek egymással. Vegyük fel a `rand` crate-et az _add_one/Cargo.toml_ fájl
-`[dependencies]` szakaszába, hogy használni tudjuk a `rand` crate-et az `add_one`
-crate-ben:
+legfelső szinten, nem pedig minden crate könyvtárában külön-külön. Ez
+biztosítja, hogy minden crate ugyanazt a verziót használja az összes
+függőségből. Ha felvesszük a `rand` csomagot az _adder/Cargo.toml_ és az
+_add_one/Cargo.toml_ fájlokba, a Cargo mindkettőt a `rand` egyetlen verziójára
+oldja fel, és ezt rögzíti az egyetlen _Cargo.lock_ fájlban. Ha a workspace
+minden crate-je ugyanazokat a függőségeket használja, akkor a crate-ek mindig
+kompatibilisek lesznek egymással. Vegyük fel a `rand` crate-et az
+_add_one/Cargo.toml_ fájl `[dependencies]` szakaszába, hogy használni tudjuk a
+`rand` crate-et az `add_one` crate-ben:
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -266,7 +268,8 @@ A legfelső szintű _Cargo.lock_ mostantól tartalmazza az `add_one` `rand`-tól
 való függésének adatait. Ugyanakkor hiába használjuk a `rand`-ot valahol a
 workspace-ben, a workspace többi crate-jében nem használhatjuk mindaddig, amíg a
 `rand`-ot fel nem vesszük az ő _Cargo.toml_ fájljaikba is. Ha például az `adder`
-csomag _adder/src/main.rs_ fájljához hozzáadjuk a `use rand;` sort, hibát kapunk:
+csomag _adder/src/main.rs_ fájljához hozzáadjuk a `use rand;` sort, hibát
+kapunk:
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/output-only-03-use-rand/add
@@ -286,17 +289,17 @@ error[E0432]: unresolved import `rand`
 ```
 
 Ennek javításához szerkeszd az `adder` csomag _Cargo.toml_ fájlját, és jelezd,
-hogy a `rand` az ő függősége is. Az `adder` csomag felépítése felveszi a `rand`-ot
-az `adder` függőségeinek listájára a _Cargo.lock_ fájlban, de a `rand` további
-másolatait nem tölti le. A Cargo gondoskodik arról, hogy a workspace minden
-csomagjának minden olyan crate-je, amely a `rand` csomagot használja, ugyanazt a
-verziót használja – amennyiben kompatibilis `rand`-verziókat adnak meg –, így
-helyet takarít meg, és biztosítja, hogy a workspace crate-jei kompatibilisek
-legyenek egymással.
+hogy a `rand` az ő függősége is. Az `adder` csomag felépítése felveszi a
+`rand`-ot az `adder` függőségeinek listájára a _Cargo.lock_ fájlban, de a `rand`
+további másolatait nem tölti le. A Cargo gondoskodik arról, hogy a workspace
+minden csomagjának minden olyan crate-je, amely a `rand` csomagot használja,
+ugyanazt a verziót használja – amennyiben kompatibilis `rand`-verziókat adnak
+meg –, így helyet takarít meg, és biztosítja, hogy a workspace crate-jei
+kompatibilisek legyenek egymással.
 
-Ha a workspace crate-jei ugyanannak a függőségnek nem kompatibilis verzióit adják
-meg, a Cargo mindegyiket feloldja, de akkor is igyekszik a lehető legkevesebb
-verziót feloldani.
+Ha a workspace crate-jei ugyanannak a függőségnek nem kompatibilis verzióit
+adják meg, a Cargo mindegyiket feloldja, de akkor is igyekszik a lehető
+legkevesebb verziót feloldani.
 
 ### Teszt hozzáadása egy workspace-hez
 
@@ -309,9 +312,9 @@ az `add_one` crate-en belül:
 {{#rustdoc_include ../listings/ch14-more-about-cargo/no-listing-04-workspace-with-tests/add/add_one/src/lib.rs}}
 ```
 
-Most futtasd a `cargo test` parancsot a legfelső szintű _add_ könyvtárban. Ha egy
-ilyen felépítésű workspace-ben futtatod a `cargo test` parancsot, az a workspace
-összes crate-jének tesztjeit lefuttatja:
+Most futtasd a `cargo test` parancsot a legfelső szintű _add_ könyvtárban. Ha
+egy ilyen felépítésű workspace-ben futtatod a `cargo test` parancsot, az a
+workspace összes crate-jének tesztjeit lefuttatja:
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/no-listing-04-workspace-with-tests/add
@@ -345,9 +348,9 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-A kimenet első szakasza azt mutatja, hogy az `add_one` crate-ben lévő
-`it_works` teszt sikeres volt. A következő szakasz azt mutatja, hogy az `adder`
-crate-ben nulla tesztet találtunk, az utolsó szakasz pedig azt, hogy az `add_one`
+A kimenet első szakasza azt mutatja, hogy az `add_one` crate-ben lévő `it_works`
+teszt sikeres volt. A következő szakasz azt mutatja, hogy az `adder` crate-ben
+nulla tesztet találtunk, az utolsó szakasz pedig azt, hogy az `add_one`
 crate-ben nulla dokumentációs tesztet találtunk.
 
 Egy workspace-ben lévő adott crate tesztjeit is futtathatjuk a legfelső szintű
@@ -380,16 +383,15 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 Ez a kimenet azt mutatja, hogy a `cargo test` csak az `add_one` crate tesztjeit
 futtatta le, az `adder` crate tesztjeit nem.
 
-Ha a workspace crate-jeit publikálod a
-[crates.io](https://crates.io/)<!-- ignore --> oldalra, a workspace minden
-crate-jét külön kell publikálni. A `cargo test`-hez hasonlóan a workspace egy
-adott crate-jét a `-p` kapcsolóval és a publikálni kívánt crate nevének
-megadásával publikálhatjuk.
+Ha a workspace crate-jeit publikálod a [crates.io](https://crates.io/)<!--
+ignore --> oldalra, a workspace minden crate-jét külön kell publikálni. A `cargo
+test`-hez hasonlóan a workspace egy adott crate-jét a `-p` kapcsolóval és a
+publikálni kívánt crate nevének megadásával publikálhatjuk.
 
 További gyakorlásként vegyél fel egy `add_two` crate-et is ebbe a workspace-be,
 hasonlóan az `add_one` crate-hez!
 
-Ahogy a projekted nő, érdemes workspace-t használni: így egyetlen nagy
-kódmassza helyett kisebb, könnyebben érthető komponensekkel dolgozhatsz. Emellett
-ha a crate-eket egy workspace-ben tartod, az megkönnyítheti a crate-ek közötti
+Ahogy a projekted nő, érdemes workspace-t használni: így egyetlen nagy kódmassza
+helyett kisebb, könnyebben érthető komponensekkel dolgozhatsz. Emellett ha a
+crate-eket egy workspace-ben tartod, az megkönnyítheti a crate-ek közötti
 összehangolást, amennyiben gyakran egyszerre változnak.

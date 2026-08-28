@@ -8,15 +8,15 @@ Az adatokra való hivatkozáson kívül semmilyen különleges képességük nin
 nem járnak többletköltséggel.
 
 A _smart pointerek_ ezzel szemben olyan adatszerkezetek, amelyek pointerként
-viselkednek, de emellett további metaadatokkal és képességekkel is
-rendelkeznek. A smart pointerek fogalma nem a Rust sajátja: a smart pointerek a
-C++-ból erednek, és más nyelvekben is léteznek. A Rust standard könyvtárában
-sokféle smart pointer található, amelyek a referenciákon túlmutató
-funkcionalitást nyújtanak. Az általános fogalom feltérképezéséhez több
-különböző példát is megnézünk smart pointerekre, köztük egy _referenciaszámláló_
-smart pointer típust. Ez a pointer lehetővé teszi, hogy egy adatnak több ownere
-legyen: nyilvántartja az ownerek számát, és amikor egy owner sem marad,
-felszabadítja az adatot.
+viselkednek, de emellett további metaadatokkal és képességekkel is rendelkeznek.
+A smart pointerek fogalma nem a Rust sajátja: a smart pointerek a C++-ból
+erednek, és más nyelvekben is léteznek. A Rust standard könyvtárában sokféle
+smart pointer található, amelyek a referenciákon túlmutató funkcionalitást
+nyújtanak. Az általános fogalom feltérképezéséhez több különböző példát is
+megnézünk smart pointerekre, köztük egy _referenciaszámláló_ smart pointer
+típust. Ez a pointer lehetővé teszi, hogy egy adatnak több ownere legyen:
+nyilvántartja az ownerek számát, és amikor egy owner sem marad, felszabadítja az
+adatot.
 
 A Rustban, ahol az ownership és a borrowing fogalma is jelen van, van még egy
 különbség a referenciák és a smart pointerek között: míg a referenciák csak
@@ -32,10 +32,10 @@ segítségével testre szabhatod azt a kódot, amely akkor fut le, amikor a smar
 pointer egy példánya kilép a hatóköréből. Ebben a fejezetben mindkét trait-ről
 szó lesz, és bemutatjuk, miért fontosak a smart pointerek szempontjából.
 
-Mivel a smart pointer minta egy általános, a Rustban gyakran használt
-tervezési minta, ez a fejezet nem tud minden létező smart pointerre kitérni.
-Sok könyvtárnak megvan a saját smart pointere, sőt, te magad is írhatsz ilyet.
-A standard könyvtár leggyakoribb smart pointereivel foglalkozunk:
+Mivel a smart pointer minta egy általános, a Rustban gyakran használt tervezési
+minta, ez a fejezet nem tud minden létező smart pointerre kitérni. Sok
+könyvtárnak megvan a saját smart pointere, sőt, te magad is írhatsz ilyet. A
+standard könyvtár leggyakoribb smart pointereivel foglalkozunk:
 
 - `Box<T>`, értékek lefoglalásához a heapen
 - `Rc<T>`, egy referenciaszámláló típus, amely többszörös ownershipet tesz

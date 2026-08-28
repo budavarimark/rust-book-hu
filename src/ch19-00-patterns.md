@@ -1,29 +1,31 @@
-# Patterns and Matching
+# Minták és mintaillesztés
 
-Patterns are a special syntax in Rust for matching against the structure of
-types, both complex and simple. Using patterns in conjunction with `match`
-expressions and other constructs gives you more control over a program’s
-control flow. A pattern consists of some combination of the following:
+A minták a Rust olyan speciális szintaxisát alkotják, amellyel típusok
+szerkezetére illeszthetünk – legyen az összetett vagy egyszerű. Ha a mintákat
+`match` kifejezésekkel és más szerkezetekkel együtt használod, nagyobb
+befolyásod lesz a program vezérlési folyamatára. Egy minta a következők
+valamilyen kombinációjából áll:
 
-- Literals
-- Destructured arrays, enums, structs, or tuples
-- Variables
-- Wildcards
-- Placeholders
+- literálok
+- destrukturált tömbök, enumok, structok vagy tuple-ök
+- változók
+- helyettesítő szimbólumok
+- helykitöltők
 
-Some example patterns include `x`, `(a, 3)`, and `Some(Color::Red)`. In the
-contexts in which patterns are valid, these components describe the shape of
-data. Our program then matches values against the patterns to determine whether
-it has the correct shape of data to continue running a particular piece of code.
+Néhány példa mintára: `x`, `(a, 3)` és `Some(Color::Red)`. Azokban a
+környezetekben, ahol a minták érvényesek, ezek az összetevők az adatok alakját
+írják le. A program ezután értékeket illeszt a mintákhoz, hogy eldöntse, az
+adatok alakja megfelelő-e ahhoz, hogy egy adott kódrészlet lefusson.
 
-To use a pattern, we compare it to some value. If the pattern matches the
-value, we use the value parts in our code. Recall the `match` expressions in
-Chapter 6 that used patterns, such as the coin-sorting machine example. If the
-value fits the shape of the pattern, we can use the named pieces. If it
-doesn’t, the code associated with the pattern won’t run.
+Egy minta használatához összehasonlítjuk azt valamilyen értékkel. Ha a minta
+illeszkedik az értékre, felhasználhatjuk az érték részeit a kódunkban. Gondolj
+vissza a 6. fejezet `match` kifejezéseire, amelyek mintákat használtak, például
+a pénzérme-válogató gép példájára. Ha az érték illeszkedik a minta alakjára,
+használhatjuk az elnevezett részeket. Ha nem illeszkedik, a mintához tartozó
+kód nem fut le.
 
-This chapter is a reference on all things related to patterns. We’ll cover the
-valid places to use patterns, the difference between refutable and irrefutable
-patterns, and the different kinds of pattern syntax that you might see. By the
-end of the chapter, you’ll know how to use patterns to express many concepts in
-a clear way.
+Ez a fejezet a mintákkal kapcsolatos összes tudnivaló referenciája. Végigvesszük
+azokat a helyeket, ahol a minták érvényesek, a cáfolható és cáfolhatatlan minták
+közötti különbséget, valamint a mintaszintaxis különféle fajtáit, amelyekkel
+találkozhatsz. A fejezet végére tudni fogod, hogyan fejezz ki mintákkal sok
+fogalmat világos módon.

@@ -224,9 +224,9 @@ különböző típust fogadnak el. A 10-13. listában a `NewsArticle` és a
 
 Az `item` paraméterhez nem konkrét típust adunk meg, hanem az `impl` kulcsszót
 és a trait nevét. Ez a paraméter bármilyen olyan típust elfogad, amely
-implementálja a megadott trait-et. A `notify` törzsében az `item`-en meghívhatunk
-bármilyen metódust, amely a `Summary` trait-től származik, például a
-`summarize` metódust. A `notify` függvényt meghívhatjuk, és átadhatjuk neki a
+implementálja a megadott trait-et. A `notify` törzsében az `item`-en
+meghívhatunk bármilyen metódust, amely a `Summary` trait-től származik, például
+a `summarize` metódust. A `notify` függvényt meghívhatjuk, és átadhatjuk neki a
 `NewsArticle` vagy a `SocialPost` bármelyik példányát. Az a kód, amely bármely
 más típussal hívja meg a függvényt, például egy `String`-gel vagy egy `i32`-vel,
 nem fordul le, mert azok a típusok nem implementálják a `Summary` trait-et.
@@ -356,9 +356,9 @@ vissza `impl Summary` visszatérési típussal, nem működne:
 
 Az, hogy vagy egy `NewsArticle`-t, vagy egy `SocialPost`-ot adjunk vissza, nem
 megengedett, mert az `impl Trait` szintaxis fordítóbeli megvalósítása bizonyos
-korlátokkal jár. Azt, hogyan írhatunk ilyen viselkedésű függvényt, a 18. fejezet
-[„Trait objectek használata osztott viselkedés absztrahálására”][trait-objects]<!-- ignore -->
-című szakaszában tárgyaljuk.
+korlátokkal jár. Azt, hogyan írhatunk ilyen viselkedésű függvényt, a 18.
+fejezet [„Trait objectek használata osztott viselkedés
+absztrahálására”][trait-objects]<!-- ignore --> című szakaszában tárgyaljuk.
 
 ### Metódusok feltételes implementálása trait bound-okkal
 
