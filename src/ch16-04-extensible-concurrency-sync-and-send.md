@@ -3,99 +3,102 @@
 <a id="extensible-concurrency-with-the-sync-and-send-traits"></a>
 <a id="extensible-concurrency-with-the-send-and-sync-traits"></a>
 
-## Extensible Concurrency with `Send` and `Sync`
+## Bővíthető konkurencia a `Send` és `Sync` trait-ekkel
 
-Interestingly, almost every concurrency feature we’ve talked about so far in
-this chapter has been part of the standard library, not the language. Your
-options for handling concurrency are not limited to the language or the
-standard library; you can write your own concurrency features or use those
-written by others.
+Érdekes módon szinte minden konkurenciával kapcsolatos képesség, amiről eddig
+ebben a fejezetben szó volt, a standard könyvtár része, nem a nyelvé. A
+konkurencia kezelésére nem korlátoznak téged a nyelv vagy a standard könyvtár
+lehetőségei; írhatsz saját konkurenciaeszközöket, vagy használhatod a mások által
+írtakat.
 
-However, among the key concurrency concepts that are embedded in the language
-rather than the standard library are the `std::marker` traits `Send` and `Sync`.
+A kulcsfontosságú konkurenciafogalmak közül azonban a nyelvbe – és nem a
+standard könyvtárba – van beépítve a `std::marker` `Send` és `Sync` trait-je.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="allowing-transference-of-ownership-between-threads-with-send"></a>
 
-### Transferring Ownership Between Threads
+### Ownership átadása szálak között
 
-The `Send` marker trait indicates that ownership of values of the type
-implementing `Send` can be transferred between threads. Almost every Rust type
-implements `Send`, but there are some exceptions, including `Rc<T>`: This
-cannot implement `Send` because if you cloned an `Rc<T>` value and tried to
-transfer ownership of the clone to another thread, both threads might update
-the reference count at the same time. For this reason, `Rc<T>` is implemented
-for use in single-threaded situations where you don’t want to pay the
-thread-safe performance penalty.
+A `Send` jelölő trait azt jelzi, hogy a `Send`-et implementáló típus értékeinek
+ownershipje átadható szálak között. Szinte minden Rust típus implementálja a
+`Send`-et, de van néhány kivétel, például az `Rc<T>`: ez nem implementálhatja a
+`Send`-et, mert ha klónoznál egy `Rc<T>` értéket, és megpróbálnád a klón
+ownershipjét egy másik szálnak átadni, mindkét szál egyszerre frissíthetné a
+referenciaszámlálót. Ezért az `Rc<T>` egyszálú helyzetekben való használatra
+készült, ahol nem akarod megfizetni a szálbiztonság teljesítménybeli árát.
 
-Therefore, Rust’s type system and trait bounds ensure that you can never
-accidentally send an `Rc<T>` value across threads unsafely. When we tried to do
-this in Listing 16-14, we got the error `` the trait `Send` is not implemented
-for `Rc<Mutex<i32>>` ``. When we switched to `Arc<T>`, which does implement
-`Send`, the code compiled.
+Ezért a Rust típusrendszere és a trait bound-ok gondoskodnak arról, hogy soha ne
+küldhess véletlenül egy `Rc<T>` értéket nem biztonságos módon szálak között.
+Amikor a 16-14. listában ezzel próbálkoztunk, ezt a hibát kaptuk: `` the trait
+`Send` is not implemented for `Rc<Mutex<i32>>` ``. Amikor átváltottunk az
+`Arc<T>`-re, amely implementálja a `Send`-et, a kód lefordult.
 
-Any type composed entirely of `Send` types is automatically marked as `Send` as
-well. Almost all primitive types are `Send`, aside from raw pointers, which
-we’ll discuss in Chapter 20.
+Minden olyan típus, amely teljes egészében `Send` típusokból áll, automatikusan
+szintén `Send`-nek minősül. Szinte minden primitív típus `Send`, kivéve a nyers
+pointereket, amelyekről a 20. fejezetben lesz szó.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="allowing-access-from-multiple-threads-with-sync"></a>
 
-### Accessing from Multiple Threads
+### Hozzáférés több szálról
 
-The `Sync` marker trait indicates that it is safe for the type implementing
-`Sync` to be referenced from multiple threads. In other words, any type `T`
-implements `Sync` if `&T` (an immutable reference to `T`) implements `Send`,
-meaning the reference can be sent safely to another thread. Similar to `Send`,
-primitive types all implement `Sync`, and types composed entirely of types that
-implement `Sync` also implement `Sync`.
+A `Sync` jelölő trait azt jelzi, hogy a `Sync`-et implementáló típusra
+biztonságos több szálról is hivatkozni. Más szóval bármely `T` típus
+implementálja a `Sync`-et, ha a `&T` (egy `T`-re mutató nem módosítható
+referencia) implementálja a `Send`-et, vagyis ha a referenciát biztonságosan el
+lehet küldeni egy másik szálnak. A `Send`-hez hasonlóan a primitív típusok mind
+implementálják a `Sync`-et, és azok a típusok is implementálják, amelyek teljes
+egészében `Sync`-et implementáló típusokból állnak.
 
-The smart pointer `Rc<T>` also doesn’t implement `Sync` for the same reasons
-that it doesn’t implement `Send`. The `RefCell<T>` type (which we talked about
-in Chapter 15) and the family of related `Cell<T>` types don’t implement
-`Sync`. The implementation of borrow checking that `RefCell<T>` does at runtime
-is not thread-safe. The smart pointer `Mutex<T>` implements `Sync` and can be
-used to share access with multiple threads, as you saw in [“Shared Access to
-`Mutex<T>`”][shared-access]<!-- ignore -->.
+Az `Rc<T>` smart pointer ugyanazokból az okokból nem implementálja a `Sync`-et
+sem, amiért a `Send`-et sem. A `RefCell<T>` típus (amelyről a 15. fejezetben
+volt szó) és a hozzá kapcsolódó `Cell<T>` típuscsalád szintén nem implementálja
+a `Sync`-et. A borrow checking azon implementációja, amelyet a `RefCell<T>`
+futásidőben végez, nem szálbiztos. A `Mutex<T>` smart pointer implementálja a
+`Sync`-et, és használható arra, hogy több szállal osszunk meg hozzáférést,
+ahogy azt az [„Osztott hozzáférés a `Mutex<T>`-hez”][shared-access]<!-- ignore
+--> részben láttad.
 
-### Implementing `Send` and `Sync` Manually Is Unsafe
+### A `Send` és `Sync` kézi implementálása unsafe
 
-Because types composed entirely of other types that implement the `Send` and
-`Sync` traits also automatically implement `Send` and `Sync`, we don’t have to
-implement those traits manually. As marker traits, they don’t even have any
-methods to implement. They’re just useful for enforcing invariants related to
-concurrency.
+Mivel azok a típusok, amelyek teljes egészében a `Send` és `Sync` trait-eket
+implementáló más típusokból állnak, automatikusan szintén implementálják a
+`Send`-et és a `Sync`-et, ezeket a trait-eket nem kell kézzel implementálnunk.
+Jelölő trait-ek lévén még metódusaik sincsenek, amelyeket implementálni kellene.
+Egyszerűen csak hasznosak a konkurenciával kapcsolatos invariánsok
+betartatásában.
 
-Manually implementing these traits involves implementing unsafe Rust code.
-We’ll talk about using unsafe Rust code in Chapter 20; for now, the important
-information is that building new concurrent types not made up of `Send` and
-`Sync` parts requires careful thought to uphold the safety guarantees. [“The
-Rustonomicon”][nomicon] has more information about these guarantees and how to
-uphold them.
+Ezen trait-ek kézi implementálása unsafe Rust kód írásával jár. Az unsafe Rust
+kód használatáról a 20. fejezetben lesz szó; egyelőre az a fontos információ,
+hogy olyan új konkurens típusok építése, amelyek nem `Send` és `Sync` részekből
+állnak, alapos átgondolást igényel a biztonsági garanciák betartásához. [„The
+Rustonomicon”][nomicon] további információt tartalmaz ezekről a garanciákról és
+arról, hogyan tarthatók be.
 
-## Summary
+## Összefoglalás
 
-This isn’t the last you’ll see of concurrency in this book: The next chapter
-focuses on async programming, and the project in Chapter 21 will use the
-concepts in this chapter in a more realistic situation than the smaller
-examples discussed here.
+Nem ez az utolsó alkalom, hogy konkurenciával találkozol ebben a könyvben: a
+következő fejezet az async programozásra összpontosít, a 21. fejezet projektje
+pedig az itt tárgyalt kisebb példáknál valósághűbb helyzetben használja majd az
+ebben a fejezetben megismert fogalmakat.
 
-As mentioned earlier, because very little of how Rust handles concurrency is
-part of the language, many concurrency solutions are implemented as crates.
-These evolve more quickly than the standard library, so be sure to search
-online for the current, state-of-the-art crates to use in multithreaded
-situations.
+Ahogy korábban említettük, mivel a Rust konkurenciakezeléséből nagyon kevés
+része a nyelvnek, sok konkurenciamegoldás crate-ként van implementálva. Ezek
+gyorsabban fejlődnek, mint a standard könyvtár, ezért mindenképpen keress rá az
+interneten a legfrissebb, korszerű crate-ekre, amelyeket többszálú helyzetekben
+használhatsz.
 
-The Rust standard library provides channels for message passing and smart
-pointer types, such as `Mutex<T>` and `Arc<T>`, that are safe to use in
-concurrent contexts. The type system and the borrow checker ensure that the
-code using these solutions won’t end up with data races or invalid references.
-Once you get your code to compile, you can rest assured that it will happily
-run on multiple threads without the kinds of hard-to-track-down bugs common in
-other languages. Concurrent programming is no longer a concept to be afraid of:
-Go forth and make your programs concurrent, fearlessly!
+A Rust standard könyvtára csatornákat kínál az üzenetküldéshez, valamint olyan
+smart pointer típusokat, mint a `Mutex<T>` és az `Arc<T>`, amelyek konkurens
+környezetben is biztonságosan használhatók. A típusrendszer és a borrow checker
+gondoskodik arról, hogy az ezeket a megoldásokat használó kódban ne alakuljanak
+ki adatversenyek vagy érvénytelen referenciák. Ha egyszer sikerül lefordítanod a
+kódodat, nyugodt lehetsz afelől, hogy vidáman fog futni több szálon anélkül,
+hogy a más nyelvekben megszokott, nehezen felderíthető hibák jelentkeznének. A
+konkurens programozás többé nem olyan fogalom, amelytől félni kell: rajta, tedd
+a programjaidat konkurenssé, félelem nélkül!
 
 [shared-access]: ch16-03-shared-state.html#shared-access-to-mutext
 [nomicon]: ../nomicon/index.html

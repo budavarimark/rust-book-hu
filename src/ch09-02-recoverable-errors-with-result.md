@@ -512,9 +512,9 @@ megkötések vonatkoznak arra, mi lehet a visszatérési típusa, hogy a program
 várt módon viselkedjen.
 
 Szerencsére a `main` `Result<(), E>`-t is visszaadhat. A 9-12. listában a 9-10.
-lista kódja szerepel, de a `main` visszatérési típusát `Result<(), Box<dyn
-Error>>`-ra változtattuk, és a végére hozzáadtunk egy `Ok(())` visszatérési
-értéket. Ez a kód már le fog fordulni.
+lista kódja szerepel, de a `main` visszatérési típusát
+`Result<(), Box<dyn Error>>`-ra változtattuk, és a végére hozzáadtunk egy
+`Ok(())` visszatérési értéket. Ez a kód már le fog fordulni.
 
 <Listing number="9-12" file-name="src/main.rs" caption="Ha a `main`-t úgy módosítjuk, hogy `Result<(), E>`-t adjon vissza, akkor használható a `?` operátor a `Result` értékeken.">
 

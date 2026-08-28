@@ -1,64 +1,67 @@
 ## Hello, Cargo!
 
-Cargo is Rust’s build system and package manager. Most Rustaceans use this tool
-to manage their Rust projects because Cargo handles a lot of tasks for you,
-such as building your code, downloading the libraries your code depends on, and
-building those libraries. (We call the libraries that your code needs
-_dependencies_.)
+A Cargo a Rust build rendszere és csomagkezelője. A legtöbb rustacean ezzel az
+eszközzel kezeli a Rust-projektjeit, mert a Cargo rengeteg feladatot elvégez
+helyetted: lefordítja a kódodat, letölti azokat a könyvtárakat, amelyektől a
+kódod függ, és lefordítja ezeket a könyvtárakat is. (A kódod által igényelt
+könyvtárakat _függőségeknek_ nevezzük.)
 
-The simplest Rust programs, like the one we’ve written so far, don’t have any
-dependencies. If we had built the “Hello, world!” project with Cargo, it would
-only use the part of Cargo that handles building your code. As you write more
-complex Rust programs, you’ll add dependencies, and if you start a project
-using Cargo, adding dependencies will be much easier to do.
+A legegyszerűbb Rust-programoknak – amilyet eddig írtunk – nincsenek
+függőségeik. Ha a „Hello, world!” projektet a Cargóval építettük volna fel,
+akkor csak a Cargo azon részét használtuk volna, amely a kód fordításáért
+felel. Ahogy egyre összetettebb Rust-programokat írsz, függőségeket adsz majd
+hozzájuk, és ha a projektet a Cargóval kezded, a függőségek hozzáadása sokkal
+könnyebb lesz.
 
-Because the vast majority of Rust projects use Cargo, the rest of this book
-assumes that you’re using Cargo too. Cargo comes installed with Rust if you
-used the official installers discussed in the
-[“Installation”][installation]<!-- ignore --> section. If you installed Rust
-through some other means, check whether Cargo is installed by entering the
-following in your terminal:
+Mivel a Rust-projektek túlnyomó többsége a Cargót használja, a könyv további
+része feltételezi, hogy te is a Cargót használod. A Cargo a Rusttal együtt
+települ, ha a [„Telepítés”][installation]<!-- ignore --> szakaszban tárgyalt
+hivatalos telepítőket használtad. Ha valamilyen más módon telepítetted a
+Rustot, a következő parancs terminálba írásával ellenőrizheted, hogy telepítve
+van-e a Cargo:
 
 ```console
 $ cargo --version
 ```
 
-If you see a version number, you have it! If you see an error, such as `command
-not found`, look at the documentation for your method of installation to
-determine how to install Cargo separately.
+Ha verziószámot látsz, akkor megvan! Ha hibát látsz, például azt, hogy `command
+not found`, nézd meg a telepítési módod dokumentációját, hogy kiderüljön,
+hogyan telepítheted külön a Cargót.
 
-### Creating a Project with Cargo
+### Projekt létrehozása a Cargóval
 
-Let’s create a new project using Cargo and look at how it differs from our
-original “Hello, world!” project. Navigate back to your _projects_ directory
-(or wherever you decided to store your code). Then, on any operating system,
-run the following:
+Hozzunk létre egy új projektet a Cargóval, és nézzük meg, miben tér el az
+eredeti „Hello, world!” projektünktől. Navigálj vissza a _projects_
+könyvtáradba (vagy oda, ahol a kódodat tárolni szoktad). Ezután bármelyik
+operációs rendszeren futtasd a következőt:
 
 ```console
 $ cargo new hello_cargo
 $ cd hello_cargo
 ```
 
-The first command creates a new directory and project called _hello_cargo_.
-We’ve named our project _hello_cargo_, and Cargo creates its files in a
-directory of the same name.
+Az első parancs létrehoz egy új, _hello_cargo_ nevű könyvtárat és projektet. A
+projektünket _hello_cargo_-nak neveztük el, és a Cargo egy ugyanilyen nevű
+könyvtárban hozza létre a fájljait.
 
-Go into the _hello_cargo_ directory and list the files. You’ll see that Cargo
-has generated two files and one directory for us: a _Cargo.toml_ file and a
-_src_ directory with a _main.rs_ file inside.
+Lépj be a _hello_cargo_ könyvtárba, és listázd ki a fájlokat. Látni fogod, hogy
+a Cargo két fájlt és egy könyvtárat generált nekünk: egy _Cargo.toml_ fájlt és
+egy _src_ könyvtárat, benne egy _main.rs_ fájllal.
 
-It has also initialized a new Git repository along with a _.gitignore_ file.
-Git files won’t be generated if you run `cargo new` within an existing Git
-repository; you can override this behavior by using `cargo new --vcs=git`.
+Ezenkívül inicializált egy új Git-repót is egy _.gitignore_ fájllal együtt. A
+Git-fájlok nem jönnek létre, ha a `cargo new` parancsot egy már meglévő
+Git-repón belül futtatod; ezt a viselkedést a `cargo new --vcs=git` paranccsal
+írhatod felül.
 
-> Note: Git is a common version control system. You can change `cargo new` to
-> use a different version control system or no version control system by using
-> the `--vcs` flag. Run `cargo new --help` to see the available options.
+> Megjegyzés: A Git egy elterjedt verziókezelő rendszer. A `--vcs` kapcsolóval
+> elérheted, hogy a `cargo new` másik verziókezelő rendszert vagy éppen
+> semmilyet se használjon. Futtasd a `cargo new --help` parancsot az elérhető
+> lehetőségek megtekintéséhez.
 
-Open _Cargo.toml_ in your text editor of choice. It should look similar to the
-code in Listing 1-2.
+Nyisd meg a _Cargo.toml_ fájlt a választott szövegszerkesztődben. Nagyjából az
+1-2. listában szereplő kódhoz hasonlóan kell kinéznie.
 
-<Listing number="1-2" file-name="Cargo.toml" caption="Contents of *Cargo.toml* generated by `cargo new`">
+<Listing number="1-2" file-name="Cargo.toml" caption="A `cargo new` által generált *Cargo.toml* tartalma">
 
 ```toml
 [package]
@@ -71,25 +74,26 @@ edition = "2024"
 
 </Listing>
 
-This file is in the [_TOML_][toml]<!-- ignore --> (_Tom’s Obvious, Minimal
-Language_) format, which is Cargo’s configuration format.
+Ez a fájl [_TOML_][toml]<!-- ignore --> (_Tom's Obvious, Minimal Language_)
+formátumú, ez a Cargo konfigurációs formátuma.
 
-The first line, `[package]`, is a section heading that indicates that the
-following statements are configuring a package. As we add more information to
-this file, we’ll add other sections.
+Az első sor, a `[package]`, szakaszcímsor, amely azt jelzi, hogy az utána
+következő utasítások egy csomagot konfigurálnak. Ahogy több információt adunk
+hozzá ehhez a fájlhoz, további szakaszokat is felveszünk majd.
 
-The next three lines set the configuration information Cargo needs to compile
-your program: the name, the version, and the edition of Rust to use. We’ll talk
-about the `edition` key in [Appendix E][appendix-e]<!-- ignore -->.
+A következő három sor azokat a konfigurációs adatokat állítja be, amelyekre a
+Cargónak a programod lefordításához szüksége van: a nevet, a verziót és a
+használandó Rust editiont. Az `edition` kulcsról az [E függelékben][appendix-e]<!-- ignore --> lesz szó.
 
-The last line, `[dependencies]`, is the start of a section for you to list any
-of your project’s dependencies. In Rust, packages of code are referred to as
-_crates_. We won’t need any other crates for this project, but we will in the
-first project in Chapter 2, so we’ll use this dependencies section then.
+Az utolsó sor, a `[dependencies]`, egy olyan szakasz kezdete, amelyben a
+projekted függőségeit sorolhatod fel. A Rustban a kódcsomagokat _crate_-eknek
+nevezzük. Ehhez a projekthez nem lesz szükségünk további crate-ekre, de a 2.
+fejezet első projektjéhez igen, így ott majd használjuk ezt a függőségi
+szakaszt.
 
-Now open _src/main.rs_ and take a look:
+Most nyisd meg a _src/main.rs_ fájlt, és nézd meg:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 fn main() {
@@ -97,28 +101,28 @@ fn main() {
 }
 ```
 
-Cargo has generated a “Hello, world!” program for you, just like the one we
-wrote in Listing 1-1! So far, the differences between our project and the
-project Cargo generated are that Cargo placed the code in the _src_ directory,
-and we have a _Cargo.toml_ configuration file in the top directory.
+A Cargo egy „Hello, world!” programot generált neked, pontosan olyat, amilyet
+az 1-1. listában írtunk! Eddig annyi a különbség a mi projektünk és a Cargo
+által generált projekt között, hogy a Cargo az _src_ könyvtárba tette a kódot,
+és a legfelső szintű könyvtárban van egy _Cargo.toml_ konfigurációs fájlunk.
 
-Cargo expects your source files to live inside the _src_ directory. The
-top-level project directory is just for README files, license information,
-configuration files, and anything else not related to your code. Using Cargo
-helps you organize your projects. There’s a place for everything, and
-everything is in its place.
+A Cargo azt várja, hogy a forrásfájljaid az _src_ könyvtárban legyenek. A
+legfelső szintű projektkönyvtár csak a README fájloknak, a licencinformációknak,
+a konfigurációs fájloknak és minden másnak való, ami nem kapcsolódik a kódodhoz.
+A Cargo használata segít rendszerezni a projektjeidet. Mindennek megvan a helye,
+és minden a helyén van.
 
-If you started a project that doesn’t use Cargo, as we did with the “Hello,
-world!” project, you can convert it to a project that does use Cargo. Move the
-project code into the _src_ directory and create an appropriate _Cargo.toml_
-file. One easy way to get that _Cargo.toml_ file is to run `cargo init`, which
-will create it for you automatically.
+Ha olyan projektet kezdtél el, amely nem használja a Cargót – ahogy a „Hello,
+world!” projektnél tettük –, átalakíthatod olyanná, amely használja. Helyezd át
+a projekt kódját az _src_ könyvtárba, és hozz létre egy megfelelő _Cargo.toml_
+fájlt. A _Cargo.toml_ fájlhoz egyszerűen hozzájuthatsz a `cargo init` parancs
+futtatásával, amely automatikusan létrehozza neked.
 
-### Building and Running a Cargo Project
+### Cargo-projekt fordítása és futtatása
 
-Now let’s look at what’s different when we build and run the “Hello, world!”
-program with Cargo! From your _hello_cargo_ directory, build your project by
-entering the following command:
+Most nézzük meg, mi változik, ha a „Hello, world!” programot a Cargóval
+fordítjuk le és futtatjuk! A _hello_cargo_ könyvtáradból a következő parancs
+kiadásával fordíthatod le a projektedet:
 
 ```console
 $ cargo build
@@ -126,26 +130,28 @@ $ cargo build
     Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs
 ```
 
-This command creates an executable file in _target/debug/hello_cargo_ (or
-_target\debug\hello_cargo.exe_ on Windows) rather than in your current
-directory. Because the default build is a debug build, Cargo puts the binary in
-a directory named _debug_. You can run the executable with this command:
+Ez a parancs a jelenlegi könyvtárad helyett a _target/debug/hello_cargo_
+(Windowson a _target\debug\hello_cargo.exe_) útvonalon hoz létre futtatható
+állományt. Mivel az alapértelmezett build a debug build, a Cargo a bináris
+állományt egy _debug_ nevű könyvtárba teszi. A futtatható állományt ezzel a
+paranccsal futtathatod:
 
 ```console
 $ ./target/debug/hello_cargo # or .\target\debug\hello_cargo.exe on Windows
 Hello, world!
 ```
 
-If all goes well, `Hello, world!` should print to the terminal. Running `cargo
-build` for the first time also causes Cargo to create a new file at the top
-level: _Cargo.lock_. This file keeps track of the exact versions of
-dependencies in your project. This project doesn’t have dependencies, so the
-file is a bit sparse. You won’t ever need to change this file manually; Cargo
-manages its contents for you.
+Ha minden jól megy, a `Hello, world!` szövegnek kell megjelennie a terminálban.
+A `cargo build` első futtatásakor a Cargo egy új fájlt is létrehoz a legfelső
+szinten: a _Cargo.lock_ fájlt. Ez a fájl tartja nyilván a projekted
+függőségeinek pontos verzióit. Ennek a projektnek nincsenek függőségei, így a
+fájl kicsit üresen tátong. Ezt a fájlt sosem kell kézzel módosítanod; a Cargo
+kezeli helyetted a tartalmát.
 
-We just built a project with `cargo build` and ran it with
-`./target/debug/hello_cargo`, but we can also use `cargo run` to compile the
-code and then run the resultant executable all in one command:
+Az imént lefordítottuk a projektet a `cargo build` paranccsal, és futtattuk a
+`./target/debug/hello_cargo` paranccsal, de a `cargo run` paranccsal egyetlen
+lépésben le is fordíthatjuk a kódot, és futtathatjuk is az elkészült futtatható
+állományt:
 
 ```console
 $ cargo run
@@ -154,15 +160,15 @@ $ cargo run
 Hello, world!
 ```
 
-Using `cargo run` is more convenient than having to remember to run `cargo
-build` and then use the whole path to the binary, so most developers use `cargo
-run`.
+A `cargo run` kényelmesebb, mint megjegyezni, hogy le kell futtatni a `cargo
+build` parancsot, majd beírni a bináris állomány teljes útvonalát, ezért a
+legtöbb fejlesztő a `cargo run` parancsot használja.
 
-Notice that this time we didn’t see output indicating that Cargo was compiling
-`hello_cargo`. Cargo figured out that the files hadn’t changed, so it didn’t
-rebuild but just ran the binary. If you had modified your source code, Cargo
-would have rebuilt the project before running it, and you would have seen this
-output:
+Vedd észre, hogy ezúttal nem láttunk olyan kimenetet, amely azt jelezte volna,
+hogy a Cargo lefordítja a `hello_cargo`-t. A Cargo rájött, hogy a fájlok nem
+változtak, ezért nem fordított újra, csak lefuttatta a bináris állományt. Ha
+módosítottad volna a forráskódodat, a Cargo futtatás előtt újrafordította volna
+a projektet, és ezt a kimenetet láttad volna:
 
 ```console
 $ cargo run
@@ -172,8 +178,9 @@ $ cargo run
 Hello, world!
 ```
 
-Cargo also provides a command called `cargo check`. This command quickly checks
-your code to make sure it compiles but doesn’t produce an executable:
+A Cargo egy `cargo check` nevű parancsot is kínál. Ez a parancs gyorsan
+ellenőrzi a kódodat, hogy meggyőződjön róla: lefordul, de nem állít elő
+futtatható állományt:
 
 ```console
 $ cargo check
@@ -181,55 +188,58 @@ $ cargo check
     Finished dev [unoptimized + debuginfo] target(s) in 0.32 secs
 ```
 
-Why would you not want an executable? Often, `cargo check` is much faster than
-`cargo build` because it skips the step of producing an executable. If you’re
-continually checking your work while writing the code, using `cargo check` will
-speed up the process of letting you know if your project is still compiling! As
-such, many Rustaceans run `cargo check` periodically as they write their
-program to make sure it compiles. Then, they run `cargo build` when they’re
-ready to use the executable.
+Miért is ne szeretnél futtatható állományt? A `cargo check` gyakran sokkal
+gyorsabb, mint a `cargo build`, mert kihagyja a futtatható állomány
+előállításának lépését. Ha kódírás közben folyamatosan ellenőrzöd a munkádat, a
+`cargo check` felgyorsítja azt a folyamatot, amelynek során megtudod, hogy a
+projekted még mindig lefordul-e! Ezért sok rustacean rendszeresen futtatja a
+`cargo check` parancsot programírás közben, hogy megbizonyosodjon róla: a
+program lefordul. A `cargo build` parancsot pedig akkor futtatják, amikor már
+használni akarják a futtatható állományt.
 
-Let’s recap what we’ve learned so far about Cargo:
+Foglaljuk össze, mit tanultunk eddig a Cargóról:
 
-- We can create a project using `cargo new`.
-- We can build a project using `cargo build`.
-- We can build and run a project in one step using `cargo run`.
-- We can build a project without producing a binary to check for errors using
-  `cargo check`.
-- Instead of saving the result of the build in the same directory as our code,
-  Cargo stores it in the _target/debug_ directory.
+- A `cargo new` paranccsal projektet hozhatunk létre.
+- A `cargo build` paranccsal lefordíthatunk egy projektet.
+- A `cargo run` paranccsal egy lépésben lefordíthatunk és futtathatunk egy
+  projektet.
+- A `cargo check` paranccsal úgy fordíthatunk le egy projektet a hibák
+  ellenőrzésére, hogy közben nem készül bináris állomány.
+- A Cargo a build eredményét nem a kódunkkal azonos könyvtárba menti, hanem a
+  _target/debug_ könyvtárban tárolja.
 
-An additional advantage of using Cargo is that the commands are the same no
-matter which operating system you’re working on. So, at this point, we’ll no
-longer provide specific instructions for Linux and macOS versus Windows.
+A Cargo használatának további előnye, hogy a parancsok ugyanazok, függetlenül
+attól, melyik operációs rendszeren dolgozol. Ezért ettől a ponttól kezdve már
+nem adunk külön utasításokat Linuxra és macOS-re, illetve Windowsra.
 
-### Building for Release
+### Fordítás release-re
 
-When your project is finally ready for release, you can use `cargo build
---release` to compile it with optimizations. This command will create an
-executable in _target/release_ instead of _target/debug_. The optimizations
-make your Rust code run faster, but turning them on lengthens the time it takes
-for your program to compile. This is why there are two different profiles: one
-for development, when you want to rebuild quickly and often, and another for
-building the final program you’ll give to a user that won’t be rebuilt
-repeatedly and that will run as fast as possible. If you’re benchmarking your
-code’s running time, be sure to run `cargo build --release` and benchmark with
-the executable in _target/release_.
+Amikor a projekted végre készen áll a kiadásra, a `cargo build --release`
+paranccsal optimalizálásokkal fordíthatod le. Ez a parancs a _target/debug_
+helyett a _target/release_ könyvtárban hoz létre futtatható állományt. Az
+optimalizálásoktól a Rust-kódod gyorsabban fut, de a bekapcsolásuk
+meghosszabbítja a program fordításának idejét. Ezért van két különböző profil:
+az egyik a fejlesztéshez, amikor gyorsan és gyakran akarsz újrafordítani, a
+másik pedig annak a végleges programnak az elkészítéséhez, amelyet a
+felhasználónak adsz, amelyet nem fordítasz újra meg újra, és amelynek a lehető
+leggyorsabban kell futnia. Ha a kódod futási idejét méred, mindenképpen a
+`cargo build --release` parancsot futtasd, és a _target/release_ könyvtárban
+lévő futtatható állománnyal mérj.
 
 <!-- Old headings. Do not remove or links may break. -->
 <a id="cargo-as-convention"></a>
 
-### Leveraging Cargo’s Conventions
+### A Cargo konvencióinak kihasználása
 
-With simple projects, Cargo doesn’t provide a lot of value over just using
-`rustc`, but it will prove its worth as your programs become more intricate.
-Once programs grow to multiple files or need a dependency, it’s much easier to
-let Cargo coordinate the build.
+Egyszerű projekteknél a Cargo nem sokkal ad többet a puszta `rustc`
+használatánál, de ahogy a programjaid összetettebbé válnak, bizonyítani fogja
+az értékét. Amint egy program több fájlra nő, vagy függőségre van szüksége,
+sokkal egyszerűbb a Cargóra bízni a build összehangolását.
 
-Even though the `hello_cargo` project is simple, it now uses much of the real
-tooling you’ll use in the rest of your Rust career. In fact, to work on any
-existing projects, you can use the following commands to check out the code
-using Git, change to that project’s directory, and build:
+Bár a `hello_cargo` projekt egyszerű, mostanra sok olyan valódi eszközt
+használ, amelyet a Rust-pályafutásod további részében is használni fogsz.
+Valójában bármely meglévő projekten a következő parancsokkal dolgozhatsz:
+kicsekkolod a kódot Gittel, belépsz az adott projekt könyvtárába, és lefordítod:
 
 ```console
 $ git clone example.org/someproject
@@ -237,23 +247,24 @@ $ cd someproject
 $ cargo build
 ```
 
-For more information about Cargo, check out [its documentation][cargo].
+A Cargóról bővebben [a dokumentációjában][cargo] olvashatsz.
 
-## Summary
+## Összefoglalás
 
-You’re already off to a great start on your Rust journey! In this chapter, you
-learned how to:
+Máris remekül elindultál a Rust-utadon! Ebben a fejezetben megtanultad, hogyan:
 
-- Install the latest stable version of Rust using `rustup`.
-- Update to a newer Rust version.
-- Open locally installed documentation.
-- Write and run a “Hello, world!” program using `rustc` directly.
-- Create and run a new project using the conventions of Cargo.
+- Telepítsd a Rust legutóbbi stabil verzióját a `rustup` segítségével.
+- Frissíts egy újabb Rust-verzióra.
+- Nyisd meg a helyben telepített dokumentációt.
+- Írj és futtass egy „Hello, world!” programot közvetlenül a `rustc`
+  használatával.
+- Hozz létre és futtass új projektet a Cargo konvencióival.
 
-This is a great time to build a more substantial program to get used to reading
-and writing Rust code. So, in Chapter 2, we’ll build a guessing game program.
-If you would rather start by learning how common programming concepts work in
-Rust, see Chapter 3 and then return to Chapter 2.
+Ez remek alkalom arra, hogy egy tartalmasabb programot építs, és hozzászokj a
+Rust-kód olvasásához és írásához. A 2. fejezetben ezért egy kitalálós játékot
+készítünk. Ha inkább azzal kezdenéd, hogy megtanulod, hogyan működnek a gyakori
+programozási fogalmak a Rustban, nézd meg a 3. fejezetet, és utána térj vissza
+a 2. fejezethez.
 
 [installation]: ch01-01-installation.html#installation
 [toml]: https://toml.io

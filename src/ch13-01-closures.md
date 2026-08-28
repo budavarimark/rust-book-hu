@@ -3,14 +3,14 @@
 <a id="closures-anonymous-functions-that-can-capture-their-environment"></a>
 <a id="closures-anonymous-functions-that-capture-their-environment"></a>
 
-## Closures
+## Closure-ök
 
-Rust’s closures are anonymous functions you can save in a variable or pass as
-arguments to other functions. You can create the closure in one place and then
-call the closure elsewhere to evaluate it in a different context. Unlike
-functions, closures can capture values from the scope in which they’re defined.
-We’ll demonstrate how these closure features allow for code reuse and behavior
-customization.
+A Rust closure-jei névtelen függvények, amelyeket változóban tárolhatsz vagy
+argumentumként átadhatsz más függvényeknek. A closure-t létrehozhatod az egyik
+helyen, majd máshol meghívhatod, hogy egy másik kontextusban értékelődjön ki. A
+függvényekkel ellentétben a closure-ök képesek értékeket elkapni abból a
+hatókörből, amelyben definiálva vannak. Bemutatjuk, hogyan teszik lehetővé a
+closure-ök ezen képességei a kód újrafelhasználását és a viselkedés testreszabását.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -19,27 +19,28 @@ customization.
 <a id="refactoring-with-closures-to-store-code"></a>
 <a id="capturing-the-environment-with-closures"></a>
 
-### Capturing the Environment
+### A környezet elkapása
 
-We’ll first examine how we can use closures to capture values from the
-environment they’re defined in for later use. Here’s the scenario: Every so
-often, our T-shirt company gives away an exclusive, limited-edition shirt to
-someone on our mailing list as a promotion. People on the mailing list can
-optionally add their favorite color to their profile. If the person chosen for
-a free shirt has their favorite color set, they get that color shirt. If the
-person hasn’t specified a favorite color, they get whatever color the company
-currently has the most of.
+Először azt vizsgáljuk meg, hogyan használhatunk closure-öket arra, hogy
+értékeket kapjunk el a környezetből, amelyben definiálva vannak, későbbi
+felhasználásra. A helyzet a következő: a pólócégünk időről időre elajándékoz
+egy exkluzív, limitált kiadású pólót valakinek a levelezőlistánkról,
+promócióként. A levelezőlistán szereplők tetszés szerint megadhatják a
+kedvenc színüket a profiljukban. Ha az ingyenes pólóra kiválasztott személynek
+be van állítva a kedvenc színe, olyan színű pólót kap. Ha az illető nem adott
+meg kedvenc színt, akkor abból a színből kap, amelyikből a cégnek jelenleg a
+legtöbb van.
 
-There are many ways to implement this. For this example, we’re going to use an
-enum called `ShirtColor` that has the variants `Red` and `Blue` (limiting the
-number of colors available for simplicity). We represent the company’s
-inventory with an `Inventory` struct that has a field named `shirts` that
-contains a `Vec<ShirtColor>` representing the shirt colors currently in stock.
-The method `giveaway` defined on `Inventory` gets the optional shirt color
-preference of the free-shirt winner, and it returns the shirt color the
-person will get. This setup is shown in Listing 13-1.
+Ezt sokféleképpen meg lehet valósítani. Ebben a példában egy `ShirtColor` nevű
+enumot fogunk használni, amelynek `Red` és `Blue` variánsai vannak (az
+egyszerűség kedvéért korlátozzuk az elérhető színek számát). A cég készletét
+egy `Inventory` structtal ábrázoljuk, amelynek van egy `shirts` nevű mezője,
+és ez egy `Vec<ShirtColor>` értéket tartalmaz, amely a jelenleg raktáron lévő
+pólószíneket adja meg. Az `Inventory`-n definiált `giveaway` metódus megkapja az
+ingyenpóló nyertesének esetleges pólószín-preferenciáját, és visszaadja azt a
+pólószínt, amelyet az illető kapni fog. Ezt a felállást mutatja a 13-1. lista.
 
-<Listing number="13-1" file-name="src/main.rs" caption="Shirt company giveaway situation">
+<Listing number="13-1" file-name="src/main.rs" caption="A pólócég ajándékozási helyzete">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-01/src/main.rs}}
@@ -47,73 +48,77 @@ person will get. This setup is shown in Listing 13-1.
 
 </Listing>
 
-The `store` defined in `main` has two blue shirts and one red shirt remaining
-to distribute for this limited-edition promotion. We call the `giveaway` method
-for a user with a preference for a red shirt and a user without any preference.
+A `main`-ben definiált `store`-ban két kék és egy piros póló maradt, amelyeket
+ebben a limitált kiadású promócióban szét lehet osztani. Meghívjuk a `giveaway`
+metódust egy piros pólót preferáló felhasználóra és egy olyanra, akinek nincs
+preferenciája.
 
-Again, this code could be implemented in many ways, and here, to focus on
-closures, we’ve stuck to concepts you’ve already learned, except for the body of
-the `giveaway` method that uses a closure. In the `giveaway` method, we get the
-user preference as a parameter of type `Option<ShirtColor>` and call the
-`unwrap_or_else` method on `user_preference`. The [`unwrap_or_else` method on
-`Option<T>`][unwrap-or-else]<!-- ignore --> is defined by the standard library.
-It takes one argument: a closure without any arguments that returns a value `T`
-(the same type stored in the `Some` variant of the `Option<T>`, in this case
-`ShirtColor`). If the `Option<T>` is the `Some` variant, `unwrap_or_else`
-returns the value from within the `Some`. If the `Option<T>` is the `None`
-variant, `unwrap_or_else` calls the closure and returns the value returned by
-the closure.
+Ismét: ezt a kódot sokféleképpen meg lehetne írni, és itt, hogy a closure-ökre
+összpontosítsunk, olyan fogalmakhoz ragaszkodtunk, amelyeket már megtanultál,
+kivéve a `giveaway` metódus törzsét, amely closure-t használ. A `giveaway`
+metódusban `Option<ShirtColor>` típusú paraméterként kapjuk meg a felhasználó
+preferenciáját, és meghívjuk az `unwrap_or_else` metódust a `user_preference`-en.
+Az [`Option<T>` `unwrap_or_else` metódusát][unwrap-or-else]<!-- ignore --> a
+standard könyvtár definiálja. Egyetlen argumentumot vár: egy argumentum nélküli
+closure-t, amely `T` típusú értéket ad vissza (ugyanazt a típust, amelyet az
+`Option<T>` `Some` variánsa tárol, ebben az esetben `ShirtColor`-t). Ha az
+`Option<T>` a `Some` variáns, az `unwrap_or_else` a `Some`-on belüli értéket
+adja vissza. Ha az `Option<T>` a `None` variáns, az `unwrap_or_else` meghívja a
+closure-t, és a closure által visszaadott értéket adja vissza.
 
-We specify the closure expression `|| self.most_stocked()` as the argument to
-`unwrap_or_else`. This is a closure that takes no parameters itself (if the
-closure had parameters, they would appear between the two vertical pipes). The
-body of the closure calls `self.most_stocked()`. We’re defining the closure
-here, and the implementation of `unwrap_or_else` will evaluate the closure
-later if the result is needed.
+A `|| self.most_stocked()` closure-kifejezést adjuk meg az `unwrap_or_else`
+argumentumaként. Ez egy olyan closure, amelynek magának nincsenek paraméterei
+(ha a closure-nek lennének paraméterei, azok a két függőleges vonal között
+jelennének meg). A closure törzse a `self.most_stocked()` hívást tartalmazza. A
+closure-t itt definiáljuk, az `unwrap_or_else` implementációja pedig később
+értékeli ki, ha szükség van az eredményre.
 
-Running this code prints the following:
+Ezt a kódot futtatva a következőt írja ki:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-01/output.txt}}
 ```
 
-One interesting aspect here is that we’ve passed a closure that calls
-`self.most_stocked()` on the current `Inventory` instance. The standard library
-didn’t need to know anything about the `Inventory` or `ShirtColor` types we
-defined, or the logic we want to use in this scenario. The closure captures an
-immutable reference to the `self` `Inventory` instance and passes it with the
-code we specify to the `unwrap_or_else` method. Functions, on the other hand,
-are not able to capture their environment in this way.
+Az egyik érdekes szempont itt az, hogy olyan closure-t adtunk át, amely az
+aktuális `Inventory` példányon hívja meg a `self.most_stocked()`-ot. A standard
+könyvtárnak semmit nem kellett tudnia az általunk definiált `Inventory` vagy
+`ShirtColor` típusokról, sem arról a logikáról, amelyet ebben a helyzetben
+használni akarunk. A closure elkap egy nem módosítható referenciát a `self`
+`Inventory` példányra, és az általunk megadott kóddal együtt átadja az
+`unwrap_or_else` metódusnak. A függvények ezzel szemben nem képesek ilyen módon
+elkapni a környezetüket.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="closure-type-inference-and-annotation"></a>
 
-### Inferring and Annotating Closure Types
+### Closure-típusok kikövetkeztetése és annotálása
 
-There are more differences between functions and closures. Closures don’t
-usually require you to annotate the types of the parameters or the return value
-like `fn` functions do. Type annotations are required on functions because the
-types are part of an explicit interface exposed to your users. Defining this
-interface rigidly is important for ensuring that everyone agrees on what types
-of values a function uses and returns. Closures, on the other hand, aren’t used
-in an exposed interface like this: They’re stored in variables, and they’re
-used without naming them and exposing them to users of our library.
+További különbségek is vannak a függvények és a closure-ök között. A closure-ök
+általában nem követelik meg, hogy annotáld a paraméterek vagy a visszatérési
+érték típusait, ahogy azt az `fn` függvényeknél kell. A függvényeknél azért
+kötelezők a típusannotációk, mert a típusok egy explicit interfész részei,
+amelyet a felhasználóid felé teszel közzé. Ennek az interfésznek a szigorú
+meghatározása fontos annak biztosításához, hogy mindenki egyetértsen abban,
+milyen típusú értékeket használ és ad vissza egy függvény. A closure-ök ezzel
+szemben nem ilyen közzétett interfészben szerepelnek: változókban tároljuk őket,
+és úgy használjuk őket, hogy nem nevezzük el és nem tesszük közzé őket a
+könyvtárunk felhasználói felé.
 
-Closures are typically short and relevant only within a narrow context rather
-than in any arbitrary scenario. Within these limited contexts, the compiler can
-infer the types of the parameters and the return type, similar to how it’s able
-to infer the types of most variables (there are rare cases where the compiler
-needs closure type annotations too).
+A closure-ök jellemzően rövidek, és csak egy szűk kontextusban relevánsak, nem
+pedig tetszőleges helyzetekben. Ezekben a korlátozott kontextusokban a fordító
+ki tudja következtetni a paraméterek típusait és a visszatérési típust, hasonlóan
+ahhoz, ahogy a legtöbb változó típusát is ki tudja következtetni (ritkán
+előfordul, hogy a fordítónak closure-típusannotációkra is szüksége van).
 
-As with variables, we can add type annotations if we want to increase
-explicitness and clarity at the cost of being more verbose than is strictly
-necessary. Annotating the types for a closure would look like the definition
-shown in Listing 13-2. In this example, we’re defining a closure and storing it
-in a variable rather than defining the closure in the spot we pass it as an
-argument, as we did in Listing 13-1.
+A változókhoz hasonlóan hozzáadhatunk típusannotációkat, ha növelni akarjuk az
+explicitséget és az érthetőséget, cserébe azért, hogy a szükségesnél
+bőbeszédűbbek leszünk. Egy closure típusainak annotálása úgy nézne ki, ahogy a
+13-2. listában látható definíció. Ebben a példában úgy definiálunk egy
+closure-t, hogy változóban tároljuk, ahelyett hogy ott definiálnánk, ahol
+argumentumként átadjuk, mint a 13-1. listában.
 
-<Listing number="13-2" file-name="src/main.rs" caption="Adding optional type annotations of the parameter and return value types in the closure">
+<Listing number="13-2" file-name="src/main.rs" caption="A paraméter- és a visszatérésitípus opcionális típusannotációinak hozzáadása a closure-höz">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-02/src/main.rs:here}}
@@ -121,12 +126,13 @@ argument, as we did in Listing 13-1.
 
 </Listing>
 
-With type annotations added, the syntax of closures looks more similar to the
-syntax of functions. Here, we define a function that adds 1 to its parameter and
-a closure that has the same behavior, for comparison. We’ve added some spaces
-to line up the relevant parts. This illustrates how closure syntax is similar
-to function syntax except for the use of pipes and the amount of syntax that is
-optional:
+A típusannotációk hozzáadásával a closure-ök szintaxisa jobban hasonlít a
+függvények szintaxisára. Itt összehasonlításképpen definiálunk egy függvényt,
+amely 1-et ad a paraméteréhez, és egy closure-t, amely ugyanígy viselkedik.
+Néhány szóközt is beszúrtunk, hogy a megfelelő részek egy vonalba kerüljenek. Ez
+jól szemlélteti, mennyire hasonlít a closure-szintaxis a függvényszintaxisra,
+eltekintve a függőleges vonalak használatától és attól, hogy mennyi szintaxis
+opcionális:
 
 ```rust,ignore
 fn  add_one_v1   (x: u32) -> u32 { x + 1 }
@@ -135,26 +141,27 @@ let add_one_v3 = |x|             { x + 1 };
 let add_one_v4 = |x|               x + 1  ;
 ```
 
-The first line shows a function definition and the second line shows a fully
-annotated closure definition. In the third line, we remove the type annotations
-from the closure definition. In the fourth line, we remove the brackets, which
-are optional because the closure body has only one expression. These are all
-valid definitions that will produce the same behavior when they’re called. The
-`add_one_v3` and `add_one_v4` lines require the closures to be evaluated to be
-able to compile because the types will be inferred from their usage. This is
-similar to `let v = Vec::new();` needing either type annotations or values of
-some type to be inserted into the `Vec` for Rust to be able to infer the type.
+Az első sor egy függvénydefiníciót mutat, a második egy teljesen annotált
+closure-definíciót. A harmadik sorban elhagyjuk a típusannotációkat a
+closure-definícióból. A negyedik sorban elhagyjuk a kapcsos zárójeleket,
+amelyek opcionálisak, mert a closure törzse csak egyetlen kifejezésből áll.
+Ezek mind érvényes definíciók, és meghívva ugyanazt a viselkedést produkálják.
+Az `add_one_v3` és az `add_one_v4` sorokhoz ki kell értékelni a closure-öket
+ahhoz, hogy le tudjanak fordulni, mert a típusok a használatukból következnek
+ki. Ez hasonló ahhoz, ahogy a `let v = Vec::new();` esetében is szükség van
+típusannotációkra vagy arra, hogy valamilyen típusú értékeket szúrjunk be a
+`Vec`-be, hogy a Rust ki tudja következtetni a típust.
 
-For closure definitions, the compiler will infer one concrete type for each of
-their parameters and for their return value. For instance, Listing 13-3 shows
-the definition of a short closure that just returns the value it receives as a
-parameter. This closure isn’t very useful except for the purposes of this
-example. Note that we haven’t added any type annotations to the definition.
-Because there are no type annotations, we can call the closure with any type,
-which we’ve done here with `String` the first time. If we then try to call
-`example_closure` with an integer, we’ll get an error.
+A closure-definíciók esetében a fordító minden paraméterükhöz és a
+visszatérési értékükhöz egy konkrét típust következtet ki. Például a 13-3. lista
+egy rövid closure definícióját mutatja, amely egyszerűen visszaadja a
+paraméterként kapott értéket. Ez a closure ezen a példán kívül nem túl hasznos.
+Figyeld meg, hogy nem adtunk típusannotációkat a definícióhoz. Mivel nincsenek
+típusannotációk, bármilyen típussal meghívhatjuk a closure-t, amit itt először
+`String`-gel meg is tettünk. Ha ezután megpróbáljuk az `example_closure`-t egy
+egésszel meghívni, hibát kapunk.
 
-<Listing number="13-3" file-name="src/main.rs" caption="Attempting to call a closure whose types are inferred with two different types">
+<Listing number="13-3" file-name="src/main.rs" caption="Kísérlet egy kikövetkeztetett típusú closure meghívására két különböző típussal">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-03/src/main.rs:here}}
@@ -162,30 +169,31 @@ which we’ve done here with `String` the first time. If we then try to call
 
 </Listing>
 
-The compiler gives us this error:
+A fordító ezt a hibát adja:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-03/output.txt}}
 ```
 
-The first time we call `example_closure` with the `String` value, the compiler
-infers the type of `x` and the return type of the closure to be `String`. Those
-types are then locked into the closure in `example_closure`, and we get a type
-error when we next try to use a different type with the same closure.
+Amikor először hívjuk meg az `example_closure`-t a `String` értékkel, a fordító
+`String`-nek következteti ki az `x` típusát és a closure visszatérési típusát.
+Ezek a típusok ezután rögzülnek az `example_closure`-ben lévő closure-ben, és
+típushibát kapunk, amikor legközelebb más típussal próbáljuk használni ugyanazt
+a closure-t.
 
-### Capturing References or Moving Ownership {#capturing-references-or-moving-ownership}
+### Referenciák elkapása vagy az ownership átvétele {#capturing-references-or-moving-ownership}
 
-Closures can capture values from their environment in three ways, which
-directly map to the three ways a function can take a parameter: borrowing
-immutably, borrowing mutably, and taking ownership. The closure will decide
-which of these to use based on what the body of the function does with the
-captured values.
+A closure-ök háromféleképpen kaphatnak el értékeket a környezetükből, ami
+közvetlenül megfeleltethető annak a háromféle módnak, ahogy egy függvény
+paramétert vehet át: nem módosítható borrowing, módosítható borrowing és az
+ownership átvétele. A closure aszerint dönti el, melyiket használja, hogy a
+törzse mit csinál az elkapott értékekkel.
 
-In Listing 13-4, we define a closure that captures an immutable reference to
-the vector named `list` because it only needs an immutable reference to print
-the value.
+A 13-4. listában olyan closure-t definiálunk, amely nem módosítható
+referenciát kap el a `list` nevű vektorra, mert az érték kiírásához csak nem
+módosítható referenciára van szüksége.
 
-<Listing number="13-4" file-name="src/main.rs" caption="Defining and calling a closure that captures an immutable reference">
+<Listing number="13-4" file-name="src/main.rs" caption="Nem módosítható referenciát elkapó closure definiálása és meghívása">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-04/src/main.rs}}
@@ -193,23 +201,24 @@ the value.
 
 </Listing>
 
-This example also illustrates that a variable can bind to a closure definition,
-and we can later call the closure by using the variable name and parentheses as
-if the variable name were a function name.
+Ez a példa azt is szemlélteti, hogy egy változó closure-definícióhoz köthető, és
+később a változónevet és zárójeleket használva meghívhatjuk a closure-t, mintha
+a változónév egy függvénynév lenne.
 
-Because we can have multiple immutable references to `list` at the same time,
-`list` is still accessible from the code before the closure definition, after
-the closure definition but before the closure is called, and after the closure
-is called. This code compiles, runs, and prints:
+Mivel egyszerre több nem módosítható referenciánk is lehet a `list`-re, a `list`
+továbbra is elérhető a closure-definíció előtti kódból, a closure-definíció
+után, de a closure meghívása előtt, valamint a closure meghívása után is. Ez a
+kód lefordul, lefut, és a következőt írja ki:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-04/output.txt}}
 ```
 
-Next, in Listing 13-5, we change the closure body so that it adds an element to
-the `list` vector. The closure now captures a mutable reference.
+Ezután a 13-5. listában úgy módosítjuk a closure törzsét, hogy egy elemet
+adjon hozzá a `list` vektorhoz. A closure most már módosítható referenciát kap
+el.
 
-<Listing number="13-5" file-name="src/main.rs" caption="Defining and calling a closure that captures a mutable reference">
+<Listing number="13-5" file-name="src/main.rs" caption="Módosítható referenciát elkapó closure definiálása és meghívása">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-05/src/main.rs}}
@@ -217,32 +226,34 @@ the `list` vector. The closure now captures a mutable reference.
 
 </Listing>
 
-This code compiles, runs, and prints:
+Ez a kód lefordul, lefut, és a következőt írja ki:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-05/output.txt}}
 ```
 
-Note that there’s no longer a `println!` between the definition and the call of
-the `borrows_mutably` closure: When `borrows_mutably` is defined, it captures a
-mutable reference to `list`. We don’t use the closure again after the closure
-is called, so the mutable borrow ends. Between the closure definition and the
-closure call, an immutable borrow to print isn’t allowed, because no other
-borrows are allowed when there’s a mutable borrow. Try adding a `println!`
-there to see what error message you get!
+Figyeld meg, hogy már nincs `println!` a `borrows_mutably` closure definíciója
+és meghívása között: amikor a `borrows_mutably` definiálódik, módosítható
+referenciát kap el a `list`-re. A closure meghívása után nem használjuk többé a
+closure-t, így a módosítható borrow véget ér. A closure-definíció és a
+closure-hívás között nem megengedett egy nem módosítható borrow a kiíráshoz,
+mert amíg van egy módosítható borrow, addig semmilyen más borrow nem
+megengedett. Próbálj meg odaírni egy `println!`-t, és nézd meg, milyen
+hibaüzenetet kapsz!
 
-If you want to force the closure to take ownership of the values it uses in the
-environment even though the body of the closure doesn’t strictly need
-ownership, you can use the `move` keyword before the parameter list.
+Ha rá akarod kényszeríteni a closure-t, hogy vegye át a környezetben használt
+értékek ownershipjét, még akkor is, ha a closure törzsének szigorúan véve nincs
+szüksége az ownershipre, a `move` kulcsszót használhatod a paraméterlista előtt.
 
-This technique is mostly useful when passing a closure to a new thread to move
-the data so that it’s owned by the new thread. We’ll discuss threads and why
-you would want to use them in detail in Chapter 16 when we talk about
-concurrency, but for now, let’s briefly explore spawning a new thread using a
-closure that needs the `move` keyword. Listing 13-6 shows Listing 13-4 modified
-to print the vector in a new thread rather than in the main thread.
+Ez a technika elsősorban akkor hasznos, amikor egy closure-t adunk át egy új
+szálnak, hogy az adatokat átmozgassuk, és így az új szál birtokolja őket. A
+szálakról és arról, miért érdemes használni őket, a 16. fejezetben, a
+konkurencia tárgyalásakor lesz részletesen szó, de most nézzük meg röviden, hogyan
+indíthatunk új szálat egy olyan closure-rel, amelynek szüksége van a `move`
+kulcsszóra. A 13-6. lista a 13-4. listát mutatja úgy módosítva, hogy a vektort
+egy új szálban írja ki, ne pedig a fő szálban.
 
-<Listing number="13-6" file-name="src/main.rs" caption="Using `move` to force the closure for the thread to take ownership of `list`">
+<Listing number="13-6" file-name="src/main.rs" caption="A `move` használata arra, hogy a szálhoz tartozó closure átvegye a `list` ownershipjét">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-06/src/main.rs}}
@@ -250,21 +261,22 @@ to print the vector in a new thread rather than in the main thread.
 
 </Listing>
 
-We spawn a new thread, giving the thread a closure to run as an argument. The
-closure body prints out the list. In Listing 13-4, the closure only captured
-`list` using an immutable reference because that's the least amount of access
-to `list` needed to print it. In this example, even though the closure body
-still only needs an immutable reference, we need to specify that `list` should
-be moved into the closure by putting the `move` keyword at the beginning of the
-closure definition. If the main thread performed more operations before calling
-`join` on the new thread, the new thread might finish before the rest of the
-main thread finishes, or the main thread might finish first. If the main thread
-maintained ownership of `list` but ended before the new thread and drops
-`list`, the immutable reference in the thread would be invalid. Therefore, the
-compiler requires that `list` be moved into the closure given to the new thread
-so that the reference will be valid. Try removing the `move` keyword or using
-`list` in the main thread after the closure is defined to see what compiler
-errors you get!
+Új szálat indítunk, és argumentumként átadunk a szálnak egy closure-t, amelyet
+futtatnia kell. A closure törzse kiírja a listát. A 13-4. listában a closure
+csak nem módosítható referenciával kapta el a `list`-et, mert a kiírásához ez a
+legkisebb szükséges hozzáférés a `list`-hez. Ebben a példában, noha a closure
+törzsének továbbra is csak nem módosítható referenciára van szüksége, meg kell
+adnunk, hogy a `list`-et a closure-be kell mozgatni; ezt úgy tesszük, hogy a
+closure-definíció elejére kitesszük a `move` kulcsszót. Ha a fő szál további
+műveleteket végezne, mielőtt meghívná a `join`-t az új szálon, akkor az új szál
+befejeződhetne a fő szál hátralévő részének befejeződése előtt, vagy a fő szál
+fejeződhetne be előbb. Ha a fő szál megtartaná a `list` ownershipjét, de az új
+szál előtt befejeződne, és eldobná a `list`-et, akkor a szálban lévő nem
+módosítható referencia érvénytelen lenne. Ezért a fordító megköveteli, hogy a
+`list`-et az új szálnak átadott closure-be mozgassuk, hogy a referencia
+érvényes legyen. Próbáld meg eltávolítani a `move` kulcsszót, vagy használni a
+`list`-et a fő szálban a closure definiálása után, és nézd meg, milyen fordítási
+hibákat kapsz!
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -273,38 +285,42 @@ errors you get!
 <a id="moving-captured-values-out-of-the-closure-and-the-fn-traits"></a>
 <a id="moving-captured-values-out-of-closures-and-the-fn-traits"></a>
 
-### Moving Captured Values Out of Closures {#moving-captured-values-out-of-closures}
+### Elkapott értékek kimozgatása a closure-ökből {#moving-captured-values-out-of-closures}
 
-Once a closure has captured a reference or captured ownership of a value from
-the environment where the closure is defined (thus affecting what, if anything,
-is moved _into_ the closure), the code in the body of the closure defines what
-happens to the references or values when the closure is evaluated later (thus
-affecting what, if anything, is moved _out of_ the closure).
+Miután egy closure elkapott egy referenciát vagy átvette egy érték ownershipjét
+abból a környezetből, ahol a closure definiálva van (ezzel meghatározva, hogy mi
+– ha egyáltalán bármi – mozog _bele_ a closure-be), a closure törzsében lévő kód
+határozza meg, mi történik ezekkel a referenciákkal vagy értékekkel, amikor a
+closure később kiértékelődik (ezzel meghatározva, hogy mi – ha egyáltalán bármi
+– mozog _ki_ a closure-ből).
 
-A closure body can do any of the following: Move a captured value out of the
-closure, mutate the captured value, neither move nor mutate the value, or
-capture nothing from the environment to begin with.
+Egy closure törzse a következők bármelyikét teheti: kimozgathat egy elkapott
+értéket a closure-ből, módosíthatja az elkapott értéket, se nem mozgatja, se
+nem módosítja az értéket, vagy eleve semmit nem kap el a környezetből.
 
-The way a closure captures and handles values from the environment affects
-which traits the closure implements, and traits are how functions and structs
-can specify what kinds of closures they can use. Closures will automatically
-implement one, two, or all three of these `Fn` traits, in an additive fashion,
-depending on how the closure’s body handles the values:
+Az, ahogyan egy closure elkapja és kezeli a környezetéből származó értékeket,
+befolyásolja, mely trait-eket implementálja a closure, a trait-ek pedig azt a
+módot jelentik, ahogyan a függvények és a structok megadhatják, milyen fajta
+closure-öket tudnak használni. A closure-ök automatikusan implementálják ezen
+`Fn` trait-ek közül az egyiket, kettőt vagy mindhármat, egymásra épülő módon,
+attól függően, hogyan kezeli a closure törzse az értékeket:
 
-* `FnOnce` applies to closures that can be called once. All closures implement
-  at least this trait because all closures can be called. A closure that moves
-  captured values out of its body will only implement `FnOnce` and none of the
-  other `Fn` traits because it can only be called once.
-* `FnMut` applies to closures that don’t move captured values out of their body
-  but might mutate the captured values. These closures can be called more than
-  once.
-* `Fn` applies to closures that don’t move captured values out of their body
-  and don’t mutate captured values, as well as closures that capture nothing
-  from their environment. These closures can be called more than once without
-  mutating their environment, which is important in cases such as calling a closure multiple times concurrently.
+* Az `FnOnce` azokra a closure-ökre vonatkozik, amelyeket egyszer lehet
+  meghívni. Minden closure implementálja legalább ezt a trait-et, mert minden
+  closure meghívható. Az a closure, amely elkapott értékeket mozgat ki a
+  törzséből, csak az `FnOnce`-t implementálja, a többi `Fn` trait-et nem, mert
+  csak egyszer hívható meg.
+* Az `FnMut` azokra a closure-ökre vonatkozik, amelyek nem mozgatnak ki
+  elkapott értékeket a törzsükből, de módosíthatják az elkapott értékeket.
+  Ezek a closure-ök egynél többször is meghívhatók.
+* Az `Fn` azokra a closure-ökre vonatkozik, amelyek nem mozgatnak ki elkapott
+  értékeket a törzsükből és nem is módosítják az elkapott értékeket, valamint
+  azokra, amelyek semmit nem kapnak el a környezetükből. Ezek a closure-ök
+  egynél többször is meghívhatók anélkül, hogy módosítanák a környezetüket, ami
+  fontos például akkor, amikor egy closure-t többször, konkurensen hívunk meg.
 
-Let’s look at the definition of the `unwrap_or_else` method on `Option<T>` that
-we used in Listing 13-1:
+Nézzük meg az `Option<T>` `unwrap_or_else` metódusának definícióját, amelyet a
+13-1. listában használtunk:
 
 ```rust,ignore
 impl<T> Option<T> {
@@ -320,42 +336,43 @@ impl<T> Option<T> {
 }
 ```
 
-Recall that `T` is the generic type representing the type of the value in the
-`Some` variant of an `Option`. That type `T` is also the return type of the
-`unwrap_or_else` function: Code that calls `unwrap_or_else` on an
-`Option<String>`, for example, will get a `String`.
+Emlékezz rá, hogy a `T` az a generikus típus, amely az `Option` `Some`
+variánsában lévő érték típusát képviseli. Ez a `T` típus egyben az
+`unwrap_or_else` függvény visszatérési típusa is: az a kód például, amely egy
+`Option<String>`-en hívja meg az `unwrap_or_else`-t, `String`-et fog kapni.
 
-Next, notice that the `unwrap_or_else` function has the additional generic type
-parameter `F`. The `F` type is the type of the parameter named `f`, which is
-the closure we provide when calling `unwrap_or_else`.
+Ezután figyeld meg, hogy az `unwrap_or_else` függvénynek van egy további
+generikus típusparamétere, az `F`. Az `F` típus az `f` nevű paraméter típusa,
+vagyis azé a closure-é, amelyet az `unwrap_or_else` hívásakor megadunk.
 
-The trait bound specified on the generic type `F` is `FnOnce() -> T`, which
-means `F` must be able to be called once, take no arguments, and return a `T`.
-Using `FnOnce` in the trait bound expresses the constraint that
-`unwrap_or_else` will not call `f` more than once. In the body of
-`unwrap_or_else`, we can see that if the `Option` is `Some`, `f` won’t be
-called. If the `Option` is `None`, `f` will be called once. Because all
-closures implement `FnOnce`, `unwrap_or_else` accepts all three kinds of
-closures and is as flexible as it can be.
+Az `F` generikus típusra megadott trait bound az `FnOnce() -> T`, ami azt
+jelenti, hogy az `F`-nek egyszer meghívhatónak kell lennie, nem vehet át
+argumentumot, és `T`-t kell visszaadnia. Az `FnOnce` használata a trait
+boundban azt a megkötést fejezi ki, hogy az `unwrap_or_else` legfeljebb egyszer
+hívja meg az `f`-et. Az `unwrap_or_else` törzsében látható, hogy ha az `Option`
+`Some`, az `f` nem hívódik meg. Ha az `Option` `None`, az `f` egyszer hívódik
+meg. Mivel minden closure implementálja az `FnOnce`-t, az `unwrap_or_else`
+mindhárom fajta closure-t elfogadja, és a lehető legrugalmasabb.
 
-> Note: If what we want to do doesn’t require capturing a value from the
-> environment, we can use the name of a function rather than a closure where we
-> need something that implements one of the `Fn` traits. For example, on an
-> `Option<Vec<T>>` value, we could call `unwrap_or_else(Vec::new)` to get a
-> new, empty vector if the value is `None`. The compiler automatically
-> implements whichever of the `Fn` traits is applicable for a function
-> definition.
+> Megjegyzés: Ha az, amit tenni akarunk, nem igényli érték elkapását a
+> környezetből, akkor closure helyett egy függvény nevét is használhatjuk ott,
+> ahol valami olyasmire van szükségünk, ami implementálja valamelyik `Fn`
+> trait-et. Például egy `Option<Vec<T>>` értéken meghívhatjuk az
+> `unwrap_or_else(Vec::new)`-t, hogy új, üres vektort kapjunk, ha az érték
+> `None`. A fordító egy függvénydefinícióhoz automatikusan implementálja azt az
+> `Fn` trait-et, amelyik alkalmazható rá.
 
-Now let’s look at the standard library method `sort_by_key`, defined on slices,
-to see how that differs from `unwrap_or_else` and why `sort_by_key` uses
-`FnMut` instead of `FnOnce` for the trait bound. The closure gets one argument
-in the form of a reference to the current item in the slice being considered,
-and it returns a value of type `K` that can be ordered. This function is useful
-when you want to sort a slice by a particular attribute of each item. In
-Listing 13-7, we have a list of `Rectangle` instances, and we use `sort_by_key`
-to order them by their `width` attribute from low to high.
+Most nézzük meg a standard könyvtár slice-okon definiált `sort_by_key`
+metódusát, hogy lássuk, miben tér el az `unwrap_or_else`-től, és miért az
+`FnMut`-ot használja a `sort_by_key` az `FnOnce` helyett a trait boundban. A
+closure egyetlen argumentumot kap, egy referenciát a slice éppen vizsgált
+aktuális elemére, és egy `K` típusú, rendezhető értéket ad vissza. Ez a függvény
+akkor hasznos, ha egy slice-ot az elemek valamelyik attribútuma szerint akarsz
+rendezni. A 13-7. listában van egy `Rectangle` példányokból álló listánk, és a
+`sort_by_key`-t használjuk, hogy a `width` attribútumuk szerint, növekvő
+sorrendbe rendezzük őket.
 
-<Listing number="13-7" file-name="src/main.rs" caption="Using `sort_by_key` to order rectangles by width">
+<Listing number="13-7" file-name="src/main.rs" caption="A `sort_by_key` használata a téglalapok szélesség szerinti rendezéséhez">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-07/src/main.rs}}
@@ -363,22 +380,22 @@ to order them by their `width` attribute from low to high.
 
 </Listing>
 
-This code prints:
+Ez a kód a következőt írja ki:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-07/output.txt}}
 ```
 
-The reason `sort_by_key` is defined to take an `FnMut` closure is that it calls
-the closure multiple times: once for each item in the slice. The closure `|r|
-r.width` doesn’t capture, mutate, or move anything out from its environment, so
-it meets the trait bound requirements.
+A `sort_by_key` azért `FnMut` closure-t vár, mert többször hívja meg a
+closure-t: egyszer a slice minden elemére. A `|r| r.width` closure semmit nem
+kap el, nem módosít és nem mozgat ki a környezetéből, így megfelel a trait bound
+követelményeinek.
 
-In contrast, Listing 13-8 shows an example of a closure that implements just
-the `FnOnce` trait, because it moves a value out of the environment. The
-compiler won’t let us use this closure with `sort_by_key`.
+Ezzel szemben a 13-8. lista egy olyan closure-re mutat példát, amely csak az
+`FnOnce` trait-et implementálja, mert kimozgat egy értéket a környezetből. A
+fordító nem engedi, hogy ezt a closure-t a `sort_by_key`-jel használjuk.
 
-<Listing number="13-8" file-name="src/main.rs" caption="Attempting to use an `FnOnce` closure with `sort_by_key`">
+<Listing number="13-8" file-name="src/main.rs" caption="Kísérlet egy `FnOnce` closure használatára a `sort_by_key`-jel">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-08/src/main.rs}}
@@ -386,31 +403,32 @@ compiler won’t let us use this closure with `sort_by_key`.
 
 </Listing>
 
-This is a contrived, convoluted way (that doesn’t work) to try to count the
-number of times `sort_by_key` calls the closure when sorting `list`. This code
-attempts to do this counting by pushing `value`—a `String` from the closure’s
-environment—into the `sort_operations` vector. The closure captures `value` and
-then moves `value` out of the closure by transferring ownership of `value` to
-the `sort_operations` vector. This closure can be called once; trying to call
-it a second time wouldn’t work, because `value` would no longer be in the
-environment to be pushed into `sort_operations` again! Therefore, this closure
-only implements `FnOnce`. When we try to compile this code, we get this error
-that `value` can’t be moved out of the closure because the closure must
-implement `FnMut`:
+Ez egy mesterkélt, körülményes (és nem működő) módja annak, hogy megpróbáljuk
+megszámolni, hányszor hívja meg a `sort_by_key` a closure-t a `list` rendezése
+közben. A kód úgy próbál számolni, hogy a `value`-t – egy `String`-et a closure
+környezetéből – betolja a `sort_operations` vektorba. A closure elkapja a
+`value`-t, majd kimozgatja a `value`-t a closure-ből azzal, hogy átadja a
+`value` ownershipjét a `sort_operations` vektornak. Ez a closure egyszer hívható
+meg; ha másodszor is meg akarnánk hívni, az nem működne, mert a `value` már nem
+lenne a környezetben ahhoz, hogy újra betolhassuk a `sort_operations`-be! Ezért
+ez a closure csak az `FnOnce`-t implementálja. Amikor megpróbáljuk lefordítani
+ezt a kódot, ezt a hibát kapjuk, miszerint a `value` nem mozgatható ki a
+closure-ből, mert a closure-nek implementálnia kell az `FnMut`-ot:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-08/output.txt}}
 ```
 
-The error points to the line in the closure body that moves `value` out of the
-environment. To fix this, we need to change the closure body so that it doesn’t
-move values out of the environment. Keeping a counter in the environment and
-incrementing its value in the closure body is a more straightforward way to
-count the number of times the closure is called. The closure in Listing 13-9
-works with `sort_by_key` because it is only capturing a mutable reference to the
-`num_sort_operations` counter and can therefore be called more than once.
+A hiba a closure törzsének arra a sorára mutat, amely kimozgatja a `value`-t a
+környezetből. Ennek javításához úgy kell megváltoztatnunk a closure törzsét,
+hogy ne mozgasson ki értékeket a környezetből. Ha a környezetben tartunk egy
+számlálót, és a closure törzsében növeljük az értékét, az sokkal egyszerűbb
+módja annak, hogy megszámoljuk, hányszor hívódik meg a closure. A 13-9. listában
+szereplő closure működik a `sort_by_key`-jel, mert csak egy módosítható
+referenciát kap el a `num_sort_operations` számlálóra, és így egynél többször is
+meghívható.
 
-<Listing number="13-9" file-name="src/main.rs" caption="Using an `FnMut` closure with `sort_by_key` is allowed.">
+<Listing number="13-9" file-name="src/main.rs" caption="Az `FnMut` closure használata a `sort_by_key`-jel megengedett.">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-09/src/main.rs}}
@@ -418,9 +436,9 @@ works with `sort_by_key` because it is only capturing a mutable reference to the
 
 </Listing>
 
-The `Fn` traits are important when defining or using functions or types that
-make use of closures. In the next section, we’ll discuss iterators. Many
-iterator methods take closure arguments, so keep these closure details in mind
-as we continue!
+Az `Fn` trait-ek fontosak, amikor closure-öket használó függvényeket vagy
+típusokat definiálunk vagy használunk. A következő szakaszban az iterátorokról
+lesz szó. Sok iterátormetódus vár closure-argumentumot, ezért tartsd észben
+ezeket a closure-részleteket, ahogy továbbhaladunk!
 
 [unwrap-or-else]: ../std/option/enum.Option.html#method.unwrap_or_else
