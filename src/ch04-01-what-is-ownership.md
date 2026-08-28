@@ -283,8 +283,8 @@ heap-en lévő memória látható, amely a tartalmat tárolja.
 <img alt="Két táblázat: az első táblázat az s1 stack-en lévő ábrázolását
 tartalmazza, amely a hosszából (5), a kapacitásából (5) és egy pointerből áll,
 amely a második táblázat első értékére mutat. A második táblázat a sztringadat
-heap-en lévő ábrázolását tartalmazza, bájtról bájtra." src="img/trpl04-01.svg" class="center"
-style="width: 50%;" />
+heap-en lévő ábrázolását tartalmazza, bájtról bájtra."
+src="img/trpl04-01.svg" class="center" style="width: 50%;" />
 
 <span class="caption">4-1. ábra: Egy `"hello"` értéket tartalmazó, `s1`-hez
 kötött `String` memóriabeli ábrázolása</span>

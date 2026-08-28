@@ -221,8 +221,8 @@ mutatja, amely az `art` crate `PrimaryColor` és `mix` elemeit használja.
 
 A 14-4. lista kódjának szerzőjének – aki az `art` crate-et használja – ki
 kellett derítenie, hogy a `PrimaryColor` a `kinds` modulban, a `mix` pedig a
-`utils`
-modulban van. Az `art` crate modulszerkezete inkább az `art` crate-en dolgozó
+`utils` modulban van. Az `art` crate modulszerkezete inkább az `art` crate-en
+dolgozó
 fejlesztők szempontjából érdekes, mint azok szempontjából, akik használják. A
 belső szerkezet semmilyen hasznos információt nem tartalmaz annak, aki azt
 próbálja megérteni, hogyan használja az `art` crate-et; sőt zavart okoz, mert

@@ -26,9 +26,10 @@ Ebben az esetben a feltétel azt vizsgálja, hogy a `number` változó értéke
 kisebb-e 5-nél. A feltétel teljesülése esetén végrehajtandó kódblokkot
 közvetlenül a feltétel után, kapcsos zárójelek közé helyezzük. Az `if`
 kifejezések feltételeihez tartozó kódblokkokat néha _ágaknak_ (arm) nevezzük,
-akárcsak a `match` kifejezések ágait, amelyekről a 2. fejezet [„A tipp
-összehasonlítása a titkos számmal”][comparing-the-guess-to-the-secret-number]<!--
-ignore --> című szakaszában volt szó.
+akárcsak a `match` kifejezések ágait, amelyekről a 2. fejezet
+[„A tipp összehasonlítása a titkos
+számmal”][comparing-the-guess-to-the-secret-number]<!-- ignore --> című
+szakaszában volt szó.
 
 Ha szeretnénk, egy `else` kifejezést is megadhatunk – itt éppen ezt tettük –,
 hogy a program alternatív kódblokkot futtasson arra az esetre, ha a feltétel
