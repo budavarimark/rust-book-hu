@@ -24,7 +24,7 @@ mutability mintát követi.
 
 ### A borrowing-szabályok érvényesítése futásidőben
 
-Az `Rc<T>`-vel ellentétben a `RefCell<T>` típus egyedüli ownership-et képvisel
+Az `Rc<T>`-vel ellentétben a `RefCell<T>` típus egyedüli ownershipet képvisel
 az általa tárolt adatok felett. Mitől más akkor a `RefCell<T>`, mint mondjuk egy
 `Box<T>`? Idézzük fel a borrowing-szabályokat a 4. fejezetből:
 
@@ -327,7 +327,7 @@ van egy `Rc<T>`-d, amely egy `RefCell<T>`-t tárol, olyan értéket kapsz,
 amelynek több ownere lehet, _és_ amelyet módosítani is tudsz!
 
 Idézzük fel például a 15-18. lista cons list példáját, ahol `Rc<T>` segítségével
-tettük lehetővé, hogy több lista osztozzon egy másik lista ownership-jén. Mivel
+tettük lehetővé, hogy több lista osztozzon egy másik lista ownershipjén. Mivel
 az `Rc<T>` csak nem módosítható értékeket tárol, a lista egyetlen értékét sem
 tudjuk megváltoztatni, miután létrehoztuk őket. Vegyük hozzá a `RefCell<T>`-t,
 amely képes a listákban lévő értékek megváltoztatására. A 15-24. lista mutatja,

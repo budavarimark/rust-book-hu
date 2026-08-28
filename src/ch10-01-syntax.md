@@ -81,7 +81,7 @@ a következő szakaszban lesz szó. Egyelőre elég annyit tudni, hogy ez a hiba
 lehet. Mivel a törzsben `T` típusú értékeket akarunk összehasonlítani, csak
 olyan típusokat használhatunk, amelyek értékei rendezhetők. Az összehasonlítások
 lehetővé tételére a standard könyvtárban ott van a `std::cmp::PartialOrd` trait,
-amelyet implementálhatsz a típusaidon (erről a traitről bővebben a C.
+amelyet implementálhatsz a típusaidon (erről a trait-ről bővebben a C.
 függelékben). A 10-5. listázás javításához követhetjük a súgószöveg javaslatát,
 és a `T`-hez érvényes típusokat leszűkíthetjük azokra, amelyek implementálják a
 `PartialOrd`-ot. A listázás ezután le fog fordulni, mert a standard könyvtár

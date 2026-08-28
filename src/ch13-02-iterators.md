@@ -53,7 +53,7 @@ Nézzük meg, hogyan érik ezt el az iterátorok.
 
 ### Az `Iterator` trait és a `next` metódus {#the-iterator-trait-and-the-next-method}
 
-Minden iterátor implementál egy `Iterator` nevű traitet, amelyet a standard
+Minden iterátor implementál egy `Iterator` nevű trait-et, amelyet a standard
 könyvtár definiál. A trait definíciója így néz ki:
 
 ```rust
@@ -67,7 +67,7 @@ pub trait Iterator {
 ```
 
 Vedd észre, hogy ez a definíció néhány új szintaktikai elemet használ: a `type
-Item` és a `Self::Item` egy asszociált típust definiál ehhez a traithez. Az
+Item` és a `Self::Item` egy asszociált típust definiál ehhez a trait-hez. Az
 asszociált típusokról részletesen a 20. fejezetben lesz szó. Egyelőre csak
 annyit kell tudnod, hogy ez a kód azt mondja: az `Iterator` trait
 implementálásához definiálnod kell egy `Item` típust is, és ezt az `Item`
@@ -108,9 +108,9 @@ ha módosítható referenciákon szeretnénk végighaladni, az `iter` helyett az
 
 ### Az iterátort elfogyasztó metódusok
 
-Az `Iterator` traitnek számos különböző metódusa van, amelyekhez a standard
+Az `Iterator` trait-nek számos különböző metódusa van, amelyekhez a standard
 könyvtár alapértelmezett implementációt ad; ezekről a metódusokról a standard
-könyvtár API-dokumentációjában, az `Iterator` traitnél olvashatsz. Néhány ilyen
+könyvtár API-dokumentációjában, az `Iterator` trait-nél olvashatsz. Néhány ilyen
 metódus a definíciójában meghívja a `next` metódust, és emiatt kell a `next`
 metódust implementálnod az `Iterator` trait implementálásakor.
 
@@ -135,7 +135,7 @@ annak az iterátornak az ownershipjét, amelyen meghívjuk.
 
 ### Más iterátorokat előállító metódusok
 
-Az _iterátor-adapterek_ az `Iterator` traiten definiált olyan metódusok,
+Az _iterátor-adapterek_ az `Iterator` trait-en definiált olyan metódusok,
 amelyek nem fogyasztják el az iterátort. Ehelyett más iterátorokat állítanak
 elő az eredeti iterátor valamely tulajdonságának megváltoztatásával.
 

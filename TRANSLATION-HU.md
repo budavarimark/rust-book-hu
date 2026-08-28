@@ -39,8 +39,16 @@ szabályait rögzíti. Maga a dokumentum nem része a könyvnek.
 
 ### Angolul maradó kifejezések
 
-Ezeket **nem fordítjuk**. Ragozáskor kötőjellel kapcsoljuk a toldalékot:
-`trait-ek`, `crate-ben`, `lifetime-ot`, `ownership-et`, `closure-ök`.
+Ezeket **nem fordítjuk**. A toldalékolás szabálya:
+
+- **Kötőjellel**, ha a szó néma `-e`-re végződik, vagy ha a kötőjel nélküli
+  alak nehezen olvasható: `crate-ben`, `lifetime-ot`, `closure-ök`,
+  `slice-okat`, `future-ök`, `workspace-ek`, valamint `trait-et`, `trait-ek`.
+- **Közvetlenül**, ha a szó kiejtett mássalhangzóra végződik: `structok`,
+  `enumok`, `panicot`, `taskok`, `streamet`, `heapen`, `stacken`,
+  `ownershipet`, `ownershipjét`.
+- Magyar utótaggal alkotott összetételben kötőjel: `ownership-szabályok`,
+  `trait-definíció`, `referencia-ciklus`.
 
 | Angol | Magyar használat |
 | --- | --- |

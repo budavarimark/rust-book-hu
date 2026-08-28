@@ -15,7 +15,7 @@ jó hír az, hogy minél nagyobb tapasztalatot szerzel a Rustban és az ownershi
 rendszerének szabályaiban, annál könnyebben fogsz természetes módon biztonságos
 és hatékony kódot írni. Ne add fel!
 
-Ha megérted az ownership-et, szilárd alapod lesz azoknak a képességeknek a
+Ha megérted az ownershipet, szilárd alapod lesz azoknak a képességeknek a
 megértéséhez, amelyek a Rustot egyedivé teszik. Ebben a fejezetben néhány olyan
 példán keresztül ismerkedsz meg az ownership-pel, amelyek egy nagyon gyakori
 adatszerkezetre összpontosítanak: a sztringekre.
@@ -82,7 +82,7 @@ adatszerkezetre összpontosítanak: a sztringekre.
 > heap-en, a heap-en lévő adatduplikációk minimalizálása, valamint a heap-en
 > lévő nem használt adat kitakarítása, hogy ne fogyj ki a helyből – ezek mind
 > olyan problémák, amelyeket az ownership old meg. Ha egyszer megérted az
-> ownership-et, nem kell majd túl gyakran a stack-kel és a heap-pel
+> ownershipet, nem kell majd túl gyakran a stack-kel és a heap-pel
 > foglalkoznod. Az viszont, ha tudod, hogy az ownership fő célja a heap-en lévő
 > adat kezelése, segíthet megmagyarázni, miért éppen úgy működik, ahogy.
 
@@ -147,7 +147,7 @@ honnan tudja a Rust, mikor kell kitakarítania ezt az adatot – a `String` típ
 pedig kiváló példa erre.
 
 A `String` típusnak azokra a részeire fogunk összpontosítani, amelyek az
-ownership-hez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
+ownershiphez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
 érvényesek, akár a standard könyvtár biztosítja őket, akár te hozod létre őket.
 A `String` ownership-től független szempontjait a
 [8. fejezetben][ch8]<!-- ignore --> tárgyaljuk.
@@ -497,7 +497,7 @@ ebben az ownership szabályai.
 
 ### Visszatérési értékek és hatókör
 
-A visszatérési értékek szintén átadhatják az ownership-et. A 4-4. lista egy
+A visszatérési értékek szintén átadhatják az ownershipet. A 4-4. lista egy
 olyan függvényre mutat példát, amely visszaad valamilyen értéket, a 4-3.
 listához hasonló kommentekkel.
 
@@ -509,14 +509,14 @@ listához hasonló kommentekkel.
 
 </Listing>
 
-Egy változó ownership-je minden alkalommal ugyanezt a mintát követi: ha egy
+Egy változó ownershipje minden alkalommal ugyanezt a mintát követi: ha egy
 értéket egy másik változóhoz rendelünk, az move-olódik. Amikor egy heap-en lévő
 adatot tartalmazó változó kilép a hatóköréből, az értéket a `drop` takarítja ki,
-hacsak az adat ownership-je nem került át egy másik változóhoz.
+hacsak az adat ownershipje nem került át egy másik változóhoz.
 
 Bár ez működik, kissé fárasztó minden függvénynél átvenni, majd visszaadni az
-ownership-et. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson
-egy értéket anélkül, hogy átvenné az ownership-jét? Elég bosszantó, hogy bármit,
+ownershipet. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson
+egy értéket anélkül, hogy átvenné az ownershipjét? Elég bosszantó, hogy bármit,
 amit átadunk, vissza is kell adni, ha újra használni akarjuk – azon az adaton
 felül, amely a függvény törzséből eredményként adódik, és amelyet szintén vissza
 szeretnénk kapni.
@@ -535,7 +535,7 @@ ahogy azt a 4-5. lista mutatja.
 Ez azonban túl sok ceremónia és túl sok munka egy olyan fogalomhoz, amelynek
 megszokottnak kellene lennie. Szerencsénkre a Rustnak van egy olyan képessége,
 amellyel úgy használhatunk egy értéket, hogy közben nem adjuk át az
-ownership-jét: ezek a referenciák.
+ownershipjét: ezek a referenciák.
 
 [data-types]: ch03-02-data-types.html#data-types
 [ch8]: ch08-02-strings.html

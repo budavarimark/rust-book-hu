@@ -50,7 +50,7 @@ ki a Rustban, és nem szabályos leállásba megyünk át.
 
 A hiba azt mondja, hogy nem hívhatjuk meg a `join`-t, mert csak egy módosítható
 borrow-unk van az egyes `worker`-ekre, a `join` viszont átveszi az argumentuma
-ownership-jét. A probléma megoldásához ki kell mozgatnunk a szálat abból a
+ownershipjét. A probléma megoldásához ki kell mozgatnunk a szálat abból a
 `Worker` példányból, amely a `thread`-et birtokolja, hogy a `join` fel tudja
 használni a szálat. Ennek egyik módja ugyanaz a megközelítés, amit a 18-15.
 listában alkalmaztunk. Ha a `Worker` egy `Option<thread::JoinHandle<()>>`-t

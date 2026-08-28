@@ -449,7 +449,7 @@ következő hibaüzenetet kapjuk:
 
 Ez a hiba rámutat, hogy a `?` operátort csak olyan függvényben használhatjuk,
 amely `Result`-ot, `Option`-t vagy egy másik olyan típust ad vissza, amely
-implementálja a `FromResidual` traitet.
+implementálja a `FromResidual` trait-et.
 
 A hiba javítására két lehetőséged van. Az egyik, hogy megváltoztatod a
 függvényed visszatérési típusát úgy, hogy kompatibilis legyen azzal az értékkel,
@@ -543,10 +543,10 @@ számot. A Rust szintén egész számokat ad vissza a futtatható programokból,
 kompatibilis legyen ezzel a konvencióval.
 
 A `main` függvény bármilyen olyan típust visszaadhat, amely implementálja [a
-`std::process::Termination` traitet][termination]<!-- ignore -->, amely
+`std::process::Termination` trait-et][termination]<!-- ignore -->, amely
 tartalmaz egy `report` függvényt, ami `ExitCode`-ot ad vissza. A standard
 könyvtár dokumentációjában találsz további információt arról, hogyan
-implementáld a `Termination` traitet a saját típusaidra.
+implementáld a `Termination` trait-et a saját típusaidra.
 
 Most, hogy megbeszéltük a `panic!` hívásának és a `Result` visszaadásának
 részleteit, térjünk vissza ahhoz a témához, hogyan döntsük el, melyiket

@@ -46,15 +46,15 @@ ezért a Rust megengedi, hogy ezt az első paraméterhelyen pusztán a `self` n�
 rövidítsd. Vedd észre, hogy a `self` rövidítés elé továbbra is ki kell tennünk a
 `&`-t, jelezve, hogy ez a metódus borrow-olja a `Self` példányt, ahogy a
 `rectangle: &Rectangle` esetében is tettük. A metódusok átvehetik a `self`
-ownership-jét, borrow-olhatják a `self`-et nem módosíthatóan – ahogy itt tettük
+ownershipjét, borrow-olhatják a `self`-et nem módosíthatóan – ahogy itt tettük
 –, vagy borrow-olhatják módosíthatóan, akárcsak bármely más paramétert.
 
 Itt ugyanazért választottuk a `&self`-et, amiért a függvényes változatban a
-`&Rectangle`-t használtuk: nem akarjuk átvenni az ownership-et, csak olvasni
+`&Rectangle`-t használtuk: nem akarjuk átvenni az ownershipet, csak olvasni
 akarjuk a struct adatait, nem írni. Ha a metódus feladatának részeként meg
 akarnánk változtatni azt a példányt, amelyen a metódust meghívtuk, akkor
 `&mut self` lenne az első paraméter. Ritka az olyan metódus, amely a puszta
-`self` első paraméterrel átveszi a példány ownership-jét; ezt a technikát
+`self` első paraméterrel átveszi a példány ownershipjét; ezt a technikát
 általában akkor használják, amikor a metódus a `self`-et valami mássá alakítja
 át, és meg akarod akadályozni, hogy a hívó az átalakítás után is használja az
 eredeti példányt.
@@ -176,7 +176,7 @@ típusa, azt a metódust hívó kódból tudhatjuk meg: a `rect1.can_hold(&rect2
 `&rect2`-t adja át, ami a `rect2`, egy `Rectangle` példány nem módosítható
 borrow-ja. Ennek van értelme, hiszen csak olvasnunk kell a `rect2`-t (nem
 írnunk, ami módosítható borrow-ot igényelne), és azt szeretnénk, hogy a `main`
-megtartsa a `rect2` ownership-jét, hogy a `can_hold` metódus hívása után is
+megtartsa a `rect2` ownershipjét, hogy a `can_hold` metódus hívása után is
 használhassuk. A `can_hold` visszatérési értéke logikai érték lesz, az
 implementáció pedig azt ellenőrzi, hogy a `self` szélessége és magassága
 nagyobb-e a másik `Rectangle` szélességénél, illetve magasságánál. Adjuk hozzá

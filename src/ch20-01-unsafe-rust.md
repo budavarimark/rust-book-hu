@@ -483,7 +483,7 @@ biztonságosan zajlik.
 
 Az `unsafe` használható unsafe trait implementálására is. Egy trait akkor
 unsafe, ha legalább az egyik metódusának van olyan invariánsa, amelyet a
-fordító nem tud ellenőrizni. Egy traitet úgy nyilvánítunk `unsafe`-nek, hogy a
+fordító nem tud ellenőrizni. Egy trait-et úgy nyilvánítunk `unsafe`-nek, hogy a
 `trait` elé írjuk az `unsafe` kulcsszót, és a trait implementációját is
 `unsafe`-nek jelöljük, ahogy a 20-12. listában látható.
 

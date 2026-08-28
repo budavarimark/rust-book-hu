@@ -156,7 +156,7 @@ példában a `user2` létrehozása után már nem használhatjuk a `user1`-et, m
 `user2`-nek, és így csak az `active` és a `sign_in_count` értékeket vettük
 volna át a `user1`-től, akkor a `user1` a `user2` létrehozása után is érvényes
 maradna. Az `active` és a `sign_in_count` egyaránt olyan típusú, amely
-implementálja a `Copy` traitet, tehát a [„Csak a stacken lévő adatok:
+implementálja a `Copy` trait-et, tehát a [„Csak a stacken lévő adatok:
 Copy”][copy]<!-- ignore --> szakaszban tárgyalt viselkedés érvényesülne. A `user1.email` értéket egyébként
 ebben a példában is használhatjuk továbbra is, mert az értéke nem mozgott ki a
 `user1`-ből.
@@ -209,8 +209,8 @@ Olyan structokat is definiálhatsz, amelyeknek egyetlen mezőjük sincs! Ezeket
 _unit-szerű structoknak_ nevezzük, mert hasonlóan viselkednek a `()`
 unit típushoz, amelyet a [„A tuple típus”][tuples]<!-- ignore --> szakaszban
 említettünk. A unit-szerű structok akkor lehetnek hasznosak, ha valamilyen
-típusra implementálnod kell egy traitet, de nincs olyan adat, amelyet magában a
-típusban akarnál tárolni. A traitekről a 10. fejezetben lesz szó. Íme egy példa
+típusra implementálnod kell egy trait-et, de nincs olyan adat, amelyet magában a
+típusban akarnál tárolni. A trait-ekről a 10. fejezetben lesz szó. Íme egy példa
 egy `AlwaysEqual` nevű unit struct deklarálására és példányosítására:
 
 <Listing file-name="src/main.rs">
@@ -230,7 +230,7 @@ implementálunk ehhez a típushoz, amely szerint az `AlwaysEqual` minden példá
 mindig egyenlő bármely más típus minden példányával – például azért, hogy
 tesztelési célokra ismert eredményünk legyen. Ennek a viselkedésnek az
 implementálásához semmilyen adatra nem lenne szükségünk! A 10. fejezetben
-látni fogod, hogyan definiálhatsz traiteket, és hogyan implementálhatod őket
+látni fogod, hogyan definiálhatsz trait-eket, és hogyan implementálhatod őket
 bármilyen típusra, köztük a unit-szerű structokra is.
 
 > ### A struct adatainak ownershipje

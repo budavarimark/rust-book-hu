@@ -12,11 +12,11 @@ belemerülhetünk a részletekbe.
 
 ### Trait-ek definiálása asszociált típusokkal
 
-Az _asszociált típusok_ úgy kötnek össze egy típushelyettesítőt egy traittel,
+Az _asszociált típusok_ úgy kötnek össze egy típushelyettesítőt egy trait-tel,
 hogy a trait metódusdefiníciói használhatják ezeket a helyettesítő típusokat a
 szignatúrájukban. A trait implementálója adja meg azt a konkrét típust, amelyet
 az adott implementációban a helyettesítő típus helyett használunk. Így olyan
-traitet definiálhatunk, amely bizonyos típusokat használ anélkül, hogy pontosan
+trait-et definiálhatunk, amely bizonyos típusokat használ anélkül, hogy pontosan
 tudnunk kellene, mik ezek a típusok, egészen a trait implementálásáig.
 
 Az ebben a fejezetben tárgyalt haladó képességek nagy részét úgy jellemeztük,
@@ -26,8 +26,8 @@ bemutatott képességeket, de gyakrabban, mint az ebben a fejezetben tárgyalt
 többi elemet.
 
 Az asszociált típussal rendelkező trait-ek egyik példája a standard könyvtár
-`Iterator` traitje. Az asszociált típus neve `Item`, és azoknak az értékeknek a
-típusát helyettesíti, amelyeken az `Iterator` traitet implementáló típus
+`Iterator` trait-je. Az asszociált típus neve `Item`, és azoknak az értékeknek a
+típusát helyettesíti, amelyeken az `Iterator` trait-et implementáló típus
 iterál. Az `Iterator` trait definíciója a 20-13. listában látható.
 
 <Listing number="20-13" caption="Az `Iterator` trait definíciója, amelynek van egy `Item` asszociált típusa">
@@ -58,7 +58,7 @@ egy `Counter` nevű típuson, amely az `Item` típust `u32`-ként adja meg:
 </Listing>
 
 Ez a szintaxis a generikusokéhoz hasonlónak tűnik. Miért ne definiálhatnánk
-tehát az `Iterator` traitet egyszerűen generikusokkal, ahogy a 20-14. listában
+tehát az `Iterator` trait-et egyszerűen generikusokkal, ahogy a 20-14. listában
 látható?
 
 <Listing number="20-14" caption="Az `Iterator` trait feltételezett definíciója generikusokkal">
@@ -72,13 +72,13 @@ látható?
 A különbség az, hogy generikusok használatakor, ahogy a 20-14. listában,
 minden implementációban annotálnunk kell a típusokat; mivel az `Iterator<String>
 for Counter`-t vagy bármely más típust is implementálhatnánk, több `Iterator`
-implementációnk is lehetne a `Counter`-hez. Más szóval, ha egy traitnek van
+implementációnk is lehetne a `Counter`-hez. Más szóval, ha egy trait-nek van
 generikus paramétere, akkor egy típusra többször is implementálható úgy, hogy a
 generikus típusparaméterek konkrét típusait minden alkalommal megváltoztatjuk.
 Amikor a `Counter`-en a `next` metódust használnánk, típusannotációkkal kellene
 jeleznünk, melyik `Iterator` implementációt akarjuk használni.
 
-Asszociált típusokkal nem kell típusokat annotálnunk, mert egy traitet nem
+Asszociált típusokkal nem kell típusokat annotálnunk, mert egy trait-et nem
 implementálhatunk többször ugyanarra a típusra. A 20-13. listában, ahol a
 definíció asszociált típusokat használ, csak egyszer választhatjuk meg az `Item`
 típusát, mert csak egyetlen `impl Iterator for Counter` lehet. Nem kell
@@ -109,9 +109,9 @@ szabhatod testre bizonyos helyzetekben.
 A Rust nem engedi, hogy saját operátorokat hozz létre, vagy hogy tetszőleges
 operátorokat terhelj túl. A `std::ops`-ban felsorolt műveleteket és a hozzájuk
 tartozó trait-eket viszont túlterhelheted úgy, hogy implementálod az
-operátorhoz tartozó traitet. Például a 20-15. listában a `+` operátort
+operátorhoz tartozó trait-et. Például a 20-15. listában a `+` operátort
 terheljük túl, hogy két `Point` példányt össze tudjunk adni. Ezt úgy tesszük,
-hogy implementáljuk az `Add` traitet egy `Point` structon.
+hogy implementáljuk az `Add` trait-et egy `Point` structon.
 
 <Listing number="20-15" file-name="src/main.rs" caption="Az `Add` trait implementálása a `+` operátor túlterhelésére `Point` példányokhoz">
 
@@ -122,11 +122,11 @@ hogy implementáljuk az `Add` traitet egy `Point` structon.
 </Listing>
 
 Az `add` metódus összeadja két `Point` példány `x` értékeit és két `Point`
-példány `y` értékeit, így hozva létre egy új `Point`-ot. Az `Add` traitnek van
+példány `y` értékeit, így hozva létre egy új `Point`-ot. Az `Add` trait-nek van
 egy `Output` nevű asszociált típusa, amely meghatározza az `add` metódus
 visszatérési típusát.
 
-Az alapértelmezett generikus típus ebben a kódban az `Add` traitben van. Íme a
+Az alapértelmezett generikus típus ebben a kódban az `Add` trait-ben van. Íme a
 definíciója:
 
 ```rust
@@ -178,14 +178,14 @@ Az alapértelmezett típusparamétereket főként két módon fogod használni:
 2. Olyan testreszabás engedélyezésére, amelyre a legtöbb felhasználónak nem lesz
    szüksége konkrét esetekben
 
-A standard könyvtár `Add` traitje a második célra példa: általában két azonos
+A standard könyvtár `Add` trait-je a második célra példa: általában két azonos
 típust adsz össze, de az `Add` trait lehetőséget ad az ezen túlmutató
 testreszabásra. Az `Add` trait definíciójában az alapértelmezett típusparaméter
 használata azt jelenti, hogy legtöbbször nem kell megadnod az extra
 paramétert. Más szóval nincs szükség némi implementációs sablonkódra, ami
 megkönnyíti a trait használatát.
 
-Az első cél hasonlít a másodikra, csak fordítva: ha egy meglévő traithez
+Az első cél hasonlít a másodikra, csak fordítva: ha egy meglévő trait-hez
 típusparamétert akarsz adni, adhatsz neki alapértelmezett értéket, hogy a trait
 funkcionalitása a meglévő implementációs kód megtörése nélkül bővíthető legyen.
 
@@ -196,20 +196,20 @@ funkcionalitása a meglévő implementációs kód megtörése nélkül bővíth
 
 ### Azonos nevű metódusok megkülönböztetése
 
-A Rustban semmi nem akadályozza meg, hogy egy traitnek olyan metódusa legyen,
+A Rustban semmi nem akadályozza meg, hogy egy trait-nek olyan metódusa legyen,
 amelynek a neve megegyezik egy másik trait metódusának nevével, és azt sem
-akadályozza meg a Rust, hogy mindkét traitet ugyanarra a típusra implementáld.
+akadályozza meg a Rust, hogy mindkét trait-et ugyanarra a típusra implementáld.
 Az is lehetséges, hogy közvetlenül a típuson definiálj olyan metódust, amelynek
 a neve megegyezik a trait-ek metódusaiéval.
 
 Amikor azonos nevű metódusokat hívsz, meg kell mondanod a Rustnak, melyiket
-akarod használni. Nézd meg a 20-17. listában lévő kódot, ahol két traitet
+akarod használni. Nézd meg a 20-17. listában lévő kódot, ahol két trait-et
 definiáltunk, a `Pilot`-ot és a `Wizard`-ot, és mindkettőnek van egy `fly` nevű
-metódusa. Ezután mindkét traitet implementáljuk egy `Human` típusra, amelynek
+metódusa. Ezután mindkét trait-et implementáljuk egy `Human` típusra, amelynek
 már van rajta implementálva egy `fly` nevű metódusa. Mindegyik `fly` metódus
 mást csinál.
 
-<Listing number="20-17" file-name="src/main.rs" caption="Két traitet úgy definiálunk, hogy legyen `fly` metódusuk, és implementáljuk őket a `Human` típuson, amelyre közvetlenül is implementálunk egy `fly` metódust.">
+<Listing number="20-17" file-name="src/main.rs" caption="Két trait-et úgy definiálunk, hogy legyen `fly` metódusuk, és implementáljuk őket a `Human` típuson, amelyre közvetlenül is implementálunk egy `fly` metódust.">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-17/src/main.rs:here}}
@@ -258,20 +258,20 @@ Ezt a kódot futtatva a következőt kapjuk:
 ```
 
 Mivel a `fly` metódusnak van `self` paramétere, ha két olyan _típusunk_ lenne,
-amely ugyanazt az egy _traitet_ implementálja, a Rust a `self` típusa alapján ki
+amely ugyanazt az egy _trait-et_ implementálja, a Rust a `self` típusa alapján ki
 tudná találni, a trait melyik implementációját használja.
 
 Azoknak az asszociált függvényeknek viszont, amelyek nem metódusok, nincs
 `self` paraméterük. Ha több olyan típus vagy trait van, amely azonos nevű, nem
 metódus függvényeket definiál, a Rust nem mindig tudja, melyikre gondolsz,
 hacsak nem használsz teljesen minősített szintaxist. Például a 20-20. listában
-egy állatmenhelyhez készítünk traitet, ahol minden kutyakölyköt Spotnak akarnak
-elnevezni. Készítünk egy `Animal` traitet egy `baby_name` nevű, nem metódus
-asszociált függvénnyel. Az `Animal` traitet a `Dog` structra implementáljuk,
+egy állatmenhelyhez készítünk trait-et, ahol minden kutyakölyköt Spotnak akarnak
+elnevezni. Készítünk egy `Animal` trait-et egy `baby_name` nevű, nem metódus
+asszociált függvénnyel. Az `Animal` trait-et a `Dog` structra implementáljuk,
 amelyre közvetlenül is megadunk egy `baby_name` nevű, nem metódus asszociált
 függvényt.
 
-<Listing number="20-20" file-name="src/main.rs" caption="Egy trait asszociált függvénnyel és egy típus azonos nevű asszociált függvénnyel, amely a traitet is implementálja">
+<Listing number="20-20" file-name="src/main.rs" caption="Egy trait asszociált függvénnyel és egy típus azonos nevű asszociált függvénnyel, amely a trait-et is implementálja">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-20/src/main.rs}}
@@ -281,9 +281,9 @@ függvényt.
 
 Azt a kódot, amely minden kutyakölyköt Spotnak nevez el, a `Dog`-on definiált
 `baby_name` asszociált függvényben implementáljuk. A `Dog` típus az `Animal`
-traitet is implementálja, amely az összes állat jellemzőit írja le. A
+trait-et is implementálja, amely az összes állat jellemzőit írja le. A
 kutyakölyköket angolul „puppy”-nak hívják, és ez az `Animal` trait `Dog`-ra
-vonatkozó implementációjában, az `Animal` traithez tartozó `baby_name`
+vonatkozó implementációjában, az `Animal` trait-hez tartozó `baby_name`
 függvényben jelenik meg.
 
 A `main`-ben a `Dog::baby_name` függvényt hívjuk meg, amely a közvetlenül a
@@ -308,7 +308,7 @@ lévő kódra cseréljük, fordítási hibát kapunk.
 </Listing>
 
 Mivel az `Animal::baby_name`-nek nincs `self` paramétere, és lehetnének más
-típusok is, amelyek implementálják az `Animal` traitet, a Rust nem tudja
+típusok is, amelyek implementálják az `Animal` trait-et, a Rust nem tudja
 kitalálni, az `Animal::baby_name` melyik implementációját akarjuk. Ezt a
 fordítói hibát kapjuk:
 
@@ -360,16 +360,16 @@ melyiket akarod hívni.
 
 ### Supertrait-ek használata
 
-Néha olyan traitdefiníciót írhatsz, amely egy másik traittől függ: ahhoz, hogy
-egy típus implementálja az első traitet, meg akarod követelni, hogy az adott
-típus a második traitet is implementálja. Ezt azért teszed, hogy a
-traitdefiníciód használhassa a második trait asszociált elemeit. Azt a traitet,
-amelyre a traitdefiníciód támaszkodik, a traited _supertraitjének_ nevezzük.
+Néha olyan trait-definíciót írhatsz, amely egy másik traittől függ: ahhoz, hogy
+egy típus implementálja az első trait-et, meg akarod követelni, hogy az adott
+típus a második trait-et is implementálja. Ezt azért teszed, hogy a
+trait-definíciód használhassa a második trait asszociált elemeit. Azt a trait-et,
+amelyre a trait-definíciód támaszkodik, a trait-ed _supertraitjének_ nevezzük.
 
-Tegyük fel például, hogy szeretnénk készíteni egy `OutlinePrint` traitet egy
+Tegyük fel például, hogy szeretnénk készíteni egy `OutlinePrint` trait-et egy
 `outline_print` metódussal, amely egy adott értéket úgy formázva ír ki, hogy az
 csillagokkal legyen keretezve. Vagyis egy olyan `Point` struct esetén, amely
-implementálja a standard könyvtár `Display` traitjét úgy, hogy az `(x, y)`
+implementálja a standard könyvtár `Display` trait-jét úgy, hogy az `(x, y)`
 alakot eredményezi, amikor az `outline_print`-et meghívjuk egy olyan `Point`
 példányon, ahol az `x` értéke `1`, az `y` értéke pedig `3`, a következőnek kell
 megjelennie:
@@ -386,9 +386,9 @@ Az `outline_print` metódus implementációjában a `Display` trait
 funkcionalitását akarjuk használni. Ezért meg kell adnunk, hogy az
 `OutlinePrint` trait csak olyan típusokra működjön, amelyek a `Display`-t is
 implementálják, és így biztosítják azt a funkcionalitást, amelyre az
-`OutlinePrint`-nek szüksége van. Ezt a traitdefinícióban tehetjük meg az
+`OutlinePrint`-nek szüksége van. Ezt a trait-definícióban tehetjük meg az
 `OutlinePrint: Display` megadásával. Ez a technika hasonlít ahhoz, mintha trait
-boundot adnánk a traithez. A 20-23. lista az `OutlinePrint` trait egy
+boundot adnánk a trait-hez. A 20-23. lista az `OutlinePrint` trait egy
 implementációját mutatja.
 
 <Listing number="20-23" file-name="src/main.rs" caption="Az `OutlinePrint` trait implementálása, amely megköveteli a `Display` funkcionalitását">
@@ -399,11 +399,11 @@ implementációját mutatja.
 
 </Listing>
 
-Mivel megadtuk, hogy az `OutlinePrint`-hez szükség van a `Display` traitre,
+Mivel megadtuk, hogy az `OutlinePrint`-hez szükség van a `Display` trait-re,
 használhatjuk a `to_string` függvényt, amely automatikusan implementálva van
 minden `Display`-t implementáló típusra. Ha úgy próbálnánk használni a
 `to_string`-et, hogy nem tennénk ki a kettőspontot, és nem adnánk meg a
-`Display` traitet a trait neve után, olyan hibát kapnánk, amely szerint a
+`Display` trait-et a trait neve után, olyan hibát kapnánk, amely szerint a
 `&Self` típushoz nem található `to_string` nevű metódus az aktuális hatókörben.
 
 Nézzük meg, mi történik, ha az `OutlinePrint`-et olyan típusra próbáljuk
@@ -449,15 +449,15 @@ csillagokból álló keretben jelenítsük meg.
 
 A 10. fejezet [„Trait implementálása egy
 típuson”][implementing-a-trait-on-a-type]<!-- ignore --> című szakaszában
-megemlítettük az orphan szabályt, amely szerint egy traitet csak akkor
+megemlítettük az orphan szabályt, amely szerint egy trait-et csak akkor
 implementálhatunk egy típusra, ha vagy a trait, vagy a típus, vagy mindkettő
 lokális a crate-ünkben. Ezt a korlátozást megkerülhetjük a newtype mintával,
 amelynek lényege, hogy egy tuple structban új típust hozunk létre. (A tuple
 structokról az 5. fejezet [„Különböző típusok létrehozása tuple
 structokkal”][tuple-structs]<!-- ignore --> című szakaszában volt szó.) A tuple
 structnak egyetlen mezője lesz, és vékony burkolóként veszi körül azt a
-típust, amelyre traitet szeretnénk implementálni. Ekkor a burkolótípus lokális
-a crate-ünkben, így implementálhatjuk rá a traitet. A _newtype_ olyan kifejezés,
+típust, amelyre trait-et szeretnénk implementálni. Ekkor a burkolótípus lokális
+a crate-ünkben, így implementálhatjuk rá a trait-et. A _newtype_ olyan kifejezés,
 amely a Haskell programozási nyelvből származik. Ennek a mintának a
 használatáért nem kell futásidejű teljesítménybüntetést fizetni, a burkolótípus
 pedig fordítási időben eltűnik.

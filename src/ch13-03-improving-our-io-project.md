@@ -83,7 +83,7 @@ Ez még mindig nem fog lefordulni, mert a függvény törzsét is frissítenünk
 
 Az `env::args` függvény standard könyvtári dokumentációja szerint az általa
 visszaadott iterátor típusa `std::env::Args`, és ez a típus implementálja az
-`Iterator` traitet, valamint `String` értékeket ad vissza.
+`Iterator` trait-et, valamint `String` értékeket ad vissza.
 
 Frissítettük a `Config::build` függvény szignatúráját úgy, hogy az `args`
 paraméter `&[String]` helyett `impl Iterator<Item = String>` trait bounddal
@@ -91,7 +91,7 @@ rendelkező generikus típusú legyen. Az `impl Trait` szintaxisnak ez a
 használata, amelyről a 10. fejezet
 [„Trait-ek használata paraméterként”][impl-trait]<!-- ignore --> című
 alfejezetében volt szó, azt jelenti, hogy az `args` bármilyen olyan típus
-lehet, amely implementálja az `Iterator` traitet, és `String` elemeket ad
+lehet, amely implementálja az `Iterator` trait-et, és `String` elemeket ad
 vissza.
 
 Mivel átvesszük az `args` ownershipjét, és módosítani fogjuk az `args`-ot
@@ -105,7 +105,7 @@ a `mut` kulcsszót, hogy módosíthatóvá tegyük.
 #### Az `Iterator` trait metódusainak használata
 
 Ezután megjavítjuk a `Config::build` törzsét. Mivel az `args` implementálja az
-`Iterator` traitet, tudjuk, hogy meghívhatjuk rajta a `next` metódust! A 13-20.
+`Iterator` trait-et, tudjuk, hogy meghívhatjuk rajta a `next` metódust! A 13-20.
 lista a 12-23. lista kódját frissíti úgy, hogy a `next` metódust használja.
 
 <Listing number="13-20" file-name="src/main.rs" caption="A `Config::build` törzsének átalakítása iterátormetódusok használatára">

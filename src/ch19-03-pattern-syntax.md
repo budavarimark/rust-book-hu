@@ -321,7 +321,7 @@ Ez a kód teljesen figyelmen kívül hagyja az első argumentumként átadott `3
 A legtöbb esetben, amikor már nincs szükséged egy adott függvényparaméterre,
 megváltoztatnád a szignatúrát úgy, hogy ne tartalmazza a nem használt
 paramétert. Egy függvényparaméter figyelmen kívül hagyása különösen olyankor
-hasznos, amikor például egy traitet implementálsz, ahol adott típusszignatúrára
+hasznos, amikor például egy trait-et implementálsz, ahol adott típusszignatúrára
 van szükség, de az implementációdban a függvény törzsének nincs szüksége az
 egyik paraméterre. Így elkerülöd a nem használt függvényparaméterekről szóló
 fordítói figyelmeztetést, amelyet név használata esetén kapnál.

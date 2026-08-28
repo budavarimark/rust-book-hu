@@ -91,8 +91,8 @@ amelynek szélessége `30`, magassága `50`.
 Az `area` függvényünk most már egyetlen paraméterrel van definiálva, amelyet
 `rectangle`-nek neveztünk el, és amelynek típusa egy `Rectangle` struct-példány
 nem módosítható borrow-ja. Ahogy a 4. fejezetben említettük, a struct-ot
-inkább borrow-olni akarjuk, mintsem átvenni az ownership-jét. Így a `main`
-megtartja az ownership-et, és továbbra is használhatja a `rect1`-et; ezért
+inkább borrow-olni akarjuk, mintsem átvenni az ownershipjét. Így a `main`
+megtartja az ownershipet, és továbbra is használhatja a `rect1`-et; ezért
 szerepel a `&` a függvény szignatúrájában és a függvényhívás helyén is.
 
 Az `area` függvény a `Rectangle` példány `width` és `height` mezőit éri el
@@ -197,10 +197,10 @@ sztringben a `{:?}` helyett a `{:#?}` alakot használhatjuk. Ebben a példában 
 ```
 
 Egy érték `Debug` formátumú kiírásának másik módja a [`dbg!`
-makró][dbg]<!-- ignore -->, amely átveszi egy kifejezés ownership-jét (szemben
+makró][dbg]<!-- ignore -->, amely átveszi egy kifejezés ownershipjét (szemben
 a `println!`-lel, amely referenciát vesz át), kiírja annak a fájlnak a nevét és
 sorszámát, ahol az a `dbg!` makróhívás a kódodban szerepel, a kifejezés
-eredményével együtt, majd visszaadja az érték ownership-jét.
+eredményével együtt, majd visszaadja az érték ownershipjét.
 
 > Megjegyzés: a `dbg!` makró hívása a standard hibakimenetre (`stderr`) ír,
 > szemben a `println!`-lel, amely a standard kimenetre (`stdout`) ír. A
@@ -215,9 +215,9 @@ lévő teljes struct értéke érdekel minket:
 ```
 
 A `dbg!`-t rátehetjük a `30 * scale` kifejezésre, és mivel a `dbg!` visszaadja
-a kifejezés értékének ownership-jét, a `width` mező ugyanazt az értéket kapja,
+a kifejezés értékének ownershipjét, a `width` mező ugyanazt az értéket kapja,
 mintha nem lenne ott a `dbg!` hívás. Azt nem szeretnénk, hogy a `dbg!` átvegye
-a `rect1` ownership-jét, ezért a következő hívásban a `rect1` egy referenciáját
+a `rect1` ownershipjét, ezért a következő hívásban a `rect1` egy referenciáját
 használjuk. Így néz ki ennek a példának a kimenete:
 
 ```console

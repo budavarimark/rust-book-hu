@@ -40,7 +40,7 @@ funkciójuk leírásával együtt.
 - **`match`**: Egy érték illesztése mintákra.
 - **`mod`**: Modul definiálása.
 - **`move`**: Ráveszi a closure-t, hogy vegye át az összes elkapott érték
-  ownership-jét.
+  ownershipjét.
 - **`mut`**: Módosíthatóságot jelöl referenciákban, nyers pointerekben vagy
   mintakötésekben.
 - **`pub`**: Publikus láthatóságot jelöl struct-mezőkben, `impl` blokkokban vagy

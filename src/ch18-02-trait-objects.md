@@ -45,19 +45,19 @@ könyvtárral kompatibilis új típusokat hozhassanak létre.
 ### Trait definiálása a közös viselkedéshez
 
 Ahhoz, hogy megvalósítsuk a `gui`-tól elvárt viselkedést, definiálunk egy
-`Draw` nevű traitet, amelynek egyetlen `draw` nevű metódusa lesz. Ezután
+`Draw` nevű trait-et, amelynek egyetlen `draw` nevű metódusa lesz. Ezután
 definiálhatunk egy olyan vektort, amely trait objectet vesz fel. Egy _trait
-object_ egyszerre mutat az általunk megadott traitet implementáló típus egyik
+object_ egyszerre mutat az általunk megadott trait-et implementáló típus egyik
 példányára, és egy táblázatra, amelynek segítségével futásidőben megkereshetők
 az adott típus trait-metódusai. Trait objectet úgy hozunk létre, hogy megadunk
 valamiféle pointert – például egy referenciát vagy egy `Box<T>` smart pointert
-–, majd a `dyn` kulcsszót, végül pedig a megfelelő traitet. (Arról, hogy a
+–, majd a `dyn` kulcsszót, végül pedig a megfelelő trait-et. (Arról, hogy a
 trait objecteknek miért kell pointert használniuk, a 20. fejezet [„Dinamikusan
 méretezett típusok és a `Sized` trait”][dynamically-sized]<!-- ignore -->
 részében lesz szó.) A trait objecteket generikus vagy konkrét típus helyén
 használhatjuk. Bárhol is használunk trait objectet, a Rust típusrendszere
 fordítási időben biztosítja, hogy az adott környezetben használt minden érték
-implementálja a trait object traitjét. Ennek következtében nem kell fordítási
+implementálja a trait object trait-jét. Ennek következtében nem kell fordítási
 időben ismernünk az összes lehetséges típust.
 
 Említettük már, hogy a Rustban tartózkodunk attól, hogy a structokat és az
@@ -70,7 +70,7 @@ nem tudunk adatot hozzáadni. A trait objectek általánosságban nem olyan
 hasznosak, mint más nyelvek objektumai: kifejezetten az a céljuk, hogy közös
 viselkedésre lehessen absztrahálni.
 
-A 18-3. lista bemutatja, hogyan definiálhatunk egy `Draw` nevű traitet egyetlen
+A 18-3. lista bemutatja, hogyan definiálhatunk egy `Draw` nevű trait-et egyetlen
 `draw` nevű metódussal.
 
 <Listing number="18-3" file-name="src/lib.rs" caption="A `Draw` trait definíciója">
@@ -81,14 +81,14 @@ A 18-3. lista bemutatja, hogyan definiálhatunk egy `Draw` nevű traitet egyetle
 
 </Listing>
 
-Ez a szintaxis ismerősnek tűnhet abból, amit a 10. fejezetben a traitek
+Ez a szintaxis ismerősnek tűnhet abból, amit a 10. fejezetben a trait-ek
 definiálásáról beszéltünk. Ezután jön némi új szintaxis: a 18-4. lista
 definiál egy `Screen` nevű structot, amely egy `components` nevű vektort
 tartalmaz. Ez a vektor `Box<dyn Draw>` típusú, ami egy trait object;
 helyettesítője bármely olyan típusnak egy `Box`-on belül, amely implementálja a
-`Draw` traitet.
+`Draw` trait-et.
 
-<Listing number="18-4" file-name="src/lib.rs" caption="A `Screen` struct definíciója egy `components` mezővel, amely a `Draw` traitet implementáló trait objectek vektorát tartalmazza">
+<Listing number="18-4" file-name="src/lib.rs" caption="A `Screen` struct definíciója egy `components` mezővel, amely a `Draw` trait-et implementáló trait objectek vektorát tartalmazza">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-04/src/lib.rs:here}}
@@ -137,14 +137,14 @@ futásidejű teljesítménybeli következményekről.
 
 ### A trait implementálása
 
-Most hozzáadunk néhány olyan típust, amely implementálja a `Draw` traitet.
+Most hozzáadunk néhány olyan típust, amely implementálja a `Draw` trait-et.
 Elkészítjük a `Button` típust. Egy GUI-könyvtár tényleges megvalósítása
 ismételten túlmutat e könyv keretein, ezért a `draw` metódus törzsében nem lesz
 használható implementáció. Hogy elképzelhessük, hogyan nézhetne ki az
 implementáció, a `Button` structnak lehetnének `width`, `height` és `label`
 mezői, ahogy a 18-7. listában látható.
 
-<Listing number="18-7" file-name="src/lib.rs" caption="Egy `Button` struct, amely implementálja a `Draw` traitet">
+<Listing number="18-7" file-name="src/lib.rs" caption="Egy `Button` struct, amely implementálja a `Draw` trait-et">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-07/src/lib.rs:here}}
@@ -155,7 +155,7 @@ mezői, ahogy a 18-7. listában látható.
 A `Button` `width`, `height` és `label` mezői eltérnek majd a többi komponens
 mezőitől; egy `TextField` típusnak például lehetnek ugyanezek a mezői, plusz
 egy `placeholder` mező. Minden olyan típus, amelyet a képernyőre akarunk
-rajzolni, implementálja majd a `Draw` traitet, de a `draw` metódusban más-más
+rajzolni, implementálja majd a `Draw` trait-et, de a `draw` metódusban más-más
 kódot használ annak megadására, hogyan kell az adott típust kirajzolni, ahogy
 itt a `Button` teszi (az említett módon a tényleges GUI-kód nélkül). A `Button`
 típusnak például lehet egy további `impl` blokkja, amely azzal kapcsolatos
@@ -165,10 +165,10 @@ gombra. Az ilyesféle metódusoknak nincs értelmük olyan típusoknál, mint a
 
 Ha a könyvtárunk valamelyik használója úgy dönt, hogy implementál egy
 `SelectBox` structot `width`, `height` és `options` mezőkkel, akkor a
-`SelectBox` típusra is implementálná a `Draw` traitet, ahogy a 18-8. listában
+`SelectBox` típusra is implementálná a `Draw` trait-et, ahogy a 18-8. listában
 látható.
 
-<Listing number="18-8" file-name="src/main.rs" caption="Egy másik crate, amely a `gui`-t használja, és implementálja a `Draw` traitet egy `SelectBox` structra">
+<Listing number="18-8" file-name="src/main.rs" caption="Egy másik crate, amely a `gui`-t használja, és implementálja a `Draw` trait-et egy `SelectBox` structra">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-08/src/main.rs:here}}
@@ -183,7 +183,7 @@ létrehozzon egy `Screen` példányt. A `Screen` példányhoz hozzáadhat egy
 metódusát, amely minden komponensen meghívja a `draw` metódust. A 18-9. lista
 mutatja ezt az implementációt.
 
-<Listing number="18-9" file-name="src/main.rs" caption="Trait objectek használata ugyanazt a traitet implementáló, különböző típusú értékek tárolására">
+<Listing number="18-9" file-name="src/main.rs" caption="Trait objectek használata ugyanazt a trait-et implementáló, különböző típusú értékek tárolására">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-09/src/main.rs:here}}
@@ -193,7 +193,7 @@ mutatja ezt az implementációt.
 
 Amikor megírtuk a könyvtárat, nem tudtuk, hogy valaki hozzáadhat egy
 `SelectBox` típust, a `Screen` implementációnk mégis képes volt kezelni és
-kirajzolni az új típust, mert a `SelectBox` implementálja a `Draw` traitet,
+kirajzolni az új típust, mert a `SelectBox` implementálja a `Draw` trait-et,
 vagyis implementálja a `draw` metódust.
 
 Ez az elgondolás – hogy csak az számít, milyen üzenetekre válaszol egy érték,
@@ -212,12 +212,12 @@ hasonló kódot írhatunk, azzal az előnnyel, hogy soha nem kell futásidőben
 ellenőriznünk, egy érték implementál-e egy adott metódust, és nem kell attól
 tartanunk, hogy hibát kapunk, mert egy érték nem implementál egy metódust, mi
 mégis meghívjuk. A Rust le sem fordítja a kódunkat, ha az értékek nem
-implementálják azokat a traiteket, amelyekre a trait objecteknek szükségük van.
+implementálják azokat a trait-eket, amelyekre a trait objecteknek szükségük van.
 
 A 18-10. lista például azt mutatja meg, mi történik, ha megpróbálunk olyan
 `Screen`-t létrehozni, amelynek egyik komponense egy `String`.
 
-<Listing number="18-10" file-name="src/main.rs" caption="Kísérlet olyan típus használatára, amely nem implementálja a trait object traitjét">
+<Listing number="18-10" file-name="src/main.rs" caption="Kísérlet olyan típus használatára, amely nem implementálja a trait object trait-jét">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch18-oop/listing-18-10/src/main.rs}}
@@ -225,7 +225,7 @@ A 18-10. lista például azt mutatja meg, mi történik, ha megpróbálunk olyan
 
 </Listing>
 
-Ezt a hibát fogjuk kapni, mert a `String` nem implementálja a `Draw` traitet:
+Ezt a hibát fogjuk kapni, mert a `String` nem implementálja a `Draw` trait-et:
 
 ```console
 {{#include ../listings/ch18-oop/listing-18-10/output.txt}}

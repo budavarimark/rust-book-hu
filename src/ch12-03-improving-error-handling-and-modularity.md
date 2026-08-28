@@ -409,7 +409,7 @@ A hibatípushoz a `Box<dyn Error>` trait objectet használtuk (a
 `std::error::Error` típust pedig egy `use` utasítással hoztuk hatókörbe a fájl
 elején). A trait objecteket a [18. fejezetben][ch18]<!-- ignore --> tárgyaljuk.
 Egyelőre csak azt kell tudni, hogy a `Box<dyn Error>` azt jelenti: a függvény
-olyan típust ad vissza, amely implementálja az `Error` traitet, de nem kell
+olyan típust ad vissza, amely implementálja az `Error` trait-et, de nem kell
 megadnunk, pontosan milyen típusú lesz a visszatérési érték. Ez rugalmasságot ad
 nekünk ahhoz, hogy különböző hibaesetekben különböző típusú hibaértékeket
 adhassunk vissza. A `dyn` kulcsszó a _dynamic_ (dinamikus) szó rövidítése.

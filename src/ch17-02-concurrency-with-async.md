@@ -192,7 +192,7 @@ esetekben, _mielőtt_ lefuttatnád a kódot!
 <a id="message-passing"></a>
 <a id="counting-up-on-two-tasks-using-message-passing"></a>
 
-### Adatküldés két task között üzenetküldéssel
+### Adatküldés két task között üzenetküldéssel {#sending-data-between-two-tasks-using-message-passing}
 
 A future-ök közötti adatmegosztás is ismerős lesz: ismét üzenetküldést
 használunk, de ezúttal a típusok és függvények async változataival. Kicsit más

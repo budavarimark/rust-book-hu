@@ -56,7 +56,7 @@ létrehozására szolgáló `new` függvény, amelyet a 8-11. lista mutat be.
 Ez a sor egy új, üres, `s` nevű sztringet hoz létre, amelybe aztán adatokat
 tölthetünk. Gyakran van valamilyen kezdeti adatunk, amellyel indítani
 szeretnénk a sztringet. Ehhez a `to_string` metódust használjuk, amely minden
-olyan típuson elérhető, amely implementálja a `Display` traitet – ahogy a
+olyan típuson elérhető, amely implementálja a `Display` trait-et – ahogy a
 sztringliterálok is teszik. A 8-12. lista két példát mutat.
 
 <Listing number="8-12" caption="A `to_string` metódus használata `String` létrehozására sztringliterálból">

@@ -9,7 +9,7 @@ tárolására, ez pedig a „piszkozat”, „lektorálás alatt” vagy „publ
 halmazból származó állapotobjektum lesz.
 
 Az állapotobjektumok közös funkcionalitáson osztoznak: a Rustban természetesen
-structokat és traiteket használunk objektumok és öröklődés helyett. Minden
+structokat és trait-eket használunk objektumok és öröklődés helyett. Minden
 állapotobjektum a saját viselkedéséért felel, és azért, hogy megszabja, mikor
 kell másik állapotba váltania. Az az érték, amely az állapotobjektumot tartja,
 semmit nem tud az egyes állapotok eltérő viselkedéséről, sem arról, mikor kell
@@ -104,7 +104,7 @@ Vágjunk bele a könyvtár implementációjába! Tudjuk, hogy szükségünk van 
 publikus `Post` structra, amely valamilyen tartalmat tárol, ezért a struct
 definíciójával és egy hozzá tartozó publikus `new` függvénnyel kezdjük, amely
 `Post` példányt hoz létre, ahogy a 18-12. listában látható. Készítünk egy
-privát `State` traitet is, amely azt a viselkedést definiálja, amellyel a
+privát `State` trait-et is, amely azt a viselkedést definiálja, amellyel a
 `Post` minden állapotobjektumának rendelkeznie kell.
 
 Ezután a `Post` egy `Box<dyn State>` trait objectet fog tartani egy `Option<T>`
@@ -121,7 +121,7 @@ belsejében, egy `state` nevű privát mezőben, hogy tárolja az
 
 A `State` trait a bejegyzés különböző állapotai által megosztott viselkedést
 definiálja. Az állapotobjektumok a `Draft`, a `PendingReview` és a `Published`,
-és mindegyik implementálni fogja a `State` traitet. Egyelőre a traitnek nincs
+és mindegyik implementálni fogja a `State` trait-et. Egyelőre a trait-nek nincs
 egyetlen metódusa sem, és azzal kezdjük, hogy csak a `Draft` állapotot
 definiáljuk, mert azt szeretnénk, hogy a bejegyzés ebben az állapotban induljon.
 
@@ -197,7 +197,7 @@ Ezután olyan funkciót kell hozzáadnunk, amellyel lektorálást lehet kérni e
 bejegyzésre, és amelynek `Draft`-ról `PendingReview`-ra kell változtatnia az
 állapotát. A 18-15. lista mutatja ezt a kódot.
 
-<Listing number="18-15" file-name="src/lib.rs" caption="A `request_review` metódusok implementálása a `Post`-on és a `State` traiten">
+<Listing number="18-15" file-name="src/lib.rs" caption="A `request_review` metódusok implementálása a `Post`-on és a `State` trait-en">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-15/src/lib.rs:here}}
@@ -211,7 +211,7 @@ módosítható referenciát vesz át a `self`-re. Ezután meghívunk egy belső
 `request_review` metódus felemészti az aktuális állapotot, és új állapotot ad
 vissza.
 
-A `request_review` metódust hozzáadjuk a `State` traithez; a traitet
+A `request_review` metódust hozzáadjuk a `State` trait-hez; a trait-et
 implementáló minden típusnak mostantól implementálnia kell a `request_review`
 metódust. Vedd észre, hogy a metódus első paramétereként nem `self`, `&self`
 vagy `&mut self` szerepel, hanem `self: Box<Self>`. Ez a szintaxis azt jelenti,
@@ -261,7 +261,7 @@ Az `approve` metódus hasonló lesz a `request_review` metódushoz: a `state`
 mezőt arra az értékre állítja, amelyet az aktuális állapot szerint az adott
 állapot jóváhagyásakor fel kell vennie, ahogy a 18-16. listában látható.
 
-<Listing number="18-16" file-name="src/lib.rs" caption="Az `approve` metódus implementálása a `Post`-on és a `State` traiten">
+<Listing number="18-16" file-name="src/lib.rs" caption="Az `approve` metódus implementálása a `Post`-on és a `State` trait-en">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-16/src/lib.rs:here}}
@@ -269,14 +269,14 @@ mezőt arra az értékre állítja, amelyet az aktuális állapot szerint az ado
 
 </Listing>
 
-Hozzáadjuk az `approve` metódust a `State` traithez, és felveszünk egy új
+Hozzáadjuk az `approve` metódust a `State` trait-hez, és felveszünk egy új
 structot, amely implementálja a `State`-et: a `Published` állapotot.
 
 Ahhoz hasonlóan, ahogy a `PendingReview` `request_review` metódusa működik, ha
 az `approve` metódust egy `Draft`-on hívjuk meg, annak nem lesz hatása, mert az
 `approve` a `self`-et adja vissza. Amikor az `approve`-ot a `PendingReview`-n
 hívjuk meg, az a `Published` struct új, boxolt példányát adja vissza. A
-`Published` struct implementálja a `State` traitet, és mind a `request_review`,
+`Published` struct implementálja a `State` trait-et, és mind a `request_review`,
 mind az `approve` metódus esetében önmagát adja vissza, mert ezekben az
 esetekben a bejegyzésnek `Published` állapotban kell maradnia.
 
@@ -316,12 +316,12 @@ fordulhat elő, még ha a fordító ezt nem is képes belátni.
 
 Ezen a ponton, amikor a `&Box<dyn State>` értéken meghívjuk a `content`-et, a
 deref coercion lép működésbe a `&`-en és a `Box`-on, így a `content` metódus
-végül a `State` traitet implementáló típuson hívódik meg. Ez azt jelenti, hogy
+végül a `State` trait-et implementáló típuson hívódik meg. Ez azt jelenti, hogy
 a `content`-et fel kell vennünk a `State` trait definíciójába, és ott fogjuk
 elhelyezni azt a logikát, amely megmondja, milyen tartalmat adjunk vissza az
 adott állapottól függően, ahogy a 18-18. listában látható.
 
-<Listing number="18-18" file-name="src/lib.rs" caption="A `content` metódus hozzáadása a `State` traithez">
+<Listing number="18-18" file-name="src/lib.rs" caption="A `content` metódus hozzáadása a `State` trait-hez">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-18/src/lib.rs:here}}

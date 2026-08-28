@@ -120,12 +120,12 @@ lehetővé teszi, hogy ugyanezt az implementációt egy másik típusnál is
 felhasználd. Rust-kódban ezt korlátozott mértékben megteheted az alapértelmezett
 trait-metódusimplementációkkal, amelyeket a 10-14. listában láttál, amikor
 alapértelmezett implementációt adtunk a `Summary` trait `summarize`
-metódusához. Minden olyan típusnak, amely implementálja a `Summary` traitet,
+metódusához. Minden olyan típusnak, amely implementálja a `Summary` trait-et,
 minden további kód nélkül rendelkezésére áll a `summarize` metódus. Ez ahhoz
 hasonlít, mint amikor egy szülőosztály tartalmazza egy metódus
 implementációját, és az örökítő gyermekosztály is rendelkezik a metódus
 implementációjával. Ráadásul felül is írhatjuk a `summarize` metódus
-alapértelmezett implementációját, amikor implementáljuk a `Summary` traitet,
+alapértelmezett implementációját, amikor implementáljuk a `Summary` trait-et,
 ami hasonló ahhoz, mint amikor egy gyermekosztály felülírja egy
 szülőosztálytól örökölt metódus implementációját.
 

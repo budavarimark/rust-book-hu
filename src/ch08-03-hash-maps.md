@@ -86,7 +86,7 @@ Blue: 10
 
 ### Az ownership kezelése hash mapekben
 
-Azoknál a típusoknál, amelyek implementálják a `Copy` traitet – például az
+Azoknál a típusoknál, amelyek implementálják a `Copy` trait-et – például az
 `i32`-nél –, az értékek bemásolódnak a hash mapbe. A tulajdonolt értékek, mint a
 `String`, bemozdulnak, és a hash map lesz ezeknek az értékeknek az ownere, ahogy
 azt a 8-22. lista bemutatja.
@@ -218,7 +218,7 @@ hash algoritmus, de a teljesítménycsökkenésért cserébe kapott jobb biztons
 megéri. Ha profilozod a kódodat, és azt látod, hogy az alapértelmezett hash
 függvény túl lassú a céljaidhoz, átválthatsz egy másik függvényre egy másik
 hasher megadásával. A _hasher_ olyan típus, amely implementálja a `BuildHasher`
-traitet. A traitekről és arról, hogyan implementáljuk őket, a [10.
+trait-et. A trait-ekről és arról, hogyan implementáljuk őket, a [10.
 fejezetben][traits]<!-- ignore --> beszélünk. Nem feltétlenül kell a nulláról
 megírnod a saját hasheredet; a [crates.io](https://crates.io/)<!-- ignore -->
 oldalon más Rust-felhasználók által megosztott könyvtárak érhetők el, amelyek
