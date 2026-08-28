@@ -1,84 +1,88 @@
-## Advanced Types
+## Haladó típusok
 
-The Rust type system has some features that we’ve so far mentioned but haven’t
-yet discussed. We’ll start by discussing newtypes in general as we examine why
-they are useful as types. Then, we’ll move on to type aliases, a feature
-similar to newtypes but with slightly different semantics. We’ll also discuss
-the `!` type and dynamically sized types.
+A Rust típusrendszerének van néhány olyan képessége, amelyet eddig már
+említettünk, de még nem tárgyaltunk. Először általánosságban a newtype-okról
+lesz szó, és megvizsgáljuk, miért hasznosak típusként. Utána rátérünk a
+típusaliasokra, amelyek a newtype-okhoz hasonló, de kissé eltérő szemantikájú
+nyelvi elemek. Szó lesz még a `!` típusról és a dinamikusan méretezett
+típusokról is.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-the-newtype-pattern-for-type-safety-and-abstraction"></a>
 
-### Type Safety and Abstraction with the Newtype Pattern
+### Típusbiztonság és absztrakció a newtype mintával
 
-This section assumes you’ve read the earlier section [“Implementing External
-Traits with the Newtype Pattern”][newtype]<!-- ignore -->. The newtype pattern
-is also useful for tasks beyond those we’ve discussed so far, including
-statically enforcing that values are never confused and indicating the units of
-a value. You saw an example of using newtypes to indicate units in Listing
-20-16: Recall that the `Millimeters` and `Meters` structs wrapped `u32` values
-in a newtype. If we wrote a function with a parameter of type `Millimeters`, we
-wouldn’t be able to compile a program that accidentally tried to call that
-function with a value of type `Meters` or a plain `u32`.
+Ez a szakasz feltételezi, hogy elolvastad a korábbi [„Külső trait-ek
+implementálása a newtype mintával”][newtype]<!-- ignore --> szakaszt. A newtype
+minta az eddig tárgyaltakon túl további feladatokra is hasznos, például arra,
+hogy statikusan kikényszerítsük az értékek össze nem keverhetőségét, vagy hogy
+jelezzük egy érték mértékegységét. A 20-16. listában láttál példát arra, hogy
+newtype-okkal jelezzük a mértékegységet: emlékezz rá, hogy a `Millimeters` és a
+`Meters` struct `u32` értékeket csomagolt be egy newtype-ba. Ha írnánk egy
+`Millimeters` típusú paraméterrel rendelkező függvényt, nem tudnánk lefordítani
+egy olyan programot, amely véletlenül `Meters` típusú vagy sima `u32` értékkel
+próbálná meghívni ezt a függvényt.
 
-We can also use the newtype pattern to abstract away some implementation
-details of a type: The new type can expose a public API that is different from
-the API of the private inner type.
+A newtype mintát arra is használhatjuk, hogy elrejtsük egy típus bizonyos
+implementációs részleteit: az új típus a privát belső típus API-jától eltérő,
+publikus API-t tehet elérhetővé.
 
-Newtypes can also hide internal implementation. For example, we could provide a
-`People` type to wrap a `HashMap<i32, String>` that stores a person’s ID
-associated with their name. Code using `People` would only interact with the
-public API we provide, such as a method to add a name string to the `People`
-collection; that code wouldn’t need to know that we assign an `i32` ID to names
-internally. The newtype pattern is a lightweight way to achieve encapsulation
-to hide implementation details, which we discussed in the [“Encapsulation that
-Hides Implementation
-Details”][encapsulation-that-hides-implementation-details]<!-- ignore -->
-section in Chapter 18.
+A newtype-ok a belső implementációt is elrejthetik. Például készíthetnénk egy
+`People` típust, amely egy `HashMap<i32, String>` értéket csomagol be, és egy
+személy azonosítóját tárolja a nevéhez rendelve. A `People` típust használó kód
+csak az általunk biztosított publikus API-val érintkezne — például egy olyan
+metódussal, amely egy névsztringet ad hozzá a `People` kollekcióhoz —, és ennek
+a kódnak nem kellene tudnia, hogy belül `i32` azonosítót rendelünk a nevekhez.
+A newtype minta könnyűsúlyú módja annak az egységbezárásnak, amellyel
+elrejthetjük az implementációs részleteket; erről a 18. fejezet [„Egységbezárás,
+amely elrejti az implementációs
+részleteket”][encapsulation-that-hides-implementation-details]<!-- ignore -->
+című szakaszában volt szó.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="creating-type-synonyms-with-type-aliases"></a>
 
-### Type Synonyms and Type Aliases {#type-synonyms-and-type-aliases}
+### Típusszinonimák és típusaliasok {#type-synonyms-and-type-aliases}
 
-Rust provides the ability to declare a _type alias_ to give an existing type
-another name. For this we use the `type` keyword. For example, we can create
-the alias `Kilometers` to `i32` like so:
+A Rust lehetőséget ad arra, hogy _típusaliast_ deklarálj, amellyel egy létező
+típusnak másik nevet adsz. Ehhez a `type` kulcsszót használjuk. Például így
+hozhatjuk létre a `Kilometers` aliast az `i32` típushoz:
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-04-kilometers-alias/src/main.rs:here}}
 ```
 
-Now the alias `Kilometers` is a _synonym_ for `i32`; unlike the `Millimeters`
-and `Meters` types we created in Listing 20-16, `Kilometers` is not a separate,
-new type. Values that have the type `Kilometers` will be treated the same as
-values of type `i32`:
+Mostantól a `Kilometers` alias az `i32` _szinonimája_; a 20-16. listában
+létrehozott `Millimeters` és `Meters` típusokkal ellentétben a `Kilometers` nem
+külön, új típus. A `Kilometers` típusú értékeket ugyanúgy kezeli a fordító,
+mint az `i32` típusúakat:
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-04-kilometers-alias/src/main.rs:there}}
 ```
 
-Because `Kilometers` and `i32` are the same type, we can add values of both
-types and can pass `Kilometers` values to functions that take `i32`
-parameters. However, using this method, we don’t get the type-checking benefits
-that we get from the newtype pattern discussed earlier. In other words, if we
-mix up `Kilometers` and `i32` values somewhere, the compiler will not give us
-an error.
+Mivel a `Kilometers` és az `i32` ugyanaz a típus, összeadhatjuk a kétféle
+típusú értékeket, és `Kilometers` értékeket adhatunk át olyan függvényeknek,
+amelyek `i32` paramétert várnak. Ezzel a módszerrel viszont nem kapjuk meg azt
+a típusellenőrzési előnyt, amelyet a korábban tárgyalt newtype minta nyújt.
+Más szóval, ha valahol összekeverjük a `Kilometers` és az `i32` értékeket, a
+fordító nem jelez hibát.
 
-The main use case for type synonyms is to reduce repetition. For example, we
-might have a lengthy type like this:
+A típusszinonimák fő haszna az ismétlődés csökkentése. Például lehet egy ilyen
+hosszú típusunk:
 
 ```rust,ignore
 Box<dyn Fn() + Send + 'static>
 ```
 
-Writing this lengthy type in function signatures and as type annotations all
-over the code can be tiresome and error-prone. Imagine having a project full of
-code like that in Listing 20-25.
+Fárasztó és hibalehetőségekkel teli dolog ezt a hosszú típust a
+függvényszignatúrákban és típusannotációkként újra meg újra leírni a kód
+minden pontján. Képzelj el egy olyan projektet, amely tele van a 20-25.
+listához hasonló kóddal.
 
-<Listing number="20-25" caption="Using a long type in many places">
+<Listing number="20-25" caption="Hosszú típus használata sok helyen">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-25/src/main.rs:here}}
@@ -86,11 +90,12 @@ code like that in Listing 20-25.
 
 </Listing>
 
-A type alias makes this code more manageable by reducing the repetition. In
-Listing 20-26, we’ve introduced an alias named `Thunk` for the verbose type and
-can replace all uses of the type with the shorter alias `Thunk`.
+A típusalias kezelhetőbbé teszi ezt a kódot azzal, hogy csökkenti az
+ismétlődést. A 20-26. listában bevezettünk egy `Thunk` nevű aliast a bőbeszédű
+típushoz, így a típus minden előfordulását lecserélhetjük a rövidebb `Thunk`
+aliasra.
 
-<Listing number="20-26" caption="Introducing a type alias, `Thunk`, to reduce repetition">
+<Listing number="20-26" caption="A `Thunk` típusalias bevezetése az ismétlődés csökkentésére">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-26/src/main.rs:here}}
@@ -98,64 +103,65 @@ can replace all uses of the type with the shorter alias `Thunk`.
 
 </Listing>
 
-This code is much easier to read and write! Choosing a meaningful name for a
-type alias can help communicate your intent as well (_thunk_ is a word for code
-to be evaluated at a later time, so it’s an appropriate name for a closure that
-gets stored).
+Ezt a kódot sokkal könnyebb olvasni és írni! Ha értelmes nevet választasz a
+típusaliasnak, azzal a szándékodat is jól kifejezheted (a _thunk_ olyan kódot
+jelent, amelyet később kell kiértékelni, így találó név egy eltárolt
+closure-nek).
 
-Type aliases are also commonly used with the `Result<T, E>` type for reducing
-repetition. Consider the `std::io` module in the standard library. I/O
-operations often return a `Result<T, E>` to handle situations when operations
-fail to work. This library has a `std::io::Error` struct that represents all
-possible I/O errors. Many of the functions in `std::io` will be returning
-`Result<T, E>` where the `E` is `std::io::Error`, such as these functions in
-the `Write` trait:
+A típusaliasokat gyakran használják a `Result<T, E>` típussal is az ismétlődés
+csökkentésére. Nézzük a standard könyvtár `std::io` modulját. Az I/O-műveletek
+gyakran `Result<T, E>` értéket adnak vissza, hogy kezelni lehessen a
+sikertelen műveleteket. Ebben a könyvtárban van egy `std::io::Error` struct,
+amely az összes lehetséges I/O-hibát reprezentálja. Az `std::io` sok függvénye
+olyan `Result<T, E>` értéket ad vissza, amelyben az `E` az `std::io::Error` —
+ilyenek például a `Write` trait alábbi függvényei:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-05-write-trait/src/lib.rs}}
 ```
 
-The `Result<..., Error>` is repeated a lot. As such, `std::io` has this type
-alias declaration:
+A `Result<..., Error>` sokszor ismétlődik. Emiatt az `std::io` tartalmazza ezt
+a típusalias-deklarációt:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-06-result-alias/src/lib.rs:here}}
 ```
 
-Because this declaration is in the `std::io` module, we can use the fully
-qualified alias `std::io::Result<T>`; that is, a `Result<T, E>` with the `E`
-filled in as `std::io::Error`. The `Write` trait function signatures end up
-looking like this:
+Mivel ez a deklaráció az `std::io` modulban van, használhatjuk a teljesen
+minősített `std::io::Result<T>` aliast; vagyis egy olyan `Result<T, E>`
+típust, amelyben az `E` helyére az `std::io::Error` kerül. A `Write` trait
+függvényszignatúrái így végül így néznek ki:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-06-result-alias/src/lib.rs:there}}
 ```
 
-The type alias helps in two ways: It makes code easier to write _and_ it gives
-us a consistent interface across all of `std::io`. Because it’s an alias, it’s
-just another `Result<T, E>`, which means we can use any methods that work on
-`Result<T, E>` with it, as well as special syntax like the `?` operator.
+A típusalias két dologban segít: könnyebbé teszi a kód írását, _és_ egységes
+felületet ad az egész `std::io` modulban. Mivel ez csak alias, valójában egy
+közönséges `Result<T, E>`, ami azt jelenti, hogy minden olyan metódust
+használhatunk vele, amely `Result<T, E>` értékeken működik, és a speciális
+szintaxist is, például a `?` operátort.
 
-### The Never Type That Never Returns
+### A never típus, amely sosem tér vissza
 
-Rust has a special type named `!` that’s known in type theory lingo as the
-_empty type_ because it has no values. We prefer to call it the _never type_
-because it stands in the place of the return type when a function will never
-return. Here is an example:
+A Rustban van egy `!` nevű speciális típus, amelyet a típuselmélet szóhasználata
+_üres típusnak_ nevez, mert nincs egyetlen értéke sem. Mi szívesebben hívjuk
+_never típusnak_, mert a visszatérési típus helyén áll, ha egy függvény sosem
+tér vissza. Íme egy példa:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-07-never-type/src/lib.rs:here}}
 ```
 
-This code is read as “the function `bar` returns never.” Functions that return
-never are called _diverging functions_. We can’t create values of the type `!`,
-so `bar` can never possibly return.
+Ezt a kódot így olvassuk: „a `bar` függvény sosem tér vissza”. A sosem
+visszatérő függvényeket _divergáló függvényeknek_ nevezzük. A `!` típusnak nem
+tudunk értékeit létrehozni, így a `bar` semmiképpen nem tud visszatérni.
 
-But what use is a type you can never create values for? Recall the code from
-Listing 2-5, part of the number-guessing game; we’ve reproduced a bit of it
-here in Listing 20-27.
+De mire jó egy olyan típus, amelynek sosem hozhatunk létre értékét? Emlékezz
+vissza a 2-5. lista kódjára, a számkitalálós játék részletére; egy darabkáját
+újra megmutatjuk a 20-27. listában.
 
-<Listing number="20-27" caption="A `match` with an arm that ends in `continue`">
+<Listing number="20-27" caption="`match`, amelynek egyik ága `continue`-val végződik">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-05/src/main.rs:ch19}}
@@ -163,138 +169,141 @@ here in Listing 20-27.
 
 </Listing>
 
-At the time, we skipped over some details in this code. In [“The `match`
-Control Flow Construct”][the-match-control-flow-construct]<!-- ignore -->
-section in Chapter 6, we discussed that `match` arms must all return the same
-type. So, for example, the following code doesn’t work:
+Akkoriban átugrottunk néhány részletet ebben a kódban. A 6. fejezet [„A `match`
+vezérlési szerkezet”][the-match-control-flow-construct]<!-- ignore --> című
+szakaszában szó volt arról, hogy a `match`-ágaknak mind ugyanazt a típust kell
+visszaadniuk. Így például az alábbi kód nem működik:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-08-match-arms-different-types/src/main.rs:here}}
 ```
 
-The type of `guess` in this code would have to be an integer _and_ a string,
-and Rust requires that `guess` have only one type. So, what does `continue`
-return? How were we allowed to return a `u32` from one arm and have another arm
-that ends with `continue` in Listing 20-27?
+Ebben a kódban a `guess` típusának egyszerre kellene egész számnak _és_
+sztringnek lennie, a Rust viszont megköveteli, hogy a `guess`-nek csak egy
+típusa legyen. Mit ad hát vissza a `continue`? Hogyan lehetséges, hogy a 20-27.
+listában az egyik ágból `u32` értéket adhattunk vissza, miközben egy másik ág
+`continue`-val végződik?
 
-As you might have guessed, `continue` has a `!` value. That is, when Rust
-computes the type of `guess`, it looks at both match arms, the former with a
-value of `u32` and the latter with a `!` value. Because `!` can never have a
-value, Rust decides that the type of `guess` is `u32`.
+Ahogy sejtheted, a `continue` értéke `!` típusú. Vagyis amikor a Rust
+kiszámítja a `guess` típusát, mindkét match-ágat megnézi: az elsőben `u32`
+értékű, a másodikban `!` értékű kifejezés áll. Mivel a `!` sosem vehet fel
+értéket, a Rust úgy dönt, hogy a `guess` típusa `u32`.
 
-The formal way of describing this behavior is that expressions of type `!` can
-be coerced into any other type. We’re allowed to end this `match` arm with
-`continue` because `continue` doesn’t return a value; instead, it moves control
-back to the top of the loop, so in the `Err` case, we never assign a value to
-`guess`.
+E viselkedés formális leírása úgy hangzik, hogy a `!` típusú kifejezések
+bármely más típussá kényszeríthetők. Azért zárhatjuk le ezt a `match`-ágat
+`continue`-val, mert a `continue` nem ad vissza értéket; ehelyett visszaadja a
+vezérlést a ciklus elejére, így az `Err` esetben sosem rendelünk értéket a
+`guess`-hez.
 
-The never type is useful with the `panic!` macro as well. Recall the `unwrap`
-function that we call on `Option<T>` values to produce a value or panic with
-this definition:
+A never típus a `panic!` makróval is hasznos. Emlékezz vissza az `unwrap`
+függvényre, amelyet `Option<T>` értékeken hívunk meg, hogy értéket kapjunk
+vagy panicot váltsunk ki; a definíciója ez:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-09-unwrap-definition/src/lib.rs:here}}
 ```
 
-In this code, the same thing happens as in the `match` in Listing 20-27: Rust
-sees that `val` has the type `T` and `panic!` has the type `!`, so the result
-of the overall `match` expression is `T`. This code works because `panic!`
-doesn’t produce a value; it ends the program. In the `None` case, we won’t be
-returning a value from `unwrap`, so this code is valid.
+Ebben a kódban ugyanaz történik, mint a 20-27. lista `match`-ében: a Rust
+látja, hogy a `val` típusa `T`, a `panic!` típusa pedig `!`, így a teljes
+`match` kifejezés eredménye `T` típusú. Ez a kód azért működik, mert a `panic!`
+nem állít elő értéket; véget vet a programnak. A `None` esetben nem adunk
+vissza értéket az `unwrap`-ből, így ez a kód érvényes.
 
-One final expression that has the type `!` is a loop:
+Még egy kifejezés van, amelynek `!` a típusa: a `loop` ciklus.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-10-loop-returns-never/src/main.rs:here}}
 ```
 
-Here, the loop never ends, so `!` is the value of the expression. However, this
-wouldn’t be true if we included a `break`, because the loop would terminate
-when it got to the `break`.
+Itt a ciklus sosem ér véget, így a kifejezés értéke `!`. Ez azonban nem lenne
+igaz, ha `break`-et is beleírnánk, mert akkor a ciklus a `break`-hez érve
+befejeződne.
 
-### Dynamically Sized Types and the `Sized` Trait {#dynamically-sized-types-and-the-sized-trait}
+### Dinamikusan méretezett típusok és a `Sized` trait {#dynamically-sized-types-and-the-sized-trait}
 
-Rust needs to know certain details about its types, such as how much space to
-allocate for a value of a particular type. This leaves one corner of its type
-system a little confusing at first: the concept of _dynamically sized types_.
-Sometimes referred to as _DSTs_ or _unsized types_, these types let us write
-code using values whose size we can know only at runtime.
+A Rustnak bizonyos részleteket tudnia kell a típusairól, például azt, hogy egy
+adott típus értéke számára mennyi helyet foglaljon le. Emiatt a
+típusrendszerének egyik sarka elsőre kissé zavarba ejtő: ez a _dinamikusan
+méretezett típusok_ fogalma. Ezeket a típusokat néha _DST_-knek vagy
+_méret nélküli típusoknak_ is nevezik, és lehetővé teszik, hogy olyan
+értékekkel írjunk kódot, amelyek méretét csak futásidőben ismerhetjük meg.
 
-Let’s dig into the details of a dynamically sized type called `str`, which
-we’ve been using throughout the book. That’s right, not `&str`, but `str` on
-its own, is a DST. In many cases, such as when storing text entered by a user,
-we can’t know how long the string is until runtime. That means we can’t create
-a variable of type `str`, nor can we take an argument of type `str`. Consider
-the following code, which does not work:
+Nézzük meg közelebbről egy dinamikusan méretezett típus, a `str` részleteit,
+amelyet a könyv során végig használtunk. Jól olvasod: nem a `&str`, hanem
+önmagában a `str` a DST. Sok esetben — például ha a felhasználó által beírt
+szöveget tároljuk — csak futásidőben derül ki, milyen hosszú a sztring. Ez azt
+jelenti, hogy nem hozhatunk létre `str` típusú változót, és `str` típusú
+argumentumot sem fogadhatunk. Nézd meg az alábbi kódot, amely nem működik:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-11-cant-create-str/src/main.rs:here}}
 ```
 
-Rust needs to know how much memory to allocate for any value of a particular
-type, and all values of a type must use the same amount of memory. If Rust
-allowed us to write this code, these two `str` values would need to take up the
-same amount of space. But they have different lengths: `s1` needs 12 bytes of
-storage and `s2` needs 15. This is why it’s not possible to create a variable
-holding a dynamically sized type.
+A Rustnak tudnia kell, mennyi memóriát foglaljon le egy adott típus bármely
+értékének, és egy típus minden értékének ugyanannyi memóriát kell használnia.
+Ha a Rust megengedné ezt a kódot, ennek a két `str` értéknek ugyanannyi helyet
+kellene elfoglalnia. A hosszuk viszont különböző: az `s1` 12 bájtnyi tárhelyet
+igényel, az `s2` pedig 15-öt. Ezért nem lehet dinamikusan méretezett típusú
+értéket tartalmazó változót létrehozni.
 
-So, what do we do? In this case, you already know the answer: We make the type
-of `s1` and `s2` string slice (`&str`) rather than `str`. Recall from the
-[“String Slices”][string-slices]<!-- ignore --> section in Chapter 4 that the
-slice data structure only stores the starting position and the length of the
-slice. So, although `&T` is a single value that stores the memory address of
-where the `T` is located, a string slice is _two_ values: the address of the
-`str` and its length. As such, we can know the size of a string slice value at
-compile time: It’s twice the length of a `usize`. That is, we always know the
-size of a string slice, no matter how long the string it refers to is. In
-general, this is the way in which dynamically sized types are used in Rust:
-They have an extra bit of metadata that stores the size of the dynamic
-information. The golden rule of dynamically sized types is that we must always
-put values of dynamically sized types behind a pointer of some kind.
+Mit tegyünk hát? Ebben az esetben már ismered a választ: a `s1` és az `s2`
+típusa ne `str`, hanem string slice (`&str`) legyen. A 4. fejezet [„String
+slice-ok”][string-slices]<!-- ignore --> című szakaszából emlékezhetsz rá, hogy
+a slice adatszerkezet csak a slice kezdőpozícióját és hosszát tárolja. Így míg
+a `&T` egyetlen érték, amely azt a memóriacímet tárolja, ahol a `T`
+elhelyezkedik, addig a string slice _két_ érték: a `str` címe és a hossza.
+Ennek megfelelően egy string slice értékének méretét fordítási időben
+ismerjük: egy `usize` hosszának kétszerese. Vagyis mindig tudjuk, mekkora egy
+string slice, függetlenül attól, milyen hosszú sztringre hivatkozik.
+Általánosságban így használjuk a dinamikusan méretezett típusokat a Rustban:
+van egy kis extra metaadatuk, amely a dinamikus információ méretét tárolja. A
+dinamikusan méretezett típusok aranyszabálya, hogy az ilyen típusú értékeket
+mindig valamilyen pointer mögé kell tennünk.
 
-We can combine `str` with all kinds of pointers: for example, `Box<str>` or
-`Rc<str>`. In fact, you’ve seen this before but with a different dynamically
-sized type: traits. Every trait is a dynamically sized type we can refer to by
-using the name of the trait. In the [“Using Trait Objects to Abstract over
-Shared Behavior”][using-trait-objects-to-abstract-over-shared-behavior]<!--
-ignore --> section in Chapter 18, we mentioned that to use traits as trait
-objects, we must put them behind a pointer, such as `&dyn Trait` or `Box<dyn
-Trait>` (`Rc<dyn Trait>` would work too).
+A `str` mindenféle pointerrel kombinálható: például `Box<str>` vagy `Rc<str>`
+alakban. Valójában ezt már láttad korábban is, csak egy másik dinamikusan
+méretezett típusnál: a trait-eknél. Minden trait dinamikusan méretezett típus,
+amelyre a trait nevével hivatkozhatunk. A 18. fejezet [„Trait objectek
+használata a közös viselkedés
+absztrahálására”][using-trait-objects-to-abstract-over-shared-behavior]<!--
+ignore --> című szakaszában említettük, hogy ha a trait-eket trait objectként
+akarjuk használni, pointer mögé kell tennünk őket, például `&dyn Trait` vagy
+`Box<dyn Trait>` alakban (az `Rc<dyn Trait>` is működne).
 
-To work with DSTs, Rust provides the `Sized` trait to determine whether or not
-a type’s size is known at compile time. This trait is automatically implemented
-for everything whose size is known at compile time. In addition, Rust
-implicitly adds a bound on `Sized` to every generic function. That is, a
-generic function definition like this:
+A DST-kkel való munkához a Rust a `Sized` trait-et biztosítja, amellyel
+eldönthető, hogy egy típus mérete ismert-e fordítási időben. Ez a trait
+automatikusan implementálva van mindenre, aminek a mérete fordítási időben
+ismert. Ezenfelül a Rust minden generikus függvényhez implicit módon hozzáad
+egy `Sized` trait bound-ot. Vagyis egy ilyen generikus függvénydefiníció:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-12-generic-fn-definition/src/lib.rs}}
 ```
 
-is actually treated as though we had written this:
+valójában úgy viselkedik, mintha ezt írtuk volna:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-13-generic-implicit-sized-bound/src/lib.rs}}
 ```
 
-By default, generic functions will work only on types that have a known size at
-compile time. However, you can use the following special syntax to relax this
-restriction:
+Alapértelmezés szerint a generikus függvények csak olyan típusokkal működnek,
+amelyek mérete fordítási időben ismert. Az alábbi speciális szintaxissal
+azonban lazíthatsz ezen a megkötésen:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-14-generic-maybe-sized/src/lib.rs}}
 ```
 
-A trait bound on `?Sized` means “`T` may or may not be `Sized`,” and this
-notation overrides the default that generic types must have a known size at
-compile time. The `?Trait` syntax with this meaning is only available for
-`Sized`, not any other traits.
+A `?Sized` trait bound jelentése: „a `T` lehet `Sized`, de nem feltétlenül az”,
+és ez a jelölés felülírja azt az alapértelmezést, hogy a generikus típusok
+méretének fordítási időben ismertnek kell lennie. A `?Trait` szintaxis ebben az
+értelemben csak a `Sized` esetén használható, más trait-ekkel nem.
 
-Also note that we switched the type of the `t` parameter from `T` to `&T`.
-Because the type might not be `Sized`, we need to use it behind some kind of
-pointer. In this case, we’ve chosen a reference.
+Vedd észre azt is, hogy a `t` paraméter típusát `T`-ről `&T`-re cseréltük.
+Mivel a típus lehet, hogy nem `Sized`, valamilyen pointer mögött kell
+használnunk. Ebben az esetben referenciát választottunk.
 
-Next, we’ll talk about functions and closures!
+A következőkben a függvényekről és a closure-ökről lesz szó!
 
 [encapsulation-that-hides-implementation-details]: ch18-01-what-is-oo.html#encapsulation-that-hides-implementation-details
 [string-slices]: ch04-03-slices.html#string-slices
