@@ -1,43 +1,45 @@
-# An I/O Project: Building a Command Line Program
+# Egy I/O-projekt: parancssori program készítése
 
-This chapter is a recap of the many skills you’ve learned so far and an
-exploration of a few more standard library features. We’ll build a command line
-tool that interacts with file and command line input/output to practice some of
-the Rust concepts you now have under your belt.
+Ez a fejezet összefoglalja az eddig megtanult készségeket, és bemutat néhány
+további képességet a standard könyvtárból. Készítünk egy parancssori eszközt,
+amely fájlokkal és a parancssori be- és kimenettel dolgozik, hogy gyakoroljuk
+azokat a Rust-fogalmakat, amelyek már a birtokodban vannak.
 
-Rust’s speed, safety, single binary output, and cross-platform support make it
-an ideal language for creating command line tools, so for our project, we’ll
-make our own version of the classic command line search tool `grep`
-(**g**lobally search a **r**egular **e**xpression and **p**rint). In the
-simplest use case, `grep` searches a specified file for a specified string. To
-do so, `grep` takes as its arguments a file path and a string. Then, it reads
-the file, finds lines in that file that contain the string argument, and prints
-those lines.
+A Rust sebessége, biztonságossága, az egyetlen binárisból álló kimenete és a
+platformfüggetlen támogatása ideális nyelvvé teszi parancssori eszközök
+készítéséhez, ezért a projektünkben elkészítjük a klasszikus `grep` parancssori
+keresőeszköz saját változatát (**g**lobally search a **r**egular **e**xpression
+and **p**rint, azaz „keress globálisan egy reguláris kifejezést, és írasd ki”).
+A legegyszerűbb használati esetben a `grep` egy megadott karakterláncot keres
+egy megadott fájlban. Ehhez a `grep` egy fájlútvonalat és egy karakterláncot vár
+argumentumként. Ezután beolvassa a fájlt, megkeresi benne azokat a sorokat,
+amelyek tartalmazzák a karakterlánc-argumentumot, és kiírja ezeket a sorokat.
 
-Along the way, we’ll show how to make our command line tool use the terminal
-features that many other command line tools use. We’ll read the value of an
-environment variable to allow the user to configure the behavior of our tool.
-We’ll also print error messages to the standard error console stream (`stderr`)
-instead of standard output (`stdout`) so that, for example, the user can
-redirect successful output to a file while still seeing error messages onscreen.
+Közben megmutatjuk, hogyan használhatja a parancssori eszközünk azokat a
+terminálképességeket, amelyeket sok más parancssori eszköz is használ.
+Beolvassuk egy környezeti változó értékét, hogy a felhasználó beállíthassa az
+eszközünk viselkedését. A hibaüzeneteket pedig a szabványos hibakimenetre
+(`stderr`) írjuk ki a szabványos kimenet (`stdout`) helyett, hogy a felhasználó
+például egy fájlba irányíthassa át a sikeres kimenetet, miközben a
+hibaüzeneteket továbbra is látja a képernyőn.
 
-One Rust community member, Andrew Gallant, has already created a fully
-featured, very fast version of `grep`, called `ripgrep`. By comparison, our
-version will be fairly simple, but this chapter will give you some of the
-background knowledge you need to understand a real-world project such as
-`ripgrep`.
+A Rust közösségének egyik tagja, Andrew Gallant már elkészítette a `grep` teljes
+értékű, nagyon gyors változatát `ripgrep` néven. Ehhez képest a mi változatunk
+meglehetősen egyszerű lesz, de ez a fejezet megadja azt a háttértudást, amelyre
+szükséged van egy olyan valós projekt megértéséhez, mint a `ripgrep`.
 
-Our `grep` project will combine a number of concepts you’ve learned so far:
+A `grep`-projektünk számos olyan fogalmat kapcsol össze, amelyet eddig
+megtanultál:
 
-- Organizing code ([Chapter 7][ch7]<!-- ignore -->)
-- Using vectors and strings ([Chapter 8][ch8]<!-- ignore -->)
-- Handling errors ([Chapter 9][ch9]<!-- ignore -->)
-- Using traits and lifetimes where appropriate ([Chapter 10][ch10]<!-- ignore -->)
-- Writing tests ([Chapter 11][ch11]<!-- ignore -->)
+- A kód szervezése ([7. fejezet][ch7]<!-- ignore -->)
+- Vektorok és karakterláncok használata ([8. fejezet][ch8]<!-- ignore -->)
+- Hibakezelés ([9. fejezet][ch9]<!-- ignore -->)
+- Trait-ek és lifetime-ok használata ott, ahol helyénvaló ([10. fejezet][ch10]<!-- ignore -->)
+- Tesztek írása ([11. fejezet][ch11]<!-- ignore -->)
 
-We’ll also briefly introduce closures, iterators, and trait objects, which
-[Chapter 13][ch13]<!-- ignore --> and [Chapter 18][ch18]<!-- ignore --> will
-cover in detail.
+Röviden bemutatjuk a closure-öket, az iterátorokat és a trait objecteket is,
+amelyeket a [13. fejezet][ch13]<!-- ignore --> és a [18.
+fejezet][ch18]<!-- ignore --> tárgyal majd részletesen.
 
 [ch7]: ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
 [ch8]: ch08-00-common-collections.html

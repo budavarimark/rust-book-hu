@@ -1,18 +1,19 @@
-## Bringing Paths into Scope with the `use` Keyword
+## Útvonalak hatókörbe hozása a `use` kulcsszóval
 
-Having to write out the paths to call functions can feel inconvenient and
-repetitive. In Listing 7-7, whether we chose the absolute or relative path to
-the `add_to_waitlist` function, every time we wanted to call `add_to_waitlist`
-we had to specify `front_of_house` and `hosting` too. Fortunately, there’s a
-way to simplify this process: We can create a shortcut to a path with the `use`
-keyword once and then use the shorter name everywhere else in the scope.
+Kényelmetlennek és ismétlődőnek tűnhet, hogy a függvények hívásához ki kell
+írnunk az útvonalakat. A 7-7. listában, akár az abszolút, akár a relatív
+útvonalat választottuk az `add_to_waitlist` függvényhez, minden alkalommal, ha
+meg akartuk hívni az `add_to_waitlist`-et, a `front_of_house`-t és a
+`hosting`-ot is meg kellett adnunk. Szerencsére van mód a folyamat
+egyszerűsítésére: a `use` kulcsszóval egyszer létrehozhatunk egy rövidítést egy
+útvonalhoz, majd a hatókör összes többi pontján a rövidebb nevet használhatjuk.
 
-In Listing 7-11, we bring the `crate::front_of_house::hosting` module into the
-scope of the `eat_at_restaurant` function so that we only have to specify
-`hosting::add_to_waitlist` to call the `add_to_waitlist` function in
-`eat_at_restaurant`.
+A 7-11. listában a `crate::front_of_house::hosting` modult hozzuk be az
+`eat_at_restaurant` függvény hatókörébe, így az `add_to_waitlist` függvény
+`eat_at_restaurant`-beli hívásához már csak a `hosting::add_to_waitlist`-et kell
+megadnunk.
 
-<Listing number="7-11" file-name="src/lib.rs" caption="Bringing a module into scope with `use`">
+<Listing number="7-11" file-name="src/lib.rs" caption="Modul hatókörbe hozása a `use` segítségével">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-11/src/lib.rs}}
@@ -20,18 +21,19 @@ scope of the `eat_at_restaurant` function so that we only have to specify
 
 </Listing>
 
-Adding `use` and a path in a scope is similar to creating a symbolic link in
-the filesystem. By adding `use crate::front_of_house::hosting` in the crate
-root, `hosting` is now a valid name in that scope, just as though the `hosting`
-module had been defined in the crate root. Paths brought into scope with `use`
-also check privacy, like any other paths.
+Egy `use` és egy útvonal hozzáadása egy hatókörben hasonlít ahhoz, mint amikor
+szimbolikus linket hozunk létre a fájlrendszerben. Azzal, hogy a crate
+gyökerében hozzáadjuk a `use crate::front_of_house::hosting` sort, a `hosting`
+mostantól érvényes név abban a hatókörben, épp úgy, mintha a `hosting` modul a
+crate gyökerében lett volna definiálva. A `use`-zal hatókörbe hozott útvonalakra
+is vonatkozik a privátság ellenőrzése, ahogy minden más útvonalra.
 
-Note that `use` only creates the shortcut for the particular scope in which the
-`use` occurs. Listing 7-12 moves the `eat_at_restaurant` function into a new
-child module named `customer`, which is then a different scope than the `use`
-statement, so the function body won’t compile.
+Vedd figyelembe, hogy a `use` csak abban a bizonyos hatókörben hozza létre a
+rövidítést, amelyben szerepel. A 7-12. listában az `eat_at_restaurant` függvényt
+egy új, `customer` nevű gyermekmodulba mozgatjuk, ami így már más hatókör, mint
+a `use` utasításé, ezért a függvény törzse nem fordul le.
 
-<Listing number="7-12" file-name="src/lib.rs" caption="A `use` statement only applies in the scope it’s in.">
+<Listing number="7-12" file-name="src/lib.rs" caption="A `use` utasítás csak abban a hatókörben érvényes, amelyben van.">
 
 ```rust,noplayground,test_harness,does_not_compile,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-12/src/lib.rs}}
@@ -39,26 +41,27 @@ statement, so the function body won’t compile.
 
 </Listing>
 
-The compiler error shows that the shortcut no longer applies within the
-`customer` module:
+A fordítási hiba mutatja, hogy a rövidítés a `customer` modulon belül már nem
+érvényes:
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-12/output.txt}}
 ```
 
-Notice there’s also a warning that the `use` is no longer used in its scope! To
-fix this problem, move the `use` within the `customer` module too, or reference
-the shortcut in the parent module with `super::hosting` within the child
-`customer` module.
+Vedd észre, hogy egy figyelmeztetés is szerepel arról, hogy a `use` a saját
+hatókörében már nincs használatban! A probléma megoldásához vagy mozgasd a
+`use`-t is a `customer` modulba, vagy a gyermek `customer` modulon belül
+hivatkozz a szülőmodulban lévő rövidítésre a `super::hosting` alakkal.
 
-### Creating Idiomatic `use` Paths {#creating-idiomatic-use-paths}
+### Idiomatikus `use`-útvonalak írása {#creating-idiomatic-use-paths}
 
-In Listing 7-11, you might have wondered why we specified `use
-crate::front_of_house::hosting` and then called `hosting::add_to_waitlist` in
-`eat_at_restaurant`, rather than specifying the `use` path all the way out to
-the `add_to_waitlist` function to achieve the same result, as in Listing 7-13.
+A 7-11. listánál talán felmerült benned, miért a
+`use crate::front_of_house::hosting` sort adtuk meg, majd miért a
+`hosting::add_to_waitlist`-et hívtuk az `eat_at_restaurant`-ban ahelyett, hogy
+ugyanennek az eredménynek az eléréséhez a `use` útvonalát egészen az
+`add_to_waitlist` függvényig írtuk volna ki, ahogy a 7-13. listában látható.
 
-<Listing number="7-13" file-name="src/lib.rs" caption="Bringing the `add_to_waitlist` function into scope with `use`, which is unidiomatic">
+<Listing number="7-13" file-name="src/lib.rs" caption="Az `add_to_waitlist` függvény hatókörbe hozása a `use` segítségével, ami nem idiomatikus">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-13/src/lib.rs}}
@@ -66,20 +69,20 @@ the `add_to_waitlist` function to achieve the same result, as in Listing 7-13.
 
 </Listing>
 
-Although both Listing 7-11 and Listing 7-13 accomplish the same task, Listing
-7-11 is the idiomatic way to bring a function into scope with `use`. Bringing
-the function’s parent module into scope with `use` means we have to specify the
-parent module when calling the function. Specifying the parent module when
-calling the function makes it clear that the function isn’t locally defined
-while still minimizing repetition of the full path. The code in Listing 7-13 is
-unclear as to where `add_to_waitlist` is defined.
+Bár a 7-11. és a 7-13. lista ugyanazt a feladatot végzi el, a 7-11. lista az
+idiomatikus módja annak, hogy egy függvényt a `use`-zal hatókörbe hozzunk. Ha a
+függvény szülőmodulját hozzuk hatókörbe a `use`-zal, akkor a függvény hívásakor
+meg kell adnunk a szülőmodult. A szülőmodul megadása a függvény hívásakor
+világossá teszi, hogy a függvény nem helyben van definiálva, miközben a teljes
+útvonal ismétlését is minimálisra csökkenti. A 7-13. listában lévő kódból nem
+derül ki egyértelműen, hol van az `add_to_waitlist` definiálva.
 
-On the other hand, when bringing in structs, enums, and other items with `use`,
-it’s idiomatic to specify the full path. Listing 7-14 shows the idiomatic way
-to bring the standard library’s `HashMap` struct into the scope of a binary
-crate.
+Ezzel szemben structok, enumok és egyéb elemek `use`-zal való behozatalakor az
+idiomatikus megoldás a teljes útvonal megadása. A 7-14. lista azt az
+idiomatikus módot mutatja be, ahogyan a standard könyvtár `HashMap` structját
+egy binary crate hatókörébe hozzuk.
 
-<Listing number="7-14" file-name="src/main.rs" caption="Bringing `HashMap` into scope in an idiomatic way">
+<Listing number="7-14" file-name="src/main.rs" caption="A `HashMap` hatókörbe hozása idiomatikus módon">
 
 ```rust
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-14/src/main.rs}}
@@ -87,15 +90,15 @@ crate.
 
 </Listing>
 
-There’s no strong reason behind this idiom: It’s just the convention that has
-emerged, and folks have gotten used to reading and writing Rust code this way.
+Nincs erős indok e mögött az idióma mögött: egyszerűen ez a konvenció alakult
+ki, és az emberek megszokták, hogy így olvassák és írják a Rust-kódot.
 
-The exception to this idiom is if we’re bringing two items with the same name
-into scope with `use` statements, because Rust doesn’t allow that. Listing 7-15
-shows how to bring two `Result` types into scope that have the same name but
-different parent modules, and how to refer to them.
+Az idióma alóli kivétel az, ha két azonos nevű elemet hozunk hatókörbe `use`
+utasításokkal, mert azt a Rust nem engedi meg. A 7-15. lista azt mutatja be,
+hogyan hozhatunk hatókörbe két olyan `Result` típust, amelyek neve azonos, de
+szülőmoduljuk eltérő, és hogyan hivatkozhatunk rájuk.
 
-<Listing number="7-15" file-name="src/lib.rs" caption="Bringing two types with the same name into the same scope requires using their parent modules.">
+<Listing number="7-15" file-name="src/lib.rs" caption="Ha két azonos nevű típust hozunk ugyanabba a hatókörbe, használnunk kell a szülőmoduljaikat.">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-15/src/lib.rs:here}}
@@ -103,19 +106,20 @@ different parent modules, and how to refer to them.
 
 </Listing>
 
-As you can see, using the parent modules distinguishes the two `Result` types.
-If instead we specified `use std::fmt::Result` and `use std::io::Result`, we’d
-have two `Result` types in the same scope, and Rust wouldn’t know which one we
-meant when we used `Result`.
+Ahogy látod, a szülőmodulok használata megkülönbözteti a két `Result` típust. Ha
+ehelyett a `use std::fmt::Result` és a `use std::io::Result` sorokat adnánk meg,
+két `Result` típusunk lenne ugyanabban a hatókörben, és a Rust nem tudná, melyik
+`Result`-ra gondolunk, amikor a `Result`-ot használjuk.
 
-### Providing New Names with the `as` Keyword
+### Új nevek megadása az `as` kulcsszóval
 
-There’s another solution to the problem of bringing two types of the same name
-into the same scope with `use`: After the path, we can specify `as` and a new
-local name, or _alias_, for the type. Listing 7-16 shows another way to write
-the code in Listing 7-15 by renaming one of the two `Result` types using `as`.
+Van egy másik megoldás is arra a problémára, hogy két azonos nevű típust hozunk
+`use`-zal ugyanabba a hatókörbe: az útvonal után megadhatjuk az `as` kulcsszót
+és a típus új, helyi nevét, azaz egy _aliast_. A 7-16. lista a 7-15. listában
+szereplő kód megírásának egy másik módját mutatja be: a két `Result` típus közül
+az egyiket az `as` segítségével átnevezi.
 
-<Listing number="7-16" file-name="src/lib.rs" caption="Renaming a type when it’s brought into scope with the `as` keyword">
+<Listing number="7-16" file-name="src/lib.rs" caption="Típus átnevezése az `as` kulcsszóval, amikor hatókörbe hozzuk">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-16/src/lib.rs:here}}
@@ -123,24 +127,24 @@ the code in Listing 7-15 by renaming one of the two `Result` types using `as`.
 
 </Listing>
 
-In the second `use` statement, we chose the new name `IoResult` for the
-`std::io::Result` type, which won’t conflict with the `Result` from `std::fmt`
-that we’ve also brought into scope. Listing 7-15 and Listing 7-16 are
-considered idiomatic, so the choice is up to you!
+A második `use` utasításban az `IoResult` új nevet választottuk a
+`std::io::Result` típusnak, ami így nem ütközik a `std::fmt`-ből származó
+`Result`-tal, amelyet szintén hatókörbe hoztunk. A 7-15. és a 7-16. lista
+egyaránt idiomatikusnak számít, így rajtad áll a választás!
 
-### Re-exporting Names with `pub use`
+### Nevek újraexportálása a `pub use` segítségével
 
-When we bring a name into scope with the `use` keyword, the name is private to
-the scope into which we imported it. To enable code outside that scope to refer
-to that name as if it had been defined in that scope, we can combine `pub` and
-`use`. This technique is called _re-exporting_ because we’re bringing an item
-into scope but also making that item available for others to bring into their
-scope.
+Amikor egy nevet a `use` kulcsszóval hatókörbe hozunk, a név privát abban a
+hatókörben, amelybe importáltuk. Ahhoz, hogy az adott hatókörön kívüli kód is
+úgy hivatkozhasson erre a névre, mintha abban a hatókörben lett volna
+definiálva, kombinálhatjuk a `pub`-ot és a `use`-t. Ezt a technikát
+_újraexportálásnak_ nevezzük, mert nemcsak hatókörbe hozunk egy elemet, hanem
+elérhetővé is tesszük, hogy mások a saját hatókörükbe hozhassák.
 
-Listing 7-17 shows the code in Listing 7-11 with `use` in the root module
-changed to `pub use`.
+A 7-17. lista a 7-11. listában szereplő kódot mutatja, azzal a különbséggel,
+hogy a gyökérmodulban a `use`-t `pub use`-ra cseréltük.
 
-<Listing number="7-17" file-name="src/lib.rs" caption="Making a name available for any code to use from a new scope with `pub use`">
+<Listing number="7-17" file-name="src/lib.rs" caption="Név elérhetővé tétele bármilyen kód számára egy új hatókörből a `pub use` segítségével">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-17/src/lib.rs}}
@@ -148,29 +152,31 @@ changed to `pub use`.
 
 </Listing>
 
-Before this change, external code would have to call the `add_to_waitlist`
-function by using the path
-`restaurant::front_of_house::hosting::add_to_waitlist()`, which also would have
-required the `front_of_house` module to be marked as `pub`. Now that this `pub
-use` has re-exported the `hosting` module from the root module, external code
-can use the path `restaurant::hosting::add_to_waitlist()` instead.
+E változtatás előtt a külső kódnak a
+`restaurant::front_of_house::hosting::add_to_waitlist()` útvonalon kellett volna
+meghívnia az `add_to_waitlist` függvényt, ami ráadásul azt is megkövetelte
+volna, hogy a `front_of_house` modul `pub`-ként legyen megjelölve. Most, hogy ez
+a `pub use` újraexportálta a `hosting` modult a gyökérmodulból, a külső kód
+helyette a `restaurant::hosting::add_to_waitlist()` útvonalat használhatja.
 
-Re-exporting is useful when the internal structure of your code is different
-from how programmers calling your code would think about the domain. For
-example, in this restaurant metaphor, the people running the restaurant think
-about “front of house” and “back of house.” But customers visiting a restaurant
-probably won’t think about the parts of the restaurant in those terms. With `pub
-use`, we can write our code with one structure but expose a different structure.
-Doing so makes our library well organized for programmers working on the library
-and programmers calling the library. We’ll look at another example of `pub use`
-and how it affects your crate’s documentation in [“Exporting a Convenient Public
-API”][ch14-pub-use]<!-- ignore --> in Chapter 14.
+Az újraexportálás akkor hasznos, ha a kódod belső szerkezete eltér attól,
+ahogyan a kódodat hívó programozók a témakörről gondolkodnak. Ebben az
+éttermes hasonlatban például az éttermet üzemeltető emberek „front of house” és
+„back of house” fogalmakban gondolkodnak. Az étterembe betérő vendégek viszont
+valószínűleg nem ilyen kifejezésekben gondolkodnak az étterem részeiről. A
+`pub use` segítségével a kódunkat az egyik szerkezet szerint írhatjuk meg, de
+egy másik szerkezetet tehetünk közzé. Így a könyvtárunk jól szervezett lesz
+azoknak a programozóknak, akik a könyvtáron dolgoznak, és azoknak is, akik a
+könyvtárat hívják. A 14. fejezetben, a [„Kényelmes nyilvános API
+exportálása”][ch14-pub-use]<!-- ignore --> szakaszban megnézünk egy másik `pub
+use`-példát, és azt is, hogyan hat ez a crate-ed dokumentációjára.
 
-### Using External Packages
+### Külső csomagok használata
 
-In Chapter 2, we programmed a guessing game project that used an external
-package called `rand` to get random numbers. To use `rand` in our project, we
-added this line to _Cargo.toml_:
+A 2. fejezetben egy kitalálós játék projektet programoztunk, amely egy `rand`
+nevű külső csomagot használt véletlen számok előállítására. Ahhoz, hogy a
+`rand`-ot használhassuk a projektünkben, ezt a sort adtuk a _Cargo.toml_
+fájlhoz:
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -188,48 +194,51 @@ added this line to _Cargo.toml_:
 
 </Listing>
 
-Adding `rand` as a dependency in _Cargo.toml_ tells Cargo to download the
-`rand` package and any dependencies from [crates.io](https://crates.io/) and
-make `rand` available to our project.
+Ha a `rand`-ot függőségként adjuk hozzá a _Cargo.toml_ fájlhoz, azzal azt
+mondjuk a Cargónak, hogy töltse le a `rand` csomagot és annak összes függőségét
+a [crates.io](https://crates.io/) oldalról, és tegye elérhetővé a `rand`-ot a
+projektünk számára.
 
-Then, to bring `rand` definitions into the scope of our package, we added a
-`use` line starting with the name of the crate, `rand`, and listed the items we
-wanted to bring into scope. Recall that in [“Generating a Random
-Number”][rand]<!-- ignore --> in Chapter 2, we brought items in the
-`rand::prelude` module into scope and called the `rand::rng` function:
+Ezután ahhoz, hogy a `rand` definícióit a csomagunk hatókörébe hozzuk, egy
+`use` sort adtunk hozzá, amely a crate nevével, a `rand`-dal kezdődött, és
+felsorolta azokat az elemeket, amelyeket hatókörbe akartunk hozni. Emlékezz
+vissza: a 2. fejezetben a [„Véletlen szám előállítása”][rand]<!-- ignore -->
+szakaszban a `rand::prelude` modulban lévő elemeket hoztuk hatókörbe, és a
+`rand::rng` függvényt hívtuk meg:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-03/src/main.rs:ch07-04}}
 ```
 
-Members of the Rust community have made many packages available at
-[crates.io](https://crates.io/), and pulling any of them into your package
-involves these same steps: listing them in your package’s _Cargo.toml_ file and
-using `use` to bring items from their crates into scope.
+A Rust közösségének tagjai rengeteg csomagot tettek elérhetővé a
+[crates.io](https://crates.io/) oldalon, és bármelyikük behúzása a csomagodba
+ugyanezekből a lépésekből áll: felveszed őket a csomagod _Cargo.toml_ fájljába,
+és a `use`-zal hatókörbe hozod a crate-jeikből az elemeket.
 
-Note that the standard `std` library is also a crate that’s external to our
-package. Because the standard library is shipped with the Rust language, we
-don’t need to change _Cargo.toml_ to include `std`. But we do need to refer to
-it with `use` to bring items from there into our package’s scope. For example,
-with `HashMap` we would use this line:
+Vedd figyelembe, hogy a standard `std` könyvtár szintén olyan crate, amely a
+csomagunkon kívül van. Mivel a standard könyvtár a Rust nyelvvel együtt
+érkezik, nem kell módosítanunk a _Cargo.toml_ fájlt ahhoz, hogy az `std`-t
+felvegyük. Arra viszont szükség van, hogy `use`-zal hivatkozzunk rá, hogy az
+onnan származó elemeket a csomagunk hatókörébe hozzuk. A `HashMap` esetében
+például ezt a sort használnánk:
 
 ```rust
 use std::collections::HashMap;
 ```
 
-This is an absolute path starting with `std`, the name of the standard library
-crate.
+Ez egy abszolút útvonal, amely az `std`-vel, a standard könyvtár crate nevével
+kezdődik.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-nested-paths-to-clean-up-large-use-lists"></a>
 
-### Using Nested Paths to Clean Up `use` Lists
+### Egymásba ágyazott útvonalak a `use`-listák rendbetételéhez
 
-If we’re using multiple items defined in the same crate or same module, listing
-each item on its own line can take up a lot of vertical space in our files. For
-example, these two `use` statements we had in the guessing game in Listing 2-4
-bring items from `std` into scope:
+Ha ugyanabban a crate-ben vagy ugyanabban a modulban definiált több elemet is
+használunk, sok függőleges helyet foglalhat el a fájljainkban, ha minden elemet
+külön sorban sorolunk fel. Például ez a két `use` utasítás, amely a 2-4.
+listában szereplő kitalálós játékban volt, elemeket hoz hatókörbe az `std`-ből:
 
 <Listing file-name="src/main.rs">
 
@@ -239,12 +248,12 @@ bring items from `std` into scope:
 
 </Listing>
 
-Instead, we can use nested paths to bring the same items into scope in one
-line. We do this by specifying the common part of the path, followed by two
-colons, and then curly brackets around a list of the parts of the paths that
-differ, as shown in Listing 7-18.
+Ehelyett egymásba ágyazott útvonalakkal egyetlen sorban is hatókörbe hozhatjuk
+ugyanezeket az elemeket. Ehhez megadjuk az útvonal közös részét, majd két
+kettőspontot, végül kapcsos zárójelek közé tesszük az útvonalak eltérő
+részeinek listáját, ahogy azt a 7-18. lista mutatja.
 
-<Listing number="7-18" file-name="src/main.rs" caption="Specifying a nested path to bring multiple items with the same prefix into scope">
+<Listing number="7-18" file-name="src/main.rs" caption="Egymásba ágyazott útvonal megadása több, azonos előtagú elem hatókörbe hozásához">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-18/src/main.rs:here}}
@@ -252,16 +261,16 @@ differ, as shown in Listing 7-18.
 
 </Listing>
 
-In bigger programs, bringing many items into scope from the same crate or
-module using nested paths can reduce the number of separate `use` statements
-needed by a lot!
+Nagyobb programokban, ha egyazon crate-ből vagy modulból sok elemet hozunk
+hatókörbe egymásba ágyazott útvonalakkal, azzal rengeteg különálló `use`
+utasítást takaríthatunk meg!
 
-We can use a nested path at any level in a path, which is useful when combining
-two `use` statements that share a subpath. For example, Listing 7-19 shows two
-`use` statements: one that brings `std::io` into scope and one that brings
-`std::io::Write` into scope.
+Egymásba ágyazott útvonalat egy útvonal bármely szintjén használhatunk, ami
+hasznos két olyan `use` utasítás összevonásakor, amelyek osztoznak egy
+részútvonalon. A 7-19. lista például két `use` utasítást mutat: az egyik az
+`std::io`-t, a másik az `std::io::Write`-ot hozza hatókörbe.
 
-<Listing number="7-19" file-name="src/lib.rs" caption="Two `use` statements where one is a subpath of the other">
+<Listing number="7-19" file-name="src/lib.rs" caption="Két `use` utasítás, amelyek közül az egyik a másik részútvonala">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-19/src/lib.rs}}
@@ -269,11 +278,11 @@ two `use` statements that share a subpath. For example, Listing 7-19 shows two
 
 </Listing>
 
-The common part of these two paths is `std::io`, and that’s the complete first
-path. To merge these two paths into one `use` statement, we can use `self` in
-the nested path, as shown in Listing 7-20.
+E két útvonal közös része az `std::io`, ami egyben a teljes első útvonal is.
+Ahhoz, hogy ezt a két útvonalat egyetlen `use` utasításba olvasszuk, a `self`-et
+használhatjuk az egymásba ágyazott útvonalban, ahogy azt a 7-20. lista mutatja.
 
-<Listing number="7-20" file-name="src/lib.rs" caption="Combining the paths in Listing 7-19 into one `use` statement">
+<Listing number="7-20" file-name="src/lib.rs" caption="A 7-19. listában szereplő útvonalak összevonása egyetlen `use` utasításba">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-20/src/lib.rs}}
@@ -281,35 +290,36 @@ the nested path, as shown in Listing 7-20.
 
 </Listing>
 
-This line brings `std::io` and `std::io::Write` into scope.
+Ez a sor az `std::io`-t és az `std::io::Write`-ot is hatókörbe hozza.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="the-glob-operator"></a>
 
-### Importing Items with the Glob Operator
+### Elemek importálása a glob operátorral
 
-If we want to bring _all_ public items defined in a path into scope, we can
-specify that path followed by the `*` glob operator:
+Ha egy útvonalban definiált _összes_ nyilvános elemet hatókörbe akarjuk hozni,
+megadhatjuk az útvonalat, majd utána a `*` glob operátort:
 
 ```rust
 use std::collections::*;
 ```
 
-This `use` statement brings all public items defined in `std::collections` into
-the current scope. Be careful when using the glob operator! Glob can make it
-harder to tell what names are in scope and where a name used in your program
-was defined. Additionally, if the dependency changes its definitions, what
-you’ve imported changes as well, which may lead to compiler errors when you
-upgrade the dependency if the dependency adds a definition with the same name
-as a definition of yours in the same scope, for example.
+Ez a `use` utasítás az `std::collections`-ben definiált összes nyilvános elemet
+az aktuális hatókörbe hozza. Légy óvatos a glob operátor használatakor! A glob
+megnehezítheti annak megállapítását, hogy mely nevek vannak hatókörben, és hol
+lett definiálva egy, a programodban használt név. Ezen felül, ha a függőség
+megváltoztatja a definícióit, akkor az is megváltozik, amit importáltál, ami
+fordítási hibákhoz vezethet a függőség frissítésekor, például akkor, ha a
+függőség olyan definíciót vesz fel, amelynek a neve megegyezik egy saját,
+ugyanabban a hatókörben lévő definícióddal.
 
-The glob operator is often used when testing to bring everything under test into
-the `tests` module; we’ll talk about that in [“How to Write
-Tests”][writing-tests]<!-- ignore --> in Chapter 11. The glob operator is also
-sometimes used as part of the prelude pattern: See [the standard library
-documentation](../std/prelude/index.html#other-preludes)<!-- ignore --> for more
-information on that pattern.
+A glob operátort gyakran használják teszteléskor, hogy a teszt alatt álló
+mindent behozzák a `tests` modulba; erről a 11. fejezetben, a [„Hogyan írjunk
+teszteket”][writing-tests]<!-- ignore --> szakaszban lesz szó. A glob operátort
+néha a prelude minta részeként is használják: erről a mintáról lásd
+[a standard könyvtár
+dokumentációját](../std/prelude/index.html#other-preludes)<!-- ignore -->.
 
 [ch14-pub-use]: ch14-02-publishing-to-crates-io.html#exporting-a-convenient-public-api
 [rand]: ch02-00-guessing-game-tutorial.html#generating-a-random-number

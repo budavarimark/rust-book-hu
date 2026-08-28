@@ -2,41 +2,43 @@
 
 <a id="using-message-passing-to-transfer-data-between-threads"></a>
 
-## Transfer Data Between Threads with Message Passing
+## Adatátvitel szálak között üzenetküldéssel
 
-One increasingly popular approach to ensuring safe concurrency is message
-passing, where threads or actors communicate by sending each other messages
-containing data. Here’s the idea in a slogan from [the Go language documentation](https://golang.org/doc/effective_go.html#concurrency):
-“Do not communicate by sharing memory; instead, share memory by communicating.”
+A biztonságos konkurencia egyik egyre népszerűbb megközelítése az üzenetküldés,
+amelyben a szálak vagy aktorok úgy kommunikálnak, hogy adatot tartalmazó
+üzeneteket küldenek egymásnak. Az alapgondolatot [a Go nyelv dokumentációjának](https://golang.org/doc/effective_go.html#concurrency)
+jelmondata így fogalmazza meg: „Ne memóriamegosztással kommunikálj; ehelyett
+kommunikációval oszd meg a memóriát.”
 
-To accomplish message-sending concurrency, Rust’s standard library provides an
-implementation of channels. A _channel_ is a general programming concept by
-which data is sent from one thread to another.
+Az üzenetküldésen alapuló konkurenciához a Rust standard könyvtára ad egy
+csatorna-implementációt. A _csatorna_ általános programozási fogalom, amellyel
+adatot küldünk az egyik szálról a másikra.
 
-You can imagine a channel in programming as being like a directional channel of
-water, such as a stream or a river. If you put something like a rubber duck
-into a river, it will travel downstream to the end of the waterway.
+A programozásbeli csatornát elképzelheted úgy, mint egy irányított vízi utat,
+például egy patakot vagy folyót. Ha beledobsz valamit, mondjuk egy gumikacsát a
+folyóba, az sodródni fog lefelé, egészen a vízi út végéig.
 
-A channel has two halves: a transmitter and a receiver. The transmitter half is
-the upstream location where you put the rubber duck into the river, and the
-receiver half is where the rubber duck ends up downstream. One part of your
-code calls methods on the transmitter with the data you want to send, and
-another part checks the receiving end for arriving messages. A channel is said
-to be _closed_ if either the transmitter or receiver half is dropped.
+A csatornának két fele van: egy adó és egy fogadó. Az adó fele az a folyásirány
+szerint feljebb lévő hely, ahol a gumikacsát a folyóba teszed, a fogadó fele
+pedig az, ahol a gumikacsa lejjebb kiköt. A kódod egyik része metódusokat hív
+az adón azzal az adattal, amit el akarsz küldeni, egy másik része pedig a fogadó
+végén figyeli a beérkező üzeneteket. Egy csatornát _lezártnak_ nevezünk, ha az
+adó vagy a fogadó fele eldobásra kerül.
 
-Here, we’ll work up to a program that has one thread to generate values and
-send them down a channel, and another thread that will receive the values and
-print them out. We’ll be sending simple values between threads using a channel
-to illustrate the feature. Once you’re familiar with the technique, you could
-use channels for any threads that need to communicate with each other, such as
-a chat system or a system where many threads perform parts of a calculation and
-send the parts to one thread that aggregates the results.
+Itt fokozatosan eljutunk egy olyan programig, amelyben az egyik szál értékeket
+állít elő, és leküldi őket egy csatornán, egy másik szál pedig fogadja és
+kiírja ezeket az értékeket. Egyszerű értékeket fogunk küldeni a szálak között
+egy csatornán keresztül, hogy szemléltessük a képességet. Ha egyszer
+elsajátítottad a technikát, csatornákat használhatsz bármely egymással
+kommunikálni akaró szálhoz, például egy chatrendszerhez, vagy egy olyan
+rendszerhez, ahol sok szál végzi egy számítás egy-egy részét, és küldi el a
+részeredményeket egyetlen szálnak, amely összesíti őket.
 
-First, in Listing 16-6, we’ll create a channel but not do anything with it.
-Note that this won’t compile yet because Rust can’t tell what type of values we
-want to send over the channel.
+Először, a 16-6. listában létrehozunk egy csatornát, de nem kezdünk vele semmit.
+Vedd észre, hogy ez egyelőre nem fordul le, mert a Rust nem tudja megállapítani,
+milyen típusú értékeket akarunk a csatornán küldeni.
 
-<Listing number="16-6" file-name="src/main.rs" caption="Creating a channel and assigning the two halves to `tx` and `rx`">
+<Listing number="16-6" file-name="src/main.rs" caption="Csatorna létrehozása és a két felének hozzárendelése a `tx` és `rx` változókhoz">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-06/src/main.rs}}
@@ -44,31 +46,31 @@ want to send over the channel.
 
 </Listing>
 
-We create a new channel using the `mpsc::channel` function; `mpsc` stands for
-_multiple producer, single consumer_. In short, the way Rust’s standard library
-implements channels means a channel can have multiple _sending_ ends that
-produce values but only one _receiving_ end that consumes those values. Imagine
-multiple streams flowing together into one big river: Everything sent down any
-of the streams will end up in one river at the end. We’ll start with a single
-producer for now, but we’ll add multiple producers when we get this example
-working.
+Új csatornát az `mpsc::channel` függvénnyel hozunk létre; az `mpsc` a _multiple
+producer, single consumer_ („több termelő, egy fogyasztó”) rövidítése. Röviden:
+a Rust standard könyvtárának csatorna-implementációja miatt egy csatornának több
+_küldő_ vége lehet, amelyek értékeket állítanak elő, de csak egyetlen _fogadó_
+vége, amely ezeket az értékeket elfogyasztja. Képzelj el több patakot, amelyek
+egyetlen nagy folyóba ömlenek: minden, amit bármelyik patakon leküldesz, a végén
+ugyanabban a folyóban köt ki. Egyelőre egyetlen termelővel kezdünk, de amint ez
+a példa működik, hozzáadunk több termelőt is.
 
-The `mpsc::channel` function returns a tuple, the first element of which is the
-sending end—the transmitter—and the second element of which is the receiving
-end—the receiver. The abbreviations `tx` and `rx` are traditionally used in
-many fields for _transmitter_ and _receiver_, respectively, so we name our
-variables as such to indicate each end. We’re using a `let` statement with a
-pattern that destructures the tuples; we’ll discuss the use of patterns in
-`let` statements and destructuring in Chapter 19. For now, know that using a
-`let` statement in this way is a convenient approach to extract the pieces of
-the tuple returned by `mpsc::channel`.
+Az `mpsc::channel` függvény egy tuple-t ad vissza, amelynek első eleme a küldő
+vég – az adó –, második eleme pedig a fogadó vég – a fogadó. A `tx` és `rx`
+rövidítéseket hagyományosan sok területen használják a _transmitter_ (adó),
+illetve a _receiver_ (fogadó) jelölésére, ezért mi is így nevezzük el a
+változóinkat, hogy jelezzük, melyik vég melyik. Egy `let` utasítást használunk
+olyan mintával, amely szétbontja a tuple-t; a `let` utasításokban használt
+mintákról és a szétbontásról a 19. fejezetben lesz szó. Egyelőre elég annyi,
+hogy a `let` utasítás ilyen használata kényelmes módja az `mpsc::channel` által
+visszaadott tuple darabjainak kinyerésére.
 
-Let’s move the transmitting end into a spawned thread and have it send one
-string so that the spawned thread is communicating with the main thread, as
-shown in Listing 16-7. This is like putting a rubber duck in the river upstream
-or sending a chat message from one thread to another.
+Mozgassuk át az adó véget egy elindított szálba, és küldessünk vele egy
+sztringet, hogy az elindított szál kommunikáljon a fő szállal, ahogy a 16-7.
+listában látható. Ez olyan, mintha a gumikacsát a folyó felső szakaszán a vízbe
+tennénk, vagy chatüzenetet küldenénk az egyik szálról a másikra.
 
-<Listing number="16-7" file-name="src/main.rs" caption='Moving `tx` to a spawned thread and sending `"hi"`'>
+<Listing number="16-7" file-name="src/main.rs" caption='A `tx` átmozgatása egy elindított szálba és a `"hi"` elküldése'>
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-07/src/main.rs}}
@@ -76,23 +78,23 @@ or sending a chat message from one thread to another.
 
 </Listing>
 
-Again, we’re using `thread::spawn` to create a new thread and then using `move`
-to move `tx` into the closure so that the spawned thread owns `tx`. The spawned
-thread needs to own the transmitter to be able to send messages through the
-channel.
+Ismét a `thread::spawn`-t használjuk egy új szál létrehozásához, majd a `move`
+segítségével bemozgatjuk a `tx`-et a closure-be, hogy az elindított szál
+birtokolja a `tx`-et. Az elindított szálnak birtokolnia kell az adót ahhoz, hogy
+üzeneteket tudjon küldeni a csatornán.
 
-The transmitter has a `send` method that takes the value we want to send. The
-`send` method returns a `Result<T, E>` type, so if the receiver has already
-been dropped and there’s nowhere to send a value, the send operation will
-return an error. In this example, we’re calling `unwrap` to panic in case of an
-error. But in a real application, we would handle it properly: Return to
-Chapter 9 to review strategies for proper error handling.
+Az adónak van egy `send` metódusa, amely az elküldeni kívánt értéket veszi át. A
+`send` metódus `Result<T, E>` típussal tér vissza, tehát ha a fogadót már
+eldobták, és nincs hova küldeni az értéket, a küldési művelet hibát ad vissza.
+Ebben a példában az `unwrap` hívással váltunk ki panicot hiba esetén. Egy valódi
+alkalmazásban azonban rendesen kezelnénk: térj vissza a 9. fejezethez a
+megfelelő hibakezelési stratégiák átnézéséhez.
 
-In Listing 16-8, we’ll get the value from the receiver in the main thread. This
-is like retrieving the rubber duck from the water at the end of the river or
-receiving a chat message.
+A 16-8. listában a fő szálon vesszük át az értéket a fogadótól. Ez olyan, mintha
+a folyó végén kihalásznánk a gumikacsát a vízből, vagy fogadnánk egy
+chatüzenetet.
 
-<Listing number="16-8" file-name="src/main.rs" caption='Receiving the value `"hi"` in the main thread and printing it'>
+<Listing number="16-8" file-name="src/main.rs" caption='A `"hi"` érték fogadása a fő szálon és kiírása'>
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-08/src/main.rs}}
@@ -100,26 +102,25 @@ receiving a chat message.
 
 </Listing>
 
-The receiver has two useful methods: `recv` and `try_recv`. We’re using `recv`,
-short for _receive_, which will block the main thread’s execution and wait
-until a value is sent down the channel. Once a value is sent, `recv` will
-return it in a `Result<T, E>`. When the transmitter closes, `recv` will return
-an error to signal that no more values will be coming.
+A fogadónak két hasznos metódusa van: a `recv` és a `try_recv`. Mi a `recv`-et
+használjuk, amely a _receive_ rövidítése; ez blokkolja a fő szál futását, és
+megvárja, amíg egy érték megérkezik a csatornán. Amint egy értéket elküldenek, a
+`recv` egy `Result<T, E>`-ben adja vissza. Amikor az adó lezárul, a `recv` hibát
+ad vissza jelezve, hogy több érték nem fog érkezni.
 
-The `try_recv` method doesn’t block, but will instead return a `Result<T, E>`
-immediately: an `Ok` value holding a message if one is available and an `Err`
-value if there aren’t any messages this time. Using `try_recv` is useful if
-this thread has other work to do while waiting for messages: We could write a
-loop that calls `try_recv` every so often, handles a message if one is
-available, and otherwise does other work for a little while until checking
-again.
+A `try_recv` metódus nem blokkol, hanem azonnal visszaad egy `Result<T, E>`-t:
+egy `Ok` értéket, amely az üzenetet tartalmazza, ha van elérhető, vagy egy `Err`
+értéket, ha ezúttal nincs üzenet. A `try_recv` akkor hasznos, ha a szálnak más
+dolga is van, miközben üzenetekre vár: írhatnánk egy ciklust, amely időnként
+meghívja a `try_recv`-et, kezeli az üzenetet, ha van, egyébként pedig egy kis
+ideig mást csinál, mielőtt újra ellenőrizné.
 
-We’ve used `recv` in this example for simplicity; we don’t have any other work
-for the main thread to do other than wait for messages, so blocking the main
-thread is appropriate.
+Ebben a példában az egyszerűség kedvéért a `recv`-et használtuk; a fő szálnak
+nincs más dolga azon kívül, hogy üzenetekre várjon, így a fő szál blokkolása itt
+helyénvaló.
 
-When we run the code in Listing 16-8, we’ll see the value printed from the main
-thread:
+Amikor lefuttatjuk a 16-8. lista kódját, látni fogjuk az értéket kiírva a fő
+szálról:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -129,23 +130,24 @@ changes in the compiler -->
 Got: hi
 ```
 
-Perfect!
+Tökéletes!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="channels-and-ownership-transference"></a>
 
-### Transferring Ownership Through Channels
+### Ownership átadása csatornákon keresztül
 
-The ownership rules play a vital role in message sending because they help you
-write safe, concurrent code. Preventing errors in concurrent programming is the
-advantage of thinking about ownership throughout your Rust programs. Let’s do
-an experiment to show how channels and ownership work together to prevent
-problems: We’ll try to use a `val` value in the spawned thread _after_ we’ve
-sent it down the channel. Try compiling the code in Listing 16-9 to see why
-this code isn’t allowed.
+Az ownership-szabályok létfontosságú szerepet játszanak az üzenetküldésben, mert
+segítenek biztonságos, konkurens kódot írni. A konkurens programozás hibáinak
+megelőzése az az előny, amit abból nyerünk, hogy a Rust programjaink során végig
+az ownershipben gondolkodunk. Végezzünk egy kísérletet, amely megmutatja, hogyan
+működik együtt a csatorna és az ownership a problémák megelőzésében: megpróbáljuk
+használni a `val` értéket az elindított szálban _azután_, hogy már leküldtük a
+csatornán. Próbáld lefordítani a 16-9. lista kódját, hogy lásd, miért nem
+megengedett ez a kód.
 
-<Listing number="16-9" file-name="src/main.rs" caption="Attempting to use `val` after we’ve sent it down the channel">
+<Listing number="16-9" file-name="src/main.rs" caption="Kísérlet a `val` használatára azután, hogy leküldtük a csatornán">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-09/src/main.rs}}
@@ -153,36 +155,37 @@ this code isn’t allowed.
 
 </Listing>
 
-Here, we try to print `val` after we’ve sent it down the channel via `tx.send`.
-Allowing this would be a bad idea: Once the value has been sent to another
-thread, that thread could modify or drop it before we try to use the value
-again. Potentially, the other thread’s modifications could cause errors or
-unexpected results due to inconsistent or nonexistent data. However, Rust gives
-us an error if we try to compile the code in Listing 16-9:
+Itt megpróbáljuk kiírni a `val`-t azután, hogy a `tx.send` hívással már
+leküldtük a csatornán. Ezt megengedni rossz ötlet lenne: ha egyszer az értéket
+elküldtük egy másik szálnak, az a szál módosíthatja vagy eldobhatja, mielőtt mi
+újra használni próbálnánk. A másik szál módosításai a nem konzisztens vagy nem
+létező adat miatt hibákat vagy váratlan eredményeket okozhatnának. A Rust
+azonban hibát ad, ha megpróbáljuk lefordítani a 16-9. lista kódját:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-09/output.txt}}
 ```
 
-Our concurrency mistake has caused a compile-time error. The `send` function
-takes ownership of its parameter, and when the value is moved the receiver
-takes ownership of it. This stops us from accidentally using the value again
-after sending it; the ownership system checks that everything is okay.
+A konkurenciával kapcsolatos hibánk fordítási idejű hibát okozott. A `send`
+függvény átveszi a paramétere ownershipjét, és amikor az érték átmozog, a fogadó
+veszi át az ownershipjét. Ez megakadályozza, hogy véletlenül újra használjuk az
+értéket a küldés után; az ownership-rendszer ellenőrzi, hogy minden rendben
+van-e.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="sending-multiple-values-and-seeing-the-receiver-waiting"></a>
 
-### Sending Multiple Values
+### Több érték küldése
 
-The code in Listing 16-8 compiled and ran, but it didn’t clearly show us that
-two separate threads were talking to each other over the channel.
+A 16-8. lista kódja lefordult és lefutott, de nem mutatta meg világosan, hogy
+két külön szál beszélgetett egymással a csatornán keresztül.
 
-In Listing 16-10, we’ve made some modifications that will prove the code in
-Listing 16-8 is running concurrently: The spawned thread will now send multiple
-messages and pause for a second between each message.
+A 16-10. listában olyan módosításokat végeztünk, amelyek bizonyítják, hogy a
+16-8. lista kódja konkurensen fut: az elindított szál mostantól több üzenetet
+küld, és minden üzenet között tart egy másodperc szünetet.
 
-<Listing number="16-10" file-name="src/main.rs" caption="Sending multiple messages and pausing between each one">
+<Listing number="16-10" file-name="src/main.rs" caption="Több üzenet küldése, közöttük szünetekkel">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-10/src/main.rs}}
@@ -190,17 +193,17 @@ messages and pause for a second between each message.
 
 </Listing>
 
-This time, the spawned thread has a vector of strings that we want to send to
-the main thread. We iterate over them, sending each individually, and pause
-between each by calling the `thread::sleep` function with a `Duration` value of
-one second.
+Ezúttal az elindított szálnak van egy sztringekből álló vektora, amelyet el
+akarunk küldeni a fő szálnak. Végigiterálunk rajtuk, egyenként elküldjük őket,
+és mindegyik között szünetet tartunk a `thread::sleep` függvény hívásával, egy
+egy másodperces `Duration` értékkel.
 
-In the main thread, we’re not calling the `recv` function explicitly anymore:
-Instead, we’re treating `rx` as an iterator. For each value received, we’re
-printing it. When the channel is closed, iteration will end.
+A fő szálon már nem hívjuk meg explicit módon a `recv` függvényt: ehelyett úgy
+kezeljük az `rx`-et, mint egy iterátort. Minden fogadott értéket kiírunk. Amikor
+a csatorna lezárul, az iteráció véget ér.
 
-When running the code in Listing 16-10, you should see the following output
-with a one-second pause in between each line:
+Amikor lefuttatod a 16-10. lista kódját, a következő kimenetet kell látnod, a
+sorok között egy-egy másodperces szünettel:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -213,22 +216,22 @@ Got: the
 Got: thread
 ```
 
-Because we don’t have any code that pauses or delays in the `for` loop in the
-main thread, we can tell that the main thread is waiting to receive values from
-the spawned thread.
+Mivel a fő szál `for` ciklusában nincs semmilyen szüneteltető vagy késleltető
+kód, ebből tudhatjuk, hogy a fő szál vár az elindított száltól érkező értékekre.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="creating-multiple-producers-by-cloning-the-transmitter"></a>
 
-### Creating Multiple Producers
+### Több termelő létrehozása
 
-Earlier we mentioned that `mpsc` was an acronym for _multiple producer, single
-consumer_. Let’s put `mpsc` to use and expand the code in Listing 16-10 to
-create multiple threads that all send values to the same receiver. We can do so
-by cloning the transmitter, as shown in Listing 16-11.
+Korábban említettük, hogy az `mpsc` a _multiple producer, single consumer_
+rövidítése. Vegyük hasznát az `mpsc`-nek, és bővítsük ki a 16-10. lista kódját
+úgy, hogy több szálat hozzunk létre, amelyek mind ugyanannak a fogadónak küldenek
+értékeket. Ezt az adó klónozásával tehetjük meg, ahogy a 16-11. listában
+látható.
 
-<Listing number="16-11" file-name="src/main.rs" caption="Sending multiple messages from multiple producers">
+<Listing number="16-11" file-name="src/main.rs" caption="Több üzenet küldése több termelőtől">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-11/src/main.rs:here}}
@@ -236,12 +239,12 @@ by cloning the transmitter, as shown in Listing 16-11.
 
 </Listing>
 
-This time, before we create the first spawned thread, we call `clone` on the
-transmitter. This will give us a new transmitter we can pass to the first
-spawned thread. We pass the original transmitter to a second spawned thread.
-This gives us two threads, each sending different messages to the one receiver.
+Ezúttal az első elindított szál létrehozása előtt meghívjuk a `clone`-t az adón.
+Ez ad nekünk egy új adót, amelyet átadhatunk az első elindított szálnak. Az
+eredeti adót egy második elindított szálnak adjuk át. Így két szálunk lesz,
+amelyek különböző üzeneteket küldenek az egyetlen fogadónak.
 
-When you run the code, your output should look something like this:
+Amikor lefuttatod a kódot, a kimenet nagyjából így fog kinézni:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -258,10 +261,11 @@ Got: thread
 Got: you
 ```
 
-You might see the values in another order, depending on your system. This is
-what makes concurrency interesting as well as difficult. If you experiment with
-`thread::sleep`, giving it various values in the different threads, each run
-will be more nondeterministic and create different output each time.
+Elképzelhető, hogy az értékeket más sorrendben látod, a rendszeredtől függően.
+Ez az, ami a konkurenciát egyszerre érdekessé és nehézzé teszi. Ha kísérletezel
+a `thread::sleep`-pel, és különböző értékeket adsz neki a különböző szálakban,
+minden futás nemdeterminisztikusabb lesz, és minden alkalommal más kimenetet
+hoz létre.
 
-Now that we’ve looked at how channels work, let’s look at a different method of
-concurrency.
+Most, hogy megnéztük, hogyan működnek a csatornák, nézzünk meg egy másik
+konkurenciakezelési módszert.

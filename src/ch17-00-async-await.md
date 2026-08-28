@@ -1,167 +1,173 @@
-# Fundamentals of Asynchronous Programming: Async, Await, Futures, and Streams
+# Az aszinkron programozás alapjai: async, await, future-ök és stream-ek
 
-Many operations we ask the computer to do can take a while to finish. It would
-be nice if we could do something else while we’re waiting for those
-long-running processes to complete. Modern computers offer two techniques for
-working on more than one operation at a time: parallelism and concurrency. Our
-programs’ logic, however, is written in a mostly linear fashion. We’d like to
-be able to specify the operations a program should perform and points at which
-a function could pause and some other part of the program could run instead,
-without needing to specify up front exactly the order and manner in which each
-bit of code should run. _Asynchronous programming_ is an abstraction that lets
-us express our code in terms of potential pausing points and eventual results
-that takes care of the details of coordination for us.
+Sok művelet, amelynek elvégzésére megkérjük a számítógépet, hosszabb ideig
+tarthat. Jó lenne, ha csinálhatnánk valami mást, amíg ezekre a hosszan futó
+folyamatokra várunk. A modern számítógépek két technikát kínálnak arra, hogy
+egyszerre több műveleten dolgozzunk: a párhuzamosságot és a konkurenciát. A
+programjaink logikája azonban többnyire lineárisan íródik. Szeretnénk meg tudni
+adni, milyen műveleteket végezzen el a program, és mely pontokon szüneteltethet
+egy függvény, hogy helyette a program más része fusson, anélkül hogy előre
+pontosan meg kellene határoznunk, milyen sorrendben és módon fusson az egyes
+kódrészletek mindegyike. Az _aszinkron programozás_ olyan absztrakció, amely
+lehetővé teszi, hogy a kódunkat lehetséges szünetelési pontok és később
+megérkező eredmények formájában fejezzük ki, a koordináció részleteit pedig
+elintézi helyettünk.
 
-This chapter builds on Chapter 16’s use of threads for parallelism and
-concurrency by introducing an alternative approach to writing code: Rust’s
-futures, streams, and the `async` and `await` syntax that let us express how
-operations could be asynchronous, and the third-party crates that implement
-asynchronous runtimes: code that manages and coordinates the execution of
-asynchronous operations.
+Ez a fejezet a 16. fejezet szálakra épülő párhuzamosságára és konkurenciájára
+épít, és a kódírásnak egy alternatív megközelítését mutatja be: a Rust
+future-jeit, stream-jeit, valamint az `async` és `await` szintaxist, amelyekkel
+kifejezhetjük, hogy mely műveletek lehetnek aszinkronok, továbbá azokat a
+harmadik féltől származó crate-eket, amelyek aszinkron runtime-okat
+implementálnak: olyan kódot, amely az aszinkron műveletek végrehajtását kezeli
+és koordinálja.
 
-Let’s consider an example. Say you’re exporting a video you’ve created of a
-family celebration, an operation that could take anywhere from minutes to
-hours. The video export will use as much CPU and GPU power as it can. If you
-had only one CPU core and your operating system didn’t pause that export until
-it completed—that is, if it executed the export _synchronously_—you couldn’t do
-anything else on your computer while that task was running. That would be a
-pretty frustrating experience. Fortunately, your computer’s operating system
-can, and does, invisibly interrupt the export often enough to let you get other
-work done simultaneously.
+Nézzünk egy példát. Tegyük fel, hogy éppen exportálsz egy videót, amit egy
+családi ünnepségről készítettél; ez a művelet percektől órákig bármeddig
+eltarthat. A videóexport annyi CPU- és GPU-teljesítményt használ fel,
+amennyit csak tud. Ha csak egyetlen CPU-magod lenne, és az operációs rendszered
+nem szüneteltetné az exportot annak befejeződéséig – azaz ha _szinkron_ módon
+hajtaná végre az exportot –, semmi mást nem tudnál csinálni a számítógépeden,
+amíg az a feladat fut. Ez elég frusztráló élmény lenne. Szerencsére a
+számítógéped operációs rendszere képes elég gyakran, láthatatlanul megszakítani
+az exportot ahhoz, hogy közben más munkát is el tudj végezni.
 
-Now say you’re downloading a video shared by someone else, which can also take
-a while but does not take up as much CPU time. In this case, the CPU has to
-wait for data to arrive from the network. While you can start reading the data
-once it starts to arrive, it might take some time for all of it to show up.
-Even once the data is all present, if the video is quite large, it could take
-at least a second or two to load it all. That might not sound like much, but
-it’s a very long time for a modern processor, which can perform billions of
-operations every second. Again, your operating system will invisibly interrupt
-your program to allow the CPU to perform other work while waiting for the
-network call to finish.
+Most tegyük fel, hogy egy másvalaki által megosztott videót töltesz le; ez is
+eltarthat egy ideig, de nem foglal le annyi CPU-időt. Ebben az esetben a
+CPU-nak arra kell várnia, hogy megérkezzenek az adatok a hálózatról. Bár
+elkezdheted olvasni az adatokat, amint megjelennek, eltarthat egy ideig, amíg
+mind megérkezik. Még ha az összes adat meg is van, egy nagyobb videónál
+legalább egy-két másodpercig is eltarthat a betöltésük. Ez talán nem hangzik
+soknak, de egy modern processzor számára – amely másodpercenként több milliárd
+műveletet képes végrehajtani – nagyon hosszú idő. Az operációs rendszer itt is
+láthatatlanul megszakítja a programodat, hogy a CPU más munkát végezhessen,
+miközben a hálózati hívás befejeződésére vár.
 
-The video export is an example of a _CPU-bound_ or _compute-bound_ operation.
-It’s limited by the computer’s potential data processing speed within the CPU
-or GPU, and how much of that speed it can dedicate to the operation. The video
-download is an example of an _I/O-bound_ operation, because it’s limited by the
-speed of the computer’s _input and output_; it can only go as fast as the data
-can be sent across the network.
+A videóexport a _CPU-bound_, vagyis _compute-bound_ műveletek példája. Azt
+korlátozza, hogy a számítógép mekkora adatfeldolgozási sebességre képes a
+CPU-ban vagy a GPU-ban, és ebből mennyit tud az adott műveletre fordítani. A
+videóletöltés viszont az _I/O-bound_ műveletek példája, mert a számítógép
+_bemenetének és kimenetének_ (input és output) sebessége korlátozza: csak
+olyan gyors lehet, amilyen gyorsan az adatok átküldhetők a hálózaton.
 
-In both of these examples, the operating system’s invisible interrupts provide
-a form of concurrency. That concurrency happens only at the level of the entire
-program, though: the operating system interrupts one program to let other
-programs get work done. In many cases, because we understand our programs at a
-much more granular level than the operating system does, we can spot
-opportunities for concurrency that the operating system can’t see.
+Mindkét példában az operációs rendszer láthatatlan megszakításai a konkurencia
+egy formáját nyújtják. Ez a konkurencia azonban csak az egész program szintjén
+jelenik meg: az operációs rendszer az egyik programot megszakítja, hogy más
+programok is haladhassanak a munkájukkal. Sok esetben viszont – mivel mi
+sokkal részletesebb szinten értjük a saját programjainkat, mint az operációs
+rendszer – olyan konkurenciára adódó lehetőségeket is észreveszünk, amelyeket
+az operációs rendszer nem lát.
 
-For example, if we’re building a tool to manage file downloads, we should be
-able to write our program so that starting one download won’t lock up the UI,
-and users should be able to start multiple downloads at the same time. Many
-operating system APIs for interacting with the network are _blocking_, though;
-that is, they block the program’s progress until the data they’re processing is
-completely ready.
+Ha például egy fájlletöltéseket kezelő eszközt építünk, olyan programot
+szeretnénk írni, amelyben az egyik letöltés elindítása nem fagyasztja be a
+felhasználói felületet, és a felhasználók egyszerre több letöltést is
+elindíthatnak. A hálózattal való kommunikációhoz használt operációsrendszer-API-k
+közül azonban sok _blokkoló_; vagyis addig akadályozzák a program haladását,
+amíg az általuk feldolgozott adatok teljesen készen nem állnak.
 
-> Note: This is how _most_ function calls work, if you think about it. However,
-> the term _blocking_ is usually reserved for function calls that interact with
-> files, the network, or other resources on the computer, because those are the
-> cases where an individual program would benefit from the operation being
-> _non_-blocking.
+> Megjegyzés: ha belegondolsz, a függvényhívások _többsége_ így működik. A
+> _blokkoló_ kifejezést azonban általában olyan függvényhívásokra tartjuk fenn,
+> amelyek fájlokkal, a hálózattal vagy a számítógép más erőforrásaival lépnek
+> kapcsolatba, mert ezekben az esetekben járna jól egy adott program azzal, ha
+> a művelet _nem_ blokkolna.
 
-We could avoid blocking our main thread by spawning a dedicated thread to
-download each file. However, the overhead of the system resources used by those
-threads would eventually become a problem. It would be preferable if the call
-didn’t block in the first place, and instead we could define a number of tasks
-that we’d like our program to complete and allow the runtime to choose the best
-order and manner in which to run them.
+Elkerülhetnénk a fő szálunk blokkolását azzal, hogy minden fájl letöltéséhez
+külön szálat indítunk. Az ezek a szálak által használt rendszererőforrások
+többletterhelése azonban előbb-utóbb problémává válna. Jobb lenne, ha a hívás
+eleve nem blokkolna, mi pedig megadhatnánk azoknak a task-oknak a halmazát,
+amelyeket a programunkkal el szeretnénk végeztetni, és a runtime-ra bíznánk,
+hogy a legjobb sorrendben és módon futtassa őket.
 
-That is exactly what Rust’s _async_ (short for _asynchronous_) abstraction
-gives us. In this chapter, you’ll learn all about async as we cover the
-following topics:
+Pontosan ezt adja nekünk a Rust _async_ (az _asynchronous_, azaz aszinkron
+rövidítése) absztrakciója. Ebben a fejezetben mindent megtudsz az asyncről,
+miközben a következő témákat tekintjük át:
 
-- How to use Rust’s `async` and `await` syntax and execute asynchronous
-  functions with a runtime
-- How to use the async model to solve some of the same challenges we looked at
-  in Chapter 16
-- How multithreading and async provide complementary solutions that you can
-  combine in many cases
+- Hogyan használjuk a Rust `async` és `await` szintaxisát, és hogyan hajtsunk
+  végre aszinkron függvényeket egy runtime segítségével
+- Hogyan oldjuk meg az async modellel ugyanazokat a kihívásokat, amelyekkel a
+  16. fejezetben foglalkoztunk
+- Hogyan nyújt a többszálúság és az async egymást kiegészítő megoldásokat,
+  amelyeket sok esetben kombinálhatsz is
 
-Before we see how async works in practice, though, we need to take a short
-detour to discuss the differences between parallelism and concurrency.
+Mielőtt azonban megnéznénk, hogyan működik az async a gyakorlatban, tegyünk egy
+rövid kitérőt a párhuzamosság és a konkurencia közötti különbségek
+megbeszélésére.
 
-## Parallelism and Concurrency
+## Párhuzamosság és konkurencia
 
-We’ve treated parallelism and concurrency as mostly interchangeable so far. Now
-we need to distinguish between them more precisely, because the differences
-will show up as we start working.
+Eddig a párhuzamosságot és a konkurenciát nagyjából felcserélhetőként kezeltük.
+Most pontosabban meg kell különböztetnünk őket, mert a különbségek elő fognak
+kerülni, amint munkához látunk.
 
-Consider the different ways a team could split up work on a software project.
-You could assign a single member multiple tasks, assign each member one task,
-or use a mix of the two approaches.
+Gondold végig, milyen módokon oszthat fel egy csapat egy szoftverprojekten
+végzendő munkát. Adhatsz egyetlen tagnak több feladatot, adhatsz minden tagnak
+egy-egy feladatot, vagy keverheted a két megközelítést.
 
-When an individual works on several different tasks before any of them is
-complete, this is _concurrency_. One way to implement concurrency is similar to
-having two different projects checked out on your computer, and when you get
-bored or stuck on one project, you switch to the other. You’re just one person,
-so you can’t make progress on both tasks at the exact same time, but you can
-multitask, making progress on one at a time by switching between them (see
-Figure 17-1).
-
-<figure>
-
-<img src="img/trpl17-01.svg" class="center" alt="A diagram with stacked boxes labeled Task A and Task B, with diamonds in them representing subtasks. Arrows point from A1 to B1, B1 to A2, A2 to B2, B2 to A3, A3 to A4, and A4 to B3. The arrows between the subtasks cross the boxes between Task A and Task B." />
-
-<figcaption>Figure 17-1: A concurrent workflow, switching between Task A and Task B</figcaption>
-
-</figure>
-
-When the team splits up a group of tasks by having each member take one task
-and work on it alone, this is _parallelism_. Each person on the team can make
-progress at the exact same time (see Figure 17-2).
+Amikor egyetlen ember több különböző feladaton dolgozik úgy, hogy egyik sincs
+még kész, az a _konkurencia_. A konkurencia megvalósításának egyik módja
+hasonlít ahhoz, mintha két különböző projekt lenne kicsekkolva a
+számítógépeden, és amikor az egyikbe beleunsz vagy elakadsz, átváltasz a
+másikra. Csak egy ember vagy, így nem tudsz mindkét feladaton pontosan
+ugyanabban a pillanatban haladni, de tudsz többfelé figyelni: egyszerre az
+egyiken haladsz, váltogatva köztük (lásd a 17-1. ábrát).
 
 <figure>
 
-<img src="img/trpl17-02.svg" class="center" alt="A diagram with stacked boxes labeled Task A and Task B, with diamonds in them representing subtasks. Arrows point from A1 to A2, A2 to A3, A3 to A4, B1 to B2, and B2 to B3. No arrows cross between the boxes for Task A and Task B." />
+<img src="img/trpl17-01.svg" class="center" alt="Egy diagram egymás fölé helyezett dobozokkal, amelyek címkéje Task A és Task B, bennük rombuszok jelölik a részfeladatokat. Nyilak mutatnak A1-től B1-ig, B1-től A2-ig, A2-től B2-ig, B2-től A3-ig, A3-tól A4-ig és A4-től B3-ig. A részfeladatok közötti nyilak átlépik a Task A és a Task B doboza közötti határt." />
 
-<figcaption>Figure 17-2: A parallel workflow, where work happens on Task A and Task B independently</figcaption>
+<figcaption>17-1. ábra: Konkurens munkafolyamat, váltogatva a Task A és a Task B között</figcaption>
 
 </figure>
 
-In both of these workflows, you might have to coordinate between different
-tasks. Maybe you thought the task assigned to one person was totally
-independent from everyone else’s work, but it actually requires another person
-on the team to finish their task first. Some of the work could be done in
-parallel, but some of it was actually _serial_: it could only happen in a
-series, one task after the other, as in Figure 17-3.
+Amikor a csapat úgy osztja fel a feladatokat, hogy mindenki elvállal egyet, és
+azon egyedül dolgozik, az a _párhuzamosság_. A csapat minden tagja pontosan
+ugyanabban a pillanatban tud haladni (lásd a 17-2. ábrát).
 
 <figure>
 
-<img src="img/trpl17-03.svg" class="center" alt="A diagram with stacked boxes labeled Task A and Task B, with diamonds in them representing subtasks. In Task A, arrows point from A1 to A2, from A2 to a pair of thick vertical lines like a “pause” symbol, and from that symbol to A3. In task B, arrows point from B1 to B2, from B2 to B3, from B3 to A3, and from B3 to B4." />
+<img src="img/trpl17-02.svg" class="center" alt="Egy diagram egymás fölé helyezett dobozokkal, amelyek címkéje Task A és Task B, bennük rombuszok jelölik a részfeladatokat. Nyilak mutatnak A1-től A2-ig, A2-től A3-ig, A3-tól A4-ig, B1-től B2-ig és B2-től B3-ig. Egyetlen nyíl sem lép át a Task A és a Task B doboza között." />
 
-<figcaption>Figure 17-3: A partially parallel workflow, where work happens on Task A and Task B independently until Task A3 is blocked on the results of Task B3.</figcaption>
+<figcaption>17-2. ábra: Párhuzamos munkafolyamat, ahol a Task A és a Task B munkája egymástól függetlenül zajlik</figcaption>
 
 </figure>
 
-Likewise, you might realize that one of your own tasks depends on another of
-your tasks. Now your concurrent work has also become serial.
+Mindkét munkafolyamatban előfordulhat, hogy koordinálnod kell a különböző
+feladatok között. Talán azt hitted, hogy az egyik emberre bízott feladat
+teljesen független mindenki más munkájától, valójában viszont a csapat egy
+másik tagjának előbb be kell fejeznie a saját feladatát. A munka egy része
+végezhető párhuzamosan, egy másik része azonban valójában _soros_: csak
+sorozatban, egyik feladat a másik után történhet, ahogy a 17-3. ábrán látható.
 
-Parallelism and concurrency can intersect with each other, too. If you learn
-that a colleague is stuck until you finish one of your tasks, you’ll probably
-focus all your efforts on that task to “unblock” your colleague. You and your
-coworker are no longer able to work in parallel, and you’re also no longer able
-to work concurrently on your own tasks.
+<figure>
 
-The same basic dynamics come into play with software and hardware. On a machine
-with a single CPU core, the CPU can perform only one operation at a time, but
-it can still work concurrently. Using tools such as threads, processes, and
-async, the computer can pause one activity and switch to others before
-eventually cycling back to that first activity again. On a machine with
-multiple CPU cores, it can also do work in parallel. One core can be performing
-one task while another core performs a completely unrelated one, and those
-operations actually happen at the same time.
+<img src="img/trpl17-03.svg" class="center" alt="Egy diagram egymás fölé helyezett dobozokkal, amelyek címkéje Task A és Task B, bennük rombuszok jelölik a részfeladatokat. A Task A-ban nyilak mutatnak A1-től A2-ig, A2-től egy pár vastag függőleges vonalig, amely a „szünet” szimbólumra hasonlít, majd ettől a szimbólumtól A3-ig. A Task B-ben nyilak mutatnak B1-től B2-ig, B2-től B3-ig, B3-tól A3-ig és B3-tól B4-ig." />
 
-Running async code in Rust usually happens concurrently. Depending on the
-hardware, the operating system, and the async runtime we are using (more on
-async runtimes shortly), that concurrency may also use parallelism under the
-hood.
+<figcaption>17-3. ábra: Részben párhuzamos munkafolyamat, ahol a Task A és a Task B munkája egymástól függetlenül zajlik, amíg a Task A3 el nem akad a Task B3 eredményein.</figcaption>
 
-Now, let’s dive into how async programming in Rust actually works.
+</figure>
+
+Hasonlóképpen az is kiderülhet, hogy az egyik saját feladatod egy másik saját
+feladatodtól függ. Ekkor a konkurens munkád is sorossá vált.
+
+A párhuzamosság és a konkurencia egymást is metszheti. Ha megtudod, hogy egy
+kollégád addig nem tud haladni, amíg te be nem fejezed az egyik feladatodat,
+valószínűleg minden erőddel arra a feladatra fogsz koncentrálni, hogy
+„feloldd” a kollégádat. Ekkor te és a munkatársad már nem tudtok párhuzamosan
+dolgozni, és te sem tudsz többé konkurensen dolgozni a saját feladataidon.
+
+Ugyanezek az alapvető dinamikák érvényesülnek a szoftver és a hardver
+világában is. Egy egymagos CPU-val rendelkező gépen a CPU egyszerre csak egy
+műveletet tud végrehajtani, konkurensen mégis tud dolgozni. Olyan eszközök
+segítségével, mint a szálak, a folyamatok és az async, a számítógép
+szüneteltetheti az egyik tevékenységet, átválthat másokra, majd végül
+visszatérhet az első tevékenységhez. Egy több CPU-maggal rendelkező gépen
+párhuzamosan is tud dolgozni. Az egyik mag végezhet egy feladatot, miközben egy
+másik mag egy teljesen független feladatot végez, és ezek a műveletek
+ténylegesen egy időben zajlanak.
+
+A Rustban az async kód futtatása általában konkurensen történik. A hardvertől,
+az operációs rendszertől és a használt async runtime-tól függően (az async
+runtime-okról hamarosan bővebben) ez a konkurencia a motorháztető alatt
+párhuzamosságot is használhat.
+
+Most pedig merüljünk el abban, hogyan is működik valójában az aszinkron
+programozás a Rustban.

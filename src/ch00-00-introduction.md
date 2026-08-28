@@ -1,201 +1,210 @@
-# Introduction
+# Bevezetés
 
-> Note: This edition of the book is the same as [The Rust Programming
-> Language][nsprust] available in print and ebook format from [No Starch
-> Press][nsp].
+> Megjegyzés: A könyv jelen kiadása megegyezik a [The Rust Programming
+> Language][nsprust] című, a [No Starch Press][nsp] gondozásában nyomtatott és
+> e-könyv formátumban is elérhető kötettel.
 
 [nsprust]: https://nostarch.com/rust-programming-language-3rd-edition
 [nsp]: https://nostarch.com/
 
-Welcome to _The Rust Programming Language_, an introductory book about Rust.
-The Rust programming language helps you write faster, more reliable software.
-High-level ergonomics and low-level control are often at odds in programming
-language design; Rust challenges that conflict. Through balancing powerful
-technical capacity and a great developer experience, Rust gives you the option
-to control low-level details (such as memory usage) without all the hassle
-traditionally associated with such control.
+Üdvözlünk a _The Rust Programming Language_ lapjain, amely egy Rustról szóló
+bevezető könyv. A Rust programozási nyelv abban segít, hogy gyorsabb és
+megbízhatóbb szoftvert írj. A magas szintű ergonómia és az alacsony szintű
+irányítás a programozásinyelv-tervezésben gyakran ütközik egymással; a Rust
+kihívást intéz ez ellen az ellentét ellen. Azzal, hogy egyensúlyt teremt az
+erőteljes technikai képességek és a kellemes fejlesztői élmény között, a Rust
+lehetőséget ad az alacsony szintű részletek (például a memóriahasználat)
+kézben tartására, mégpedig azon vesződségek nélkül, amelyek az ilyen irányítást
+hagyományosan kísérik.
 
-## Who Rust Is For
+## Kinek való a Rust
 
-Rust is ideal for many people for a variety of reasons. Let’s look at a few of
-the most important groups.
+A Rust sokféle okból sokak számára ideális. Nézzünk meg néhányat a
+legfontosabb csoportok közül.
 
-### Teams of Developers
+### Fejlesztőcsapatok
 
-Rust is proving to be a productive tool for collaborating among large teams of
-developers with varying levels of systems programming knowledge. Low-level code
-is prone to various subtle bugs, which in most other languages can only be
-caught through extensive testing and careful code review by experienced
-developers. In Rust, the compiler plays a gatekeeper role by refusing to
-compile code with these elusive bugs, including concurrency bugs. By working
-alongside the compiler, the team can spend its time focusing on the program’s
-logic rather than chasing down bugs.
+A Rust termékeny eszköznek bizonyul olyan nagy fejlesztőcsapatok
+együttműködésében, amelyek tagjai eltérő mélységben ismerik a
+rendszerprogramozást. Az alacsony szintű kód hajlamos mindenféle alattomos
+hibára, amelyeket a legtöbb más nyelvben csak kiterjedt teszteléssel és
+tapasztalt fejlesztők alapos kódátvizsgálásával lehet elkapni. A Rustban a
+fordító kapuőri szerepet játszik: nem hajlandó lefordítani az ilyen
+megfoghatatlan hibákat – köztük a konkurenciahibákat – tartalmazó kódot. Ha a
+csapat a fordítóval együtt dolgozik, akkor az idejét a program logikájára
+fordíthatja ahelyett, hogy hibákat üldözne.
 
-Rust also brings contemporary developer tools to the systems programming world:
+A Rust ráadásul korszerű fejlesztői eszközöket hoz a rendszerprogramozás
+világába:
 
-- Cargo, the included dependency manager and build tool, makes adding,
-  compiling, and managing dependencies painless and consistent across the Rust
-  ecosystem.
-- The `rustfmt` formatting tool ensures a consistent coding style across
-  developers.
-- The Rust Language Server powers integrated development environment (IDE)
-  integration for code completion and inline error messages.
+- A Cargo, a hozzá tartozó függőségkezelő és build eszköz fájdalommentessé és a
+  Rust-ökoszisztémán belül egységessé teszi a függőségek hozzáadását,
+  fordítását és kezelését.
+- A `rustfmt` formázóeszköz egységes kódolási stílust biztosít a fejlesztők
+  között.
+- A Rust Language Server hajtja az integrált fejlesztői környezetek (IDE-k)
+  integrációját: a kódkiegészítést és a soron belüli hibaüzeneteket.
 
-By using these and other tools in the Rust ecosystem, developers can be
-productive while writing systems-level code.
+Ezeknek és a Rust-ökoszisztéma egyéb eszközeinek használatával a fejlesztők
+termelékenyek maradhatnak, miközben rendszerszintű kódot írnak.
 
-### Students
+### Diákok
 
-Rust is for students and those who are interested in learning about systems
-concepts. Using Rust, many people have learned about topics like operating
-systems development. The community is very welcoming and happy to answer
-students’ questions. Through efforts such as this book, the Rust teams want to
-make systems concepts more accessible to more people, especially those new to
-programming.
+A Rust a diákoké és mindazoké, akiket érdekel a rendszerszintű fogalmak
+megismerése. A Rust segítségével sokan ismerkedtek meg olyan témákkal, mint az
+operációsrendszer-fejlesztés. A közösség nagyon befogadó, és szívesen válaszol
+a diákok kérdéseire. Az olyan törekvésekkel, mint ez a könyv, a Rust csapatai
+azt szeretnék elérni, hogy a rendszerszintű fogalmak minél többek számára
+hozzáférhetők legyenek, különösen a programozásban újoncok számára.
 
-### Companies
+### Cégek
 
-Hundreds of companies, large and small, use Rust in production for a variety of
-tasks, including command line tools, web services, DevOps tooling, embedded
-devices, audio and video analysis and transcoding, cryptocurrencies,
-bioinformatics, search engines, Internet of Things applications, machine
-learning, and even major parts of the Firefox web browser.
+Több száz kis és nagy cég használja a Rustot éles környezetben a
+legkülönbözőbb feladatokra, például parancssori eszközökhöz,
+webszolgáltatásokhoz, DevOps-eszközökhöz, beágyazott eszközökhöz, hang- és
+videóelemzéshez és -átkódoláshoz, kriptovalutákhoz, bioinformatikához,
+keresőmotorokhoz, a dolgok internete (IoT) alkalmazásaihoz, gépi tanuláshoz,
+sőt a Firefox webböngésző jelentős részeihez is.
 
-### Open Source Developers
+### Nyílt forráskódú fejlesztők
 
-Rust is for people who want to build the Rust programming language, community,
-developer tools, and libraries. We’d love to have you contribute to the Rust
-language.
+A Rust azoké, akik szeretnék építeni a Rust programozási nyelvet, a
+közösségét, a fejlesztői eszközeit és a könyvtárait. Örömmel vennénk, ha te is
+hozzájárulnál a Rust nyelvhez.
 
-### People Who Value Speed and Stability
+### Akik értékelik a sebességet és a stabilitást
 
-Rust is for people who crave speed and stability in a language. By speed, we
-mean both how quickly Rust code can run and the speed at which Rust lets you
-write programs. The Rust compiler’s checks ensure stability through feature
-additions and refactoring. This is in contrast to the brittle legacy code in
-languages without these checks, which developers are often afraid to modify. By
-striving for zero-cost abstractions—higher-level features that compile to
-lower-level code as fast as code written manually—Rust endeavors to make safe
-code be fast code as well.
+A Rust azoké, akik sebességre és stabilitásra vágynak egy nyelvben. Sebesség
+alatt egyszerre értjük azt, hogy a Rust-kód milyen gyorsan fut, és azt, hogy a
+Rustban milyen gyorsan tudsz programokat írni. A Rust fordítójának
+ellenőrzései a stabilitást biztosítják az újabb képességek hozzáadása és a
+refaktorálás során is. Ez éles ellentétben áll az ilyen ellenőrzések nélküli
+nyelvek törékeny, örökölt kódjával, amelyhez a fejlesztők gyakran hozzányúlni
+sem mernek. A nulla költségű absztrakciókra – magasabb szintű képességekre,
+amelyek olyan gyors alacsony szintű kóddá fordulnak, mintha kézzel írták volna
+őket – törekedve a Rust arra igyekszik, hogy a biztonságos kód egyben gyors
+kód is legyen.
 
-The Rust language hopes to support many other users as well; those mentioned
-here are merely some of the biggest stakeholders. Overall, Rust’s greatest
-ambition is to eliminate the trade-offs that programmers have accepted for
-decades by providing safety _and_ productivity, speed _and_ ergonomics. Give
-Rust a try, and see if its choices work for you.
+A Rust nyelv reméli, hogy sok más felhasználót is támogatni tud; az itt
+említettek csupán a legnagyobb érdekelt csoportok közül valók. Összességében a
+Rust legnagyobb ambíciója az, hogy megszüntesse azokat a kompromisszumokat,
+amelyeket a programozók évtizedeken át elfogadtak: egyszerre nyújt
+biztonságot _és_ termelékenységet, sebességet _és_ ergonómiát. Próbáld ki a
+Rustot, és nézd meg, beválnak-e nálad a döntései.
 
-## Who This Book Is For
+## Kinek szól ez a könyv
 
-This book assumes that you’ve written code in another programming language, but
-it doesn’t make any assumptions about which one. We’ve tried to make the
-material broadly accessible to those from a wide variety of programming
-backgrounds. We don’t spend a lot of time talking about what programming _is_
-or how to think about it. If you’re entirely new to programming, you would be
-better served by reading a book that specifically provides an introduction to
-programming.
+Ez a könyv feltételezi, hogy már írtál kódot valamilyen másik programozási
+nyelven, de nem feltételezi, hogy melyiken. Igyekeztünk az anyagot széles
+körben hozzáférhetővé tenni a legkülönfélébb programozói háttérrel
+rendelkezők számára. Nem foglalkozunk sokat azzal, hogy _mi is_ a programozás,
+vagy hogyan gondolkodjunk róla. Ha teljesen kezdő vagy a programozásban, jobban
+jársz, ha előbb egy kifejezetten a programozásba bevezető könyvet olvasol el.
 
-## How to Use This Book
+## Hogyan használd ezt a könyvet
 
-In general, this book assumes that you’re reading it in sequence from front to
-back. Later chapters build on concepts in earlier chapters, and earlier
-chapters might not delve into details on a particular topic but will revisit
-the topic in a later chapter.
+A könyv általában azt feltételezi, hogy elölről hátrafelé, sorrendben olvasod.
+A későbbi fejezetek a korábbi fejezetek fogalmaira épülnek, a korábbi fejezetek
+pedig lehet, hogy nem mennek bele egy-egy téma részleteibe, de valamelyik
+későbbi fejezetben visszatérnek rá.
 
-You’ll find two kinds of chapters in this book: concept chapters and project
-chapters. In concept chapters, you’ll learn about an aspect of Rust. In project
-chapters, we’ll build small programs together, applying what you’ve learned so
-far. Chapter 2, Chapter 12, and Chapter 21 are project chapters; the rest are
-concept chapters.
+Kétféle fejezetet találsz a könyvben: fogalmi fejezeteket és
+projektfejezeteket. A fogalmi fejezetekben a Rust egy-egy vonatkozásáról
+tanulsz. A projektfejezetekben együtt építünk kis programokat, alkalmazva az
+addig tanultakat. A 2., a 12. és a 21. fejezet projektfejezet; a többi fogalmi
+fejezet.
 
-**Chapter 1** explains how to install Rust, how to write a “Hello, world!”
-program, and how to use Cargo, Rust’s package manager and build tool. **Chapter
-2** is a hands-on introduction to writing a program in Rust, having you build
-up a number-guessing game. Here, we cover concepts at a high level, and later
-chapters will provide additional detail. If you want to get your hands dirty
-right away, Chapter 2 is the place for that. If you’re a particularly
-meticulous learner who prefers to learn every detail before moving on to the
-next, you might want to skip Chapter 2 and go straight to **Chapter 3**, which
-covers Rust features that are similar to those of other programming languages;
-then, you can return to Chapter 2 when you’d like to work on a project applying
-the details you’ve learned.
+**Az 1. fejezet** elmagyarázza, hogyan telepítsd a Rustot, hogyan írj egy
+„Hello, world!” programot, és hogyan használd a Cargót, a Rust
+csomagkezelőjét és build eszközét. **A 2. fejezet** gyakorlatias bevezetés a
+Rust-programok írásába: egy számkitalálós játékot építesz fel benne. Itt magas
+szinten tárgyaljuk a fogalmakat, a további részleteket a későbbi fejezetek
+adják meg. Ha rögtön bele akarsz vetni magad a munkába, a 2. fejezet való
+neked. Ha viszont különösen alapos tanuló vagy, aki szereti minden részletet
+megismerni, mielőtt továbblép, akkor átugorhatod a 2. fejezetet, és rögtön a
+**3. fejezettel** folytathatod, amely a Rust más programozási nyelvekéhez
+hasonló képességeit veszi sorra; a 2. fejezethez pedig akkor térhetsz vissza,
+amikor egy projekten szeretnéd alkalmazni a megismert részleteket.
 
-In **Chapter 4**, you’ll learn about Rust’s ownership system. **Chapter 5**
-discusses structs and methods. **Chapter 6** covers enums, `match` expressions,
-and the `if let` and `let...else` control flow constructs. You’ll use structs
-and enums to make custom types.
+**A 4. fejezetben** a Rust ownership rendszerét ismered meg. **Az 5. fejezet** a
+structokról és a metódusokról szól. **A 6. fejezet** az enumokat, a `match`
+kifejezéseket, valamint az `if let` és a `let...else` vezérlési szerkezeteket
+tárgyalja. A structokkal és az enumokkal saját típusokat készíthetsz.
 
-In **Chapter 7**, you’ll learn about Rust’s module system and about privacy
-rules for organizing your code and its public application programming interface
-(API). **Chapter 8** discusses some common collection data structures that the
-standard library provides: vectors, strings, and hash maps. **Chapter 9**
-explores Rust’s error-handling philosophy and techniques.
+**A 7. fejezetben** a Rust modulrendszerével és a láthatósági szabályokkal
+ismerkedsz meg, amelyekkel a kódodat és annak nyilvános programozási felületét
+(API-ját) szervezheted. **A 8. fejezet** néhány gyakori kollekciós
+adatszerkezetet tárgyal, amelyet a standard könyvtár nyújt: a vektorokat, a
+stringeket és a hash mapeket. **A 9. fejezet** a Rust hibakezelési filozófiáját
+és technikáit járja körül.
 
-**Chapter 10** digs into generics, traits, and lifetimes, which give you the
-power to define code that applies to multiple types. **Chapter 11** is all
-about testing, which even with Rust’s safety guarantees is necessary to ensure
-that your program’s logic is correct. In **Chapter 12**, we’ll build our own
-implementation of a subset of functionality from the `grep` command line tool
-that searches for text within files. For this, we’ll use many of the concepts
-we discussed in the previous chapters.
+**A 10. fejezet** a generikusokba, a trait-ekbe és a lifetime-okba ás bele,
+amelyekkel több típusra is alkalmazható kódot definiálhatsz. **A 11. fejezet**
+teljes egészében a tesztelésről szól, amely a Rust biztonsági garanciái mellett
+is szükséges ahhoz, hogy a programod logikája biztosan helyes legyen. **A 12.
+fejezetben** megírjuk a saját implementációnkat a `grep` parancssori eszköz
+egy részhalmazának funkcionalitásáról, amellyel fájlokban lehet szöveget
+keresni. Ehhez sok olyan fogalmat felhasználunk, amelyet az előző fejezetekben
+tárgyaltunk.
 
-**Chapter 13** explores closures and iterators: features of Rust that come from
-functional programming languages. In **Chapter 14**, we’ll examine Cargo in
-more depth and talk about best practices for sharing your libraries with
-others. **Chapter 15** discusses smart pointers that the standard library
-provides and the traits that enable their functionality.
+**A 13. fejezet** a closure-öket és az iterátorokat járja körül: a Rust olyan
+képességeit, amelyek a funkcionális programozási nyelvekből származnak. **A 14.
+fejezetben** alaposabban megvizsgáljuk a Cargót, és a könyvtáraid másokkal való
+megosztásának bevált gyakorlatairól beszélünk. **A 15. fejezet** a standard
+könyvtár által nyújtott smart pointereket tárgyalja, valamint azokat a
+trait-eket, amelyek a működésüket lehetővé teszik.
 
-In **Chapter 16**, we’ll walk through different models of concurrent
-programming and talk about how Rust helps you program in multiple threads
-fearlessly. In **Chapter 17**, we build on that by exploring Rust’s async and
-await syntax, along with tasks, futures, and streams, and the lightweight
-concurrency model they enable.
+**A 16. fejezetben** végigvesszük a konkurens programozás különböző modelljeit,
+és arról beszélünk, hogyan segít a Rust abban, hogy félelem nélkül programozz
+több szálon. **A 17. fejezetben** erre építve a Rust async és await
+szintaxisát vizsgáljuk meg a taskokkal, future-ökkel és streamekkel együtt,
+valamint az általuk lehetővé tett könnyűsúlyú konkurenciamodellt.
 
-**Chapter 18** looks at how Rust idioms compare to object-oriented programming
-principles you might be familiar with. **Chapter 19** is a reference on
-patterns and pattern matching, which are powerful ways of expressing ideas
-throughout Rust programs. **Chapter 20** contains a smorgasbord of advanced
-topics of interest, including unsafe Rust, macros, and more about lifetimes,
-traits, types, functions, and closures.
+**A 18. fejezet** azt nézi meg, hogyan viszonyulnak a Rust idiómái az
+objektumorientált programozás elveihez, amelyeket talán már ismersz. **A 19.
+fejezet** referencia a mintákról és a mintaillesztésről, amelyek a
+Rust-programokban végig erőteljes eszközei a gondolatok kifejezésének. **A 20.
+fejezet** haladó témák tarka gyűjteményét tartalmazza, köztük az unsafe Rustot,
+a makrókat, valamint további tudnivalókat a lifetime-okról, a trait-ekről, a
+típusokról, a függvényekről és a closure-ökről.
 
-In **Chapter 21**, we’ll complete a project in which we’ll implement a
-low-level multithreaded web server!
+**A 21. fejezetben** befejezünk egy projektet, amelyben egy alacsony szintű,
+többszálú webszervert implementálunk!
 
-Finally, some appendixes contain useful information about the language in a
-more reference-like format. **Appendix A** covers Rust’s keywords, **Appendix
-B** covers Rust’s operators and symbols, **Appendix C** covers derivable traits
-provided by the standard library, **Appendix D** covers some useful development
-tools, and **Appendix E** explains Rust editions. In **Appendix F**, you can
-find translations of the book, and in **Appendix G** we’ll cover how Rust is
-made and what nightly Rust is.
+Végül néhány függelék tartalmaz hasznos, inkább referenciaszerű információt a
+nyelvről. **Az A függelék** a Rust kulcsszavait, **a B függelék** a Rust
+operátorait és szimbólumait, **a C függelék** a standard könyvtár által
+nyújtott származtatható trait-eket, **a D függelék** néhány hasznos fejlesztői
+eszközt tárgyal, **az E függelék** pedig a Rust editionjeit magyarázza el. **Az
+F függelékben** a könyv fordításait találod, **a G függelékben** pedig azt
+vesszük végig, hogyan készül a Rust, és mi az a nightly Rust.
 
-There is no wrong way to read this book: If you want to skip ahead, go for it!
-You might have to jump back to earlier chapters if you experience any
-confusion. But do whatever works for you.
+Ezt a könyvet nem lehet rosszul olvasni: ha előre akarsz ugrani, csak
+nyugodtan! Ha bármi zavarossá válik, lehet, hogy vissza kell ugranod korábbi
+fejezetekhez. De tedd azt, ami neked bejön.
 
 <span id="ferris"></span>
 
-An important part of the process of learning Rust is learning how to read the
-error messages the compiler displays: These will guide you toward working code.
-As such, we’ll provide many examples that don’t compile along with the error
-message the compiler will show you in each situation. Know that if you enter
-and run a random example, it may not compile! Make sure you read the
-surrounding text to see whether the example you’re trying to run is meant to
-error. In most situations, we’ll lead you to the correct version of any code
-that doesn’t compile. Ferris will also help you distinguish code that isn’t
-meant to work:
+A Rust tanulási folyamatának fontos része megtanulni elolvasni a fordító által
+megjelenített hibaüzeneteket: ezek elvezetnek a működő kódhoz. Ezért sok olyan
+példát is mutatunk, amely nem fordul le, és mellé azt a hibaüzenetet, amelyet a
+fordító az adott helyzetben mutat. Tudd hát, hogy ha csak úgy találomra beírsz
+és lefuttatsz egy példát, lehet, hogy nem fordul le! Mindig olvasd el a körülötte
+lévő szöveget, hogy kiderüljön, a futtatni kívánt példának hibát kell-e adnia. A
+legtöbb esetben elvezetünk a le nem forduló kód helyes változatához. Ferris is
+segít megkülönböztetni azt a kódot, amelynek nem is kell működnie:
 
-| Ferris                                                                                                           | Meaning                                          |
+| Ferris                                                                                                           | Jelentés                                          |
 | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| <img src="img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris with a question mark"/>            | This code does not compile!                      |
-| <img src="img/ferris/panics.svg" class="ferris-explain" alt="Ferris throwing up their hands"/>                   | This code panics!                                |
-| <img src="img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="Ferris with one claw up, shrugging"/> | This code does not produce the desired behavior. |
+| <img src="img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris kérdőjellel"/>            | Ez a kód nem fordul le!                      |
+| <img src="img/ferris/panics.svg" class="ferris-explain" alt="Ferris égnek emelt kezekkel"/>                   | Ez a kód panicot vált ki!                                |
+| <img src="img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="Ferris felemelt ollóval, vállat vonva"/> | Ez a kód nem a kívánt viselkedést produkálja. |
 
-In most situations, we’ll lead you to the correct version of any code that
-doesn’t compile.
+A legtöbb esetben elvezetünk a le nem forduló kód helyes változatához.
 
-## Source Code
+## Forráskód
 
-The source files from which this book is generated can be found on
-[GitHub][book].
+Azok a forrásfájlok, amelyekből ez a könyv készül, megtalálhatók a
+[GitHubon][book].
 
 [book]: https://github.com/rust-lang/book/tree/main/src

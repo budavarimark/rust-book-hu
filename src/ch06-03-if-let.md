@@ -1,12 +1,12 @@
-## Concise Control Flow with `if let` and `let...else`
+## Tömör vezérlés az `if let` és a `let...else` szerkezettel
 
-The `if let` syntax lets you combine `if` and `let` into a less verbose way to
-handle values that match one pattern while ignoring the rest. Consider the
-program in Listing 6-6 that matches on an `Option<u8>` value in the
-`config_max` variable but only wants to execute code if the value is the `Some`
-variant.
+Az `if let` szintaxis lehetővé teszi, hogy az `if`-et és a `let`-et
+összevonva kevésbé bőbeszédű módon kezeld az egyetlen mintára illeszkedő
+értékeket, a többit pedig figyelmen kívül hagyd. Nézd meg a 6-6. listában
+látható programot, amely a `config_max` változóban lévő `Option<u8>` értékre
+illeszt, de csak akkor akar kódot futtatni, ha az érték a `Some` variáns.
 
-<Listing number="6-6" caption="A `match` that only cares about executing code when the value is `Some`">
+<Listing number="6-6" caption="Egy `match`, amelyet csak az érdekel, hogy kódot futtasson, ha az érték `Some`">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-06/src/main.rs:here}}
@@ -14,70 +14,72 @@ variant.
 
 </Listing>
 
-If the value is `Some`, we print out the value in the `Some` variant by binding
-the value to the variable `max` in the pattern. We don’t want to do anything
-with the `None` value. To satisfy the `match` expression, we have to add `_ =>
-()` after processing just one variant, which is annoying boilerplate code to
-add.
+Ha az érték `Some`, kiírjuk a `Some` variánsban lévő értéket úgy, hogy a
+mintában hozzákötjük az értéket a `max` változóhoz. A `None` értékkel nem
+akarunk semmit sem kezdeni. Hogy a `match` kifejezésnek eleget tegyünk, egyetlen
+variáns feldolgozása után hozzá kell adnunk a `_ => ()` ágat, ami bosszantó,
+felesleges sablonkód.
 
-Instead, we could write this in a shorter way using `if let`. The following
-code behaves the same as the `match` in Listing 6-6:
+Ehelyett rövidebben is megírhatjuk ezt `if let` segítségével. A következő kód
+ugyanúgy viselkedik, mint a 6-6. listában lévő `match`:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-12-if-let/src/main.rs:here}}
 ```
 
-The syntax `if let` takes a pattern and an expression separated by an equal
-sign. It works the same way as a `match`, where the expression is given to the
-`match` and the pattern is its first arm. In this case, the pattern is
-`Some(max)`, and the `max` binds to the value inside the `Some`. We can then
-use `max` in the body of the `if let` block in the same way we used `max` in
-the corresponding `match` arm. The code in the `if let` block only runs if the
-value matches the pattern.
+Az `if let` szintaxis egy mintát és egy kifejezést vár, egyenlőségjellel
+elválasztva. Ugyanúgy működik, mint egy `match`, ahol a kifejezést a `match`
+kapja meg, a minta pedig az első ága. Ebben az esetben a minta a `Some(max)`, a
+`max` pedig a `Some`-ban lévő értékhez kötődik. Ezután az `if let` blokk
+törzsében ugyanúgy használhatjuk a `max` változót, ahogyan a neki megfelelő
+`match`-ágban használtuk. Az `if let` blokkban lévő kód csak akkor fut le, ha az
+érték illeszkedik a mintára.
 
-Using `if let` means less typing, less indentation, and less boilerplate code.
-However, you lose the exhaustive checking `match` enforces that ensures that
-you aren’t forgetting to handle any cases. Choosing between `match` and `if
-let` depends on what you’re doing in your particular situation and whether
-gaining conciseness is an appropriate trade-off for losing exhaustive checking.
+Az `if let` használatával kevesebbet kell gépelni, kevesebb a behúzás és
+kevesebb a sablonkód. Cserébe viszont elveszíted azt a kimerítő ellenőrzést,
+amelyet a `match` kényszerít ki, és amely biztosítja, hogy egyetlen esetet se
+felejts el kezelni. A `match` és az `if let` közötti választás attól függ, mit
+csinálsz az adott helyzetben, és hogy a tömörség megéri-e a kimerítő ellenőrzés
+elvesztését.
 
-In other words, you can think of `if let` as syntax sugar for a `match` that
-runs code when the value matches one pattern and then ignores all other values.
+Más szóval úgy gondolhatsz az `if let`-re, mint egy olyan `match` szintaktikai
+cukorkájára, amely akkor futtat kódot, ha az érték egy adott mintára
+illeszkedik, majd minden más értéket figyelmen kívül hagy.
 
-We can include an `else` with an `if let`. The block of code that goes with the
-`else` is the same as the block of code that would go with the `_` case in the
-`match` expression that is equivalent to the `if let` and `else`. Recall the
-`Coin` enum definition in Listing 6-4, where the `Quarter` variant also held a
-`UsState` value. If we wanted to count all non-quarter coins we see while also
-announcing the state of the quarters, we could do that with a `match`
-expression, like this:
+Az `if let` mellé `else` ágat is tehetünk. Az `else`-hez tartozó kódblokk
+ugyanaz, mint az a kódblokk, amely az `if let`-tel és `else`-szel egyenértékű
+`match` kifejezés `_` ágához tartozna. Emlékezz vissza a `Coin` enum 6-4.
+listában lévő definíciójára, ahol a `Quarter` variáns egy `UsState` értéket is
+tárolt. Ha meg akarnánk számolni az összes látott, nem negyeddolláros érmét, és
+közben be is akarnánk mondani a negyeddollárosok államát, ezt megtehetnénk egy
+`match` kifejezéssel, így:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-13-count-and-announce-match/src/main.rs:here}}
 ```
 
-Or we could use an `if let` and `else` expression, like this:
+Vagy használhatnánk egy `if let` és `else` kifejezést, így:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-14-count-and-announce-if-let-else/src/main.rs:here}}
 ```
 
-## Staying on the “Happy Path” with `let...else`
+## Maradjunk a „boldog úton” a `let...else` szerkezettel
 
-The common pattern is to perform some computation when a value is present and
-return a default value otherwise. Continuing with our example of coins with a
-`UsState` value, if we wanted to say something funny depending on how old the
-state on the quarter was, we might introduce a method on `UsState` to check the
-age of a state, like so:
+Gyakori minta, hogy elvégzünk valamilyen számítást, ha van érték, egyébként
+pedig egy alapértelmezett értéket adunk vissza. Folytatva a `UsState` értéket
+tartalmazó érmés példánkat: ha valami vicceset szeretnénk mondani annak
+függvényében, hogy milyen régi a negyeddollároson szereplő állam, bevezethetünk
+egy metódust az `UsState`-en, amely megnézi egy állam korát, így:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-07/src/main.rs:state}}
 ```
 
-Then, we might use `if let` to match on the type of coin, introducing a `state`
-variable within the body of the condition, as in Listing 6-7.
+Ezután `if let`-tel illeszthetünk az érme típusára, és bevezethetünk egy `state`
+változót a feltétel törzsében, ahogy a 6-7. listában látható.
 
-<Listing number="6-7" caption="Checking whether a state existed in 1900 by using conditionals nested inside an `if let`">
+<Listing number="6-7" caption="Annak ellenőrzése, hogy egy állam létezett-e 1900-ban, egy `if let`-be ágyazott feltételekkel">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-07/src/main.rs:describe}}
@@ -85,14 +87,14 @@ variable within the body of the condition, as in Listing 6-7.
 
 </Listing>
 
-That gets the job done, but it has pushed the work into the body of the `if
-let` statement, and if the work to be done is more complicated, it might be
-hard to follow exactly how the top-level branches relate. We could also take
-advantage of the fact that expressions produce a value either to produce the
-`state` from the `if let` or to return early, as in Listing 6-8. (You could do
-something similar with a `match`, too.)
+Ez megoldja a feladatot, de a munkát az `if let` utasítás törzsébe tolta, és ha
+az elvégzendő munka bonyolultabb, nehéz lehet pontosan követni, hogyan
+viszonyulnak egymáshoz a legfelső szintű ágak. Kihasználhatnánk azt is, hogy a
+kifejezéseknek van értékük, és vagy előállítjuk a `state`-et az `if let`-ből,
+vagy korán visszatérünk, ahogy a 6-8. listában. (Valami hasonlót `match`-csel
+is csinálhatnál.)
 
-<Listing number="6-8" caption="Using `if let` to produce a value or return early">
+<Listing number="6-8" caption="Az `if let` használata érték előállítására vagy korai visszatérésre">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-08/src/main.rs:describe}}
@@ -100,20 +102,20 @@ something similar with a `match`, too.)
 
 </Listing>
 
-This is a bit annoying to follow in its own way, though! One branch of the `if
-let` produces a value, and the other one returns from the function entirely.
+Ezt viszont a maga módján kicsit bosszantó követni! Az `if let` egyik ága értéket
+állít elő, a másik pedig teljesen kilép a függvényből.
 
-To make this common pattern nicer to express, Rust has `let...else`. The
-`let...else` syntax takes a pattern on the left side and an expression on the
-right, very similar to `if let`, but it does not have an `if` branch, only an
-`else` branch. If the pattern matches, it will bind the value from the pattern
-in the outer scope. If the pattern does _not_ match, the program will flow into
-the `else` arm, which must return from the function.
+Hogy ezt a gyakori mintát szebben lehessen kifejezni, a Rustban van
+`let...else`. A `let...else` szintaxis a bal oldalon egy mintát, a jobb oldalon
+egy kifejezést vár, nagyon hasonlóan az `if let`-hez, de nincs `if` ága, csak
+`else` ága. Ha a minta illeszkedik, a mintából származó értéket a külső
+hatókörben köti hozzá. Ha a minta _nem_ illeszkedik, a program az `else` ágra
+kerül, amelynek vissza kell térnie a függvényből.
 
-In Listing 6-9, you can see how Listing 6-8 looks when using `let...else` in
-place of `if let`.
+A 6-9. listában láthatod, hogyan néz ki a 6-8. lista, ha az `if let` helyett
+`let...else` szerkezetet használunk.
 
-<Listing number="6-9" caption="Using `let...else` to clarify the flow through the function">
+<Listing number="6-9" caption="A `let...else` használata a függvényen belüli folyamat áttekinthetőbbé tételére">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-09/src/main.rs:describe}}
@@ -121,27 +123,28 @@ place of `if let`.
 
 </Listing>
 
-Notice that it stays on the “happy path” in the main body of the function this
-way, without having significantly different control flow for two branches the
-way the `if let` did.
+Vedd észre, hogy így a függvény fő törzsében végig a „boldog úton” maradunk,
+anélkül hogy két ág között jelentősen eltérő vezérlési folyam alakulna ki, ahogy
+az `if let` esetében történt.
 
-If you have a situation in which your program has logic that is too verbose to
-express using a `match`, remember that `if let` and `let...else` are in your
-Rust toolbox as well.
+Ha olyan helyzetbe kerülsz, amelyben a programod logikája túl bőbeszédű ahhoz,
+hogy `match`-csel fejezd ki, ne feledd, hogy az `if let` és a `let...else` is a
+Rust-eszköztáradban van.
 
-## Summary
+## Összefoglalás
 
-We’ve now covered how to use enums to create custom types that can be one of a
-set of enumerated values. We’ve shown how the standard library’s `Option<T>`
-type helps you use the type system to prevent errors. When enum values have
-data inside them, you can use `match` or `if let` to extract and use those
-values, depending on how many cases you need to handle.
+Áttekintettük, hogyan használhatók az enumok arra, hogy olyan egyéni típusokat
+hozzunk létre, amelyek egy felsorolt értékkészlet valamelyik elemét vehetik fel.
+Megmutattuk, hogyan segít a standard könyvtár `Option<T>` típusa abban, hogy a
+típusrendszert hibák megelőzésére használd. Amikor az enum értékei adatot is
+tartalmaznak, a `match` vagy az `if let` segítségével nyerheted ki és
+használhatod ezeket az értékeket, attól függően, hány esetet kell kezelned.
 
-Your Rust programs can now express concepts in your domain using structs and
-enums. Creating custom types to use in your API ensures type safety: The
-compiler will make certain your functions only get values of the type each
-function expects.
+A Rust-programjaid mostantól struct-ok és enumok segítségével tudják kifejezni a
+szakterületed fogalmait. Ha egyéni típusokat hozol létre az API-dhoz, azzal
+típusbiztonságot biztosítasz: a fordító gondoskodik arról, hogy a függvényeid
+csak olyan típusú értékeket kapjanak, amilyet az adott függvény elvár.
 
-In order to provide a well-organized API to your users that is straightforward
-to use and only exposes exactly what your users will need, let’s now turn to
-Rust’s modules.
+Ahhoz, hogy jól szervezett, egyszerűen használható API-t adhass a
+felhasználóidnak, amely pontosan csak azt teszi közzé, amire szükségük lesz,
+most forduljunk a Rust moduljai felé.

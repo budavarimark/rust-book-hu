@@ -2,51 +2,59 @@
 
 <a id="managing-growing-projects-with-packages-crates-and-modules"></a>
 
-# Packages, Crates, and Modules
+# Csomagok, crate-ek és modulok
 
-As you write large programs, organizing your code will become increasingly
-important. By grouping related functionality and separating code with distinct
-features, you’ll clarify where to find code that implements a particular
-feature and where to go to change how a feature works.
+Ahogy nagyobb programokat írsz, a kódod szervezése egyre fontosabbá válik. Ha
+az összetartozó funkciókat csoportosítod, és a különálló feladatokat ellátó
+kódrészeket elkülöníted, világossá teszed, hol található egy adott képességet
+megvalósító kód, és hová kell menned, ha meg akarod változtatni, hogyan
+működik.
 
-The programs we’ve written so far have been in one module in one file. As a
-project grows, you should organize code by splitting it into multiple modules
-and then multiple files. A package can contain multiple binary crates and
-optionally one library crate. As a package grows, you can extract parts into
-separate crates that become external dependencies. This chapter covers all
-these techniques. For very large projects comprising a set of interrelated
-packages that evolve together, Cargo provides workspaces, which we’ll cover in
-[“Cargo Workspaces”][workspaces]<!-- ignore --> in Chapter 14.
+Az eddig írt programjaink egyetlen fájlban, egyetlen modulban voltak. Ahogy egy
+projekt növekszik, érdemes úgy szervezned a kódot, hogy több modulra, majd több
+fájlra bontod. Egy csomag több binary crate-et és opcionálisan egy library
+crate-et tartalmazhat. Ahogy a csomag nő, egyes részeit külön crate-ekbe
+emelheted ki, amelyek külső függőségekké válnak. Ez a fejezet mindezeket a
+technikákat bemutatja. Nagyon nagy projektekhez, amelyek együtt fejlődő,
+egymással összefüggő csomagok halmazából állnak, a Cargo workspace-eket kínál;
+ezekkel a 14. fejezet [„Cargo-workspace-ek”][workspaces]<!-- ignore --> című
+szakaszában foglalkozunk.
 
-We’ll also discuss encapsulating implementation details, which lets you reuse
-code at a higher level: Once you’ve implemented an operation, other code can
-call your code via its public interface without having to know how the
-implementation works. The way you write code defines which parts are public for
-other code to use and which parts are private implementation details that you
-reserve the right to change. This is another way to limit the amount of detail
-you have to keep in your head.
+Szó lesz az implementációs részletek egységbezárásáról is, amely lehetővé teszi
+a kód magasabb szintű újrafelhasználását: ha egyszer implementáltál egy
+műveletet, más kód meghívhatja a kódodat a nyilvános felületén keresztül
+anélkül, hogy tudnia kellene, hogyan működik az implementáció. Az, ahogyan a
+kódot megírod, meghatározza, mely részei nyilvánosak más kód számára, és mely
+részei olyan privát implementációs részletek, amelyek megváltoztatásának jogát
+fenntartod magadnak. Ez egy újabb módja annak, hogy csökkentsd a fejben
+tartandó részletek mennyiségét.
 
-A related concept is scope: The nested context in which code is written has a
-set of names that are defined as “in scope.” When reading, writing, and
-compiling code, programmers and compilers need to know whether a particular
-name at a particular spot refers to a variable, function, struct, enum, module,
-constant, or other item and what that item means. You can create scopes and
-change which names are in or out of scope. You can’t have two items with the
-same name in the same scope; tools are available to resolve name conflicts.
+Egy kapcsolódó fogalom a hatókör: az a beágyazott környezet, amelyben a kódot
+írod, rendelkezik nevek egy halmazával, amelyek „a hatókörben vannak”. Kód
+olvasásakor, írásakor és fordításakor a programozóknak és a fordítóknak tudniuk
+kell, hogy egy adott helyen egy adott név változóra, függvényre, struct-ra,
+enumra, modulra, konstansra vagy más elemre utal-e, és hogy mit jelent az adott
+elem. Létrehozhatsz hatóköröket, és megváltoztathatod, mely nevek vannak a
+hatókörben, és melyek nincsenek. Ugyanabban a hatókörben nem lehet két azonos
+nevű elemed; a névütközések feloldására vannak eszközök.
 
-Rust has a number of features that allow you to manage your code’s
-organization, including which details are exposed, which details are private,
-and what names are in each scope in your programs. These features, sometimes
-collectively referred to as the _module system_, include:
+A Rustnak számos képessége van, amelyekkel kezelheted a kódod szervezését,
+beleértve azt, hogy mely részletek nyilvánosak, mely részletek privátak, és
+milyen nevek vannak az egyes hatókörökben a programjaidban. Ezek a képességek,
+amelyeket néha együtt _modulrendszernek_ neveznek, a következők:
 
-* **Packages**: A Cargo feature that lets you build, test, and share crates
-* **Crates**: A tree of modules that produces a library or executable
-* **Modules and use**: Let you control the organization, scope, and privacy of
-paths
-* **Paths**: A way of naming an item, such as a struct, function, or module
+* **Csomagok**: A Cargo képessége, amellyel crate-eket építhetsz, tesztelhetsz
+és oszthatsz meg
+* **Crate-ek**: Modulok fája, amely könyvtárat vagy futtatható állományt hoz
+létre
+* **Modulok és a use**: Lehetővé teszik az útvonalak szervezésének,
+hatókörének és láthatóságának szabályozását
+* **Útvonalak**: Egy elem – például egy struct, függvény vagy modul –
+megnevezésének módja
 
-In this chapter, we’ll cover all these features, discuss how they interact, and
-explain how to use them to manage scope. By the end, you should have a solid
-understanding of the module system and be able to work with scopes like a pro!
+Ebben a fejezetben mindezeket a képességeket áttekintjük, megbeszéljük, hogyan
+hatnak egymásra, és elmagyarázzuk, hogyan használd őket a hatókörök kezelésére.
+A végére alaposan meg kell értened a modulrendszert, és profi módjára kell
+tudnod bánni a hatókörökkel!
 
 [workspaces]: ch14-03-cargo-workspaces.html

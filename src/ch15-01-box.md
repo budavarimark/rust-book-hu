@@ -1,44 +1,48 @@
-## Using `Box<T>` to Point to Data on the Heap
+## A `Box<T>` használata heapen lévő adatra mutatáshoz
 
-The most straightforward smart pointer is a box, whose type is written
-`Box<T>`. _Boxes_ allow you to store data on the heap rather than the stack.
-What remains on the stack is the pointer to the heap data. Refer to Chapter 4
-to review the difference between the stack and the heap.
+A legegyszerűbb smart pointer a box, amelynek típusát `Box<T>` alakban írjuk. A
+_boxok_ lehetővé teszik, hogy az adatot a stack helyett a heapen tárold. A
+stacken csak a heapen lévő adatra mutató pointer marad. A stack és a heap közötti
+különbség felelevenítéséhez lapozz vissza a 4. fejezethez.
 
-Boxes don’t have performance overhead, other than storing their data on the
-heap instead of on the stack. But they don’t have many extra capabilities
-either. You’ll use them most often in these situations:
+A boxok nem járnak teljesítménybeli többletköltséggel azon kívül, hogy az
+adatukat a stack helyett a heapen tárolják. Ugyanakkor sok extra képességük
+sincs. Leggyakrabban ezekben a helyzetekben fogod használni őket:
 
-- When you have a type whose size can’t be known at compile time, and you want
-  to use a value of that type in a context that requires an exact size
-- When you have a large amount of data, and you want to transfer ownership but
-  ensure that the data won’t be copied when you do so
-- When you want to own a value, and you care only that it’s a type that
-  implements a particular trait rather than being of a specific type
+- Amikor olyan típusod van, amelynek a mérete fordítási időben nem ismerhető meg,
+  és ilyen típusú értéket szeretnél használni olyan környezetben, amely pontos
+  méretet vár
+- Amikor nagy mennyiségű adatod van, és át szeretnéd adni az ownershipet, de
+  biztosítani szeretnéd, hogy az adat eközben ne másolódjon
+- Amikor birtokolni szeretnél egy értéket, és csak az számít, hogy egy adott
+  trait-et implementáló típus legyen, nem pedig az, hogy konkrétan milyen típus
 
-We’ll demonstrate the first situation in [“Enabling Recursive Types with
-Boxes”](#enabling-recursive-types-with-boxes)<!-- ignore -->. In the second
-case, transferring ownership of a large amount of data can take a long time
-because the data is copied around on the stack. To improve performance in this
-situation, we can store the large amount of data on the heap in a box. Then,
-only the small amount of pointer data is copied around on the stack, while the
-data it references stays in one place on the heap. The third case is known as a
-_trait object_, and [“Using Trait Objects to Abstract over Shared
-Behavior”][trait-objects]<!-- ignore --> in Chapter 18 is devoted to that
-topic. So, what you learn here you’ll apply again in that section!
+Az első helyzetet a [„Rekurzív típusok engedélyezése
+boxokkal”](#enabling-recursive-types-with-boxes)<!-- ignore --> szakaszban
+mutatjuk be. A második esetben nagy mennyiségű adat ownershipjének átadása sokáig
+tarthat, mert az adat ide-oda másolódik a stacken. Hogy ebben a helyzetben
+javítsuk a teljesítményt, a nagy mennyiségű adatot egy boxban a heapen
+tárolhatjuk. Ekkor csak a kevés pointeradat másolódik a stacken, míg a
+hivatkozott adat egy helyben marad a heapen. A harmadik esetet _trait
+object_-nek nevezik, és a 18. fejezet [„Trait objectek használata közös
+viselkedés absztrahálására”][trait-objects]<!-- ignore --> című szakasza teljes
+egészében ezzel a témával foglalkozik. Amit tehát itt megtanulsz, azt abban a
+szakaszban újra alkalmazni fogod!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-boxt-to-store-data-on-the-heap"></a>
 
-### Storing Data on the Heap
+### Adatok tárolása a heapen
 
-Before we discuss the heap storage use case for `Box<T>`, we’ll cover the
-syntax and how to interact with values stored within a `Box<T>`.
+Mielőtt a `Box<T>` heapes tárolásra vonatkozó felhasználási esetét tárgyalnánk,
+nézzük meg a szintaxist, és azt, hogyan dolgozhatunk a `Box<T>`-ben tárolt
+értékekkel.
 
-Listing 15-1 shows how to use a box to store an `i32` value on the heap.
+A 15-1. lista bemutatja, hogyan tárolhatunk egy `i32` értéket a heapen egy box
+segítségével.
 
-<Listing number="15-1" file-name="src/main.rs" caption="Storing an `i32` value on the heap using a box">
+<Listing number="15-1" file-name="src/main.rs" caption="Egy `i32` érték tárolása a heapen box használatával">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-01/src/main.rs}}
@@ -46,73 +50,75 @@ Listing 15-1 shows how to use a box to store an `i32` value on the heap.
 
 </Listing>
 
-We define the variable `b` to have the value of a `Box` that points to the
-value `5`, which is allocated on the heap. This program will print `b = 5`; in
-this case, we can access the data in the box similarly to how we would if this
-data were on the stack. Just like any owned value, when a box goes out of
-scope, as `b` does at the end of `main`, it will be deallocated. The
-deallocation happens both for the box (stored on the stack) and the data it
-points to (stored on the heap).
+A `b` változót úgy definiáljuk, hogy egy `Box` értékét vegye fel, amely az `5`
+értékre mutat; ez az érték a heapen van lefoglalva. Ez a program a `b = 5`
+szöveget írja ki; ebben az esetben ugyanúgy férhetünk hozzá a boxban lévő
+adathoz, ahogy akkor tennénk, ha ez az adat a stacken lenne. Mint minden
+birtokolt érték, a box is felszabadul, amikor kilép a hatóköréből – ahogy a `b`
+teszi a `main` végén. A felszabadítás egyaránt vonatkozik magára a boxra (amely a
+stacken van tárolva) és az adatra, amelyre mutat (amely a heapen van tárolva).
 
-Putting a single value on the heap isn’t very useful, so you won’t use boxes by
-themselves in this way very often. Having values like a single `i32` on the
-stack, where they’re stored by default, is more appropriate in the majority of
-situations. Let’s look at a case where boxes allow us to define types that we
-wouldn’t be allowed to define if we didn’t have boxes.
+Egyetlen érték heapre helyezése nem túl hasznos, ezért a boxokat önmagukban
+ilyen módon nem fogod gyakran használni. Az olyan értékeket, mint egyetlen `i32`,
+a legtöbb helyzetben helyénvalóbb a stacken tartani, ahol alapértelmezés szerint
+tárolódnak. Nézzünk meg egy olyan esetet, ahol a boxok olyan típusok
+definiálását teszik lehetővé, amelyeket boxok nélkül nem definiálhatnánk.
 
-### Enabling Recursive Types with Boxes {#enabling-recursive-types-with-boxes}
+### Rekurzív típusok engedélyezése boxokkal {#enabling-recursive-types-with-boxes}
 
-A value of a _recursive type_ can have another value of the same type as part of
-itself. Recursive types pose an issue because Rust needs to know at compile time
-how much space a type takes up. However, the nesting of values of recursive
-types could theoretically continue infinitely, so Rust can’t know how much space
-the value needs. Because boxes have a known size, we can enable recursive types
-by inserting a box in the recursive type definition.
+Egy _rekurzív típus_ értéke saját magának a részeként tartalmazhat egy másik,
+ugyanolyan típusú értéket. A rekurzív típusok azért jelentenek problémát, mert a
+Rustnak fordítási időben tudnia kell, mennyi helyet foglal egy típus. A rekurzív
+típusok értékeinek egymásba ágyazása azonban elméletileg a végtelenségig
+folytatódhat, így a Rust nem tudhatja, mennyi helyre van szüksége az értéknek.
+Mivel a boxoknak ismert a mérete, a rekurzív típusdefinícióba beszúrt box
+lehetővé teszi a rekurzív típusokat.
 
-As an example of a recursive type, let’s explore the cons list. This is a data
-type commonly found in functional programming languages. The cons list type
-we’ll define is straightforward except for the recursion; therefore, the
-concepts in the example we’ll work with will be useful anytime you get into
-more complex situations involving recursive types.
+Rekurzív típusra példaként nézzük meg a cons listát. Ez a funkcionális
+programozási nyelvekben gyakori adattípus. A cons lista típusa, amelyet
+definiálni fogunk, a rekurziót leszámítva egyszerű; ezért a példában szereplő
+fogalmak bármikor hasznosak lesznek, amikor rekurzív típusokat érintő
+bonyolultabb helyzetekbe kerülsz.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="more-information-about-the-cons-list"></a>
 
-#### Understanding the Cons List
+#### A cons lista megértése
 
-A _cons list_ is a data structure that comes from the Lisp programming language
-and its dialects, is made up of nested pairs, and is the Lisp version of a
-linked list. Its name comes from the `cons` function (short for _construct
-function_) in Lisp that constructs a new pair from its two arguments. By
-calling `cons` on a pair consisting of a value and another pair, we can
-construct cons lists made up of recursive pairs.
+A _cons lista_ olyan adatszerkezet, amely a Lisp programozási nyelvből és annak
+dialektusaiból származik, egymásba ágyazott párokból épül fel, és a láncolt lista
+Lisp-beli megfelelője. A nevét a Lisp `cons` függvényéről kapta (a _construct
+function_ rövidítése), amely két argumentumából egy új párt hoz létre. Ha a
+`cons`-t egy olyan páron hívjuk meg, amely egy értékből és egy másik párból áll,
+rekurzív párokból felépülő cons listákat állíthatunk össze.
 
-For example, here’s a pseudocode representation of a cons list containing the
-list `1, 2, 3` with each pair in parentheses:
+Például itt van egy cons lista pszeudokódos ábrázolása, amely az `1, 2, 3`
+listát tartalmazza, minden párt zárójelbe téve:
 
 ```text
 (1, (2, (3, Nil)))
 ```
 
-Each item in a cons list contains two elements: the value of the current item
-and of the next item. The last item in the list contains only a value called
-`Nil` without a next item. A cons list is produced by recursively calling the
-`cons` function. The canonical name to denote the base case of the recursion is
-`Nil`. Note that this is not the same as the “null” or “nil” concept discussed
-in Chapter 6, which is an invalid or absent value.
+A cons lista minden eleme két részt tartalmaz: az aktuális elem és a következő
+elem értékét. A lista utolsó eleme csak egy `Nil` nevű értéket tartalmaz,
+következő elem nélkül. A cons lista a `cons` függvény rekurzív hívásával jön
+létre. A rekurzió alapesetét jelölő bevett név a `Nil`. Ne feledd, hogy ez nem
+azonos a 6. fejezetben tárgyalt „null” vagy „nil” fogalommal, amely érvénytelen
+vagy hiányzó értéket jelent.
 
-The cons list isn’t a commonly used data structure in Rust. Most of the time
-when you have a list of items in Rust, `Vec<T>` is a better choice to use.
-Other, more complex recursive data types _are_ useful in various situations,
-but by starting with the cons list in this chapter, we can explore how boxes
-let us define a recursive data type without much distraction.
+A cons lista a Rustban nem gyakran használt adatszerkezet. Ha a Rustban elemek
+listájára van szükséged, a legtöbbször a `Vec<T>` a jobb választás. Más,
+bonyolultabb rekurzív adattípusok _valóban_ hasznosak különféle helyzetekben, de
+azzal, hogy ebben a fejezetben a cons listával kezdünk, sok elterelés nélkül
+feltárhatjuk, hogyan tesznek lehetővé a boxok egy rekurzív adattípus
+definiálását.
 
-Listing 15-2 contains an enum definition for a cons list. Note that this code
-won’t compile yet, because the `List` type doesn’t have a known size, which
-we’ll demonstrate.
+A 15-2. lista egy enum definícióját tartalmazza egy cons listához. Ne feledd,
+hogy ez a kód még nem fordul le, mert a `List` típusnak nem ismert a mérete –
+ezt mindjárt be is mutatjuk.
 
-<Listing number="15-2" file-name="src/main.rs" caption="The first attempt at defining an enum to represent a cons list data structure of `i32` values">
+<Listing number="15-2" file-name="src/main.rs" caption="Első próbálkozás egy `i32` értékeket tartalmazó cons lista adatszerkezetet reprezentáló enum definiálására">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-02/src/main.rs:here}}
@@ -120,15 +126,15 @@ we’ll demonstrate.
 
 </Listing>
 
-> Note: We’re implementing a cons list that holds only `i32` values for the
-> purposes of this example. We could have implemented it using generics, as we
-> discussed in Chapter 10, to define a cons list type that could store values of
-> any type.
+> Megjegyzés: ebben a példában olyan cons listát implementálunk, amely csak
+> `i32` értékeket tárol. Implementálhattuk volna generikusokkal is – ahogy a 10.
+> fejezetben tárgyaltuk –, hogy olyan cons lista típust definiáljunk, amely
+> bármilyen típusú értéket tárolni tud.
 
-Using the `List` type to store the list `1, 2, 3` would look like the code in
-Listing 15-3.
+Ha a `List` típust használnánk az `1, 2, 3` lista tárolására, az a 15-3. lista
+kódjához hasonlóan nézne ki.
 
-<Listing number="15-3" file-name="src/main.rs" caption="Using the `List` enum to store the list `1, 2, 3`">
+<Listing number="15-3" file-name="src/main.rs" caption="A `List` enum használata az `1, 2, 3` lista tárolására">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-03/src/main.rs:here}}
@@ -136,15 +142,16 @@ Listing 15-3.
 
 </Listing>
 
-The first `Cons` value holds `1` and another `List` value. This `List` value is
-another `Cons` value that holds `2` and another `List` value. This `List` value
-is one more `Cons` value that holds `3` and a `List` value, which is finally
-`Nil`, the non-recursive variant that signals the end of the list.
+Az első `Cons` érték az `1`-et és egy másik `List` értéket tartalmaz. Ez a `List`
+érték egy újabb `Cons` érték, amely a `2`-t és egy másik `List` értéket
+tartalmaz. Ez a `List` érték még egy `Cons` érték, amely a `3`-at és egy `List`
+értéket tartalmaz, amely végül `Nil`, vagyis az a nem rekurzív variáns, amely a
+lista végét jelzi.
 
-If we try to compile the code in Listing 15-3, we get the error shown in
-Listing 15-4.
+Ha megpróbáljuk lefordítani a 15-3. lista kódját, a 15-4. listában látható hibát
+kapjuk.
 
-<Listing number="15-4" caption="The error we get when attempting to define a recursive enum">
+<Listing number="15-4" caption="A hiba, amelyet egy rekurzív enum definiálásának megkísérlésekor kapunk">
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-03/output.txt}}
@@ -152,50 +159,53 @@ Listing 15-4.
 
 </Listing>
 
-The error shows this type “has infinite size.” The reason is that we’ve defined
-`List` with a variant that is recursive: It holds another value of itself
-directly. As a result, Rust can’t figure out how much space it needs to store a
-`List` value. Let’s break down why we get this error. First, we’ll look at how
-Rust decides how much space it needs to store a value of a non-recursive type.
+A hiba szerint ez a típus „végtelen méretű”. Ennek az az oka, hogy a `List`-et
+egy olyan varianssal definiáltuk, amely rekurzív: közvetlenül önmagának egy
+másik értékét tartalmazza. Ennek eredményeként a Rust nem tudja kitalálni,
+mennyi helyre van szüksége egy `List` érték tárolásához. Bontsuk elemeire, miért
+kapjuk ezt a hibát. Először nézzük meg, hogyan dönti el a Rust, mennyi helyre van
+szüksége egy nem rekurzív típusú érték tárolásához.
 
-#### Computing the Size of a Non-Recursive Type
+#### Nem rekurzív típus méretének kiszámítása
 
-Recall the `Message` enum we defined in Listing 6-2 when we discussed enum
-definitions in Chapter 6:
+Emlékezz vissza a `Message` enumra, amelyet a 6-2. listában definiáltunk, amikor
+a 6. fejezetben az enumdefiníciókról volt szó:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-02/src/main.rs:here}}
 ```
 
-To determine how much space to allocate for a `Message` value, Rust goes
-through each of the variants to see which variant needs the most space. Rust
-sees that `Message::Quit` doesn’t need any space, `Message::Move` needs enough
-space to store two `i32` values, and so forth. Because only one variant will be
-used, the most space a `Message` value will need is the space it would take to
-store the largest of its variants.
+Annak eldöntéséhez, mennyi helyet foglaljon le egy `Message` értéknek, a Rust
+végigmegy az egyes variánsokon, hogy lássa, melyik variánsnak van szüksége a
+legtöbb helyre. A Rust látja, hogy a `Message::Quit`-nak egyáltalán nincs
+szüksége helyre, a `Message::Move`-nak elegendő hely kell két `i32` érték
+tárolásához, és így tovább. Mivel egyszerre csak egy variánst használunk, egy
+`Message` érték legfeljebb annyi helyet igényel, amennyit a legnagyobb variánsa
+tárolása elfoglalna.
 
-Contrast this with what happens when Rust tries to determine how much space a
-recursive type like the `List` enum in Listing 15-2 needs. The compiler starts
-by looking at the `Cons` variant, which holds a value of type `i32` and a value
-of type `List`. Therefore, `Cons` needs an amount of space equal to the size of
-an `i32` plus the size of a `List`. To figure out how much memory the `List`
-type needs, the compiler looks at the variants, starting with the `Cons`
-variant. The `Cons` variant holds a value of type `i32` and a value of type
-`List`, and this process continues infinitely, as shown in Figure 15-1.
+Ezzel szemben nézzük meg, mi történik, amikor a Rust megpróbálja meghatározni,
+mennyi helyre van szüksége egy olyan rekurzív típusnak, mint a `List` enum a
+15-2. listában. A fordító azzal kezdi, hogy megnézi a `Cons` variánst, amely egy
+`i32` és egy `List` típusú értéket tartalmaz. Ezért a `Cons`-nak annyi helyre van
+szüksége, amennyi egy `i32` mérete plusz egy `List` mérete. Annak
+kiderítéséhez, mennyi memóriát igényel a `List` típus, a fordító megnézi a
+variánsokat, kezdve a `Cons` varianssal. A `Cons` variáns egy `i32` és egy `List`
+típusú értéket tartalmaz, és ez a folyamat a végtelenségig folytatódik, ahogy azt
+a 15-1. ábra mutatja.
 
-<img alt="An infinite Cons list: a rectangle labeled 'Cons' split into two smaller rectangles. The first smaller rectangle holds the label 'i32', and the second smaller rectangle holds the label 'Cons' and a smaller version of the outer 'Cons' rectangle. The 'Cons' rectangles continue to hold smaller and smaller versions of themselves until the smallest comfortably sized rectangle holds an infinity symbol, indicating that this repetition goes on forever." src="img/trpl15-01.svg" class="center" style="width: 50%;" />
+<img alt="Egy végtelen Cons lista: egy „Cons” feliratú téglalap két kisebb téglalapra osztva. Az első kisebb téglalapban az „i32” felirat áll, a második kisebb téglalapban pedig a „Cons” felirat és a külső „Cons” téglalap egy kisebb változata. A „Cons” téglalapok egyre kisebb és kisebb változatokat tartalmaznak önmagukból, egészen addig, amíg a legkisebb, még kényelmesen látható téglalapban egy végtelenjel áll, jelezve, hogy ez az ismétlődés örökké folytatódik." src="img/trpl15-01.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 15-1: An infinite `List` consisting of infinite
-`Cons` variants</span>
+<span class="caption">15-1. ábra: Egy végtelen `List`, amely végtelen sok `Cons`
+variánsból áll</span>
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-boxt-to-get-a-recursive-type-with-a-known-size"></a>
 
-#### Getting a Recursive Type with a Known Size
+#### Ismert méretű rekurzív típus létrehozása
 
-Because Rust can’t figure out how much space to allocate for recursively
-defined types, the compiler gives an error with this helpful suggestion:
+Mivel a Rust nem tudja kitalálni, mennyi helyet foglaljon le a rekurzívan
+definiált típusoknak, a fordító hibát ad ezzel a hasznos javaslattal:
 
 <!-- manual-regeneration
 after doing automatic regeneration, look at listings/ch15-smart-pointers/listing-15-03/output.txt and copy the relevant line
@@ -208,23 +218,23 @@ help: insert some indirection (e.g., a `Box`, `Rc`, or `&`) to break the cycle
   |               ++++    +
 ```
 
-In this suggestion, _indirection_ means that instead of storing a value
-directly, we should change the data structure to store the value indirectly by
-storing a pointer to the value instead.
+Ebben a javaslatban az _indirekció_ azt jelenti, hogy ahelyett, hogy az értéket
+közvetlenül tárolnánk, változtassuk meg az adatszerkezetet úgy, hogy közvetetten
+tárolja az értéket: az érték helyett egy rá mutató pointert tároljon.
 
-Because a `Box<T>` is a pointer, Rust always knows how much space a `Box<T>`
-needs: A pointer’s size doesn’t change based on the amount of data it’s
-pointing to. This means we can put a `Box<T>` inside the `Cons` variant instead
-of another `List` value directly. The `Box<T>` will point to the next `List`
-value that will be on the heap rather than inside the `Cons` variant.
-Conceptually, we still have a list, created with lists holding other lists, but
-this implementation is now more like placing the items next to one another
-rather than inside one another.
+Mivel a `Box<T>` egy pointer, a Rust mindig tudja, mennyi helyre van szüksége egy
+`Box<T>`-nek: egy pointer mérete nem változik attól függően, mennyi adatra mutat.
+Ez azt jelenti, hogy a `Cons` variánsba egy `Box<T>`-t tehetünk közvetlenül egy
+másik `List` érték helyett. A `Box<T>` a következő `List` értékre fog mutatni,
+amely a heapen lesz, nem pedig a `Cons` variánson belül. Fogalmilag még mindig
+egy listánk van, amelyet más listákat tartalmazó listákból hoztunk létre, de ez
+az implementáció most már inkább arra hasonlít, mintha az elemeket egymás mellé,
+nem pedig egymásba helyeznénk.
 
-We can change the definition of the `List` enum in Listing 15-2 and the usage
-of the `List` in Listing 15-3 to the code in Listing 15-5, which will compile.
+A 15-2. listában szereplő `List` enum definícióját és a `List` 15-3. listabeli
+használatát a 15-5. lista kódjára módosíthatjuk, amely már le fog fordulni.
 
-<Listing number="15-5" file-name="src/main.rs" caption="The definition of `List` that uses `Box<T>` in order to have a known size">
+<Listing number="15-5" file-name="src/main.rs" caption="A `List` definíciója, amely a `Box<T>`-t használja az ismert méret érdekében">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-05/src/main.rs}}
@@ -232,32 +242,32 @@ of the `List` in Listing 15-3 to the code in Listing 15-5, which will compile.
 
 </Listing>
 
-The `Cons` variant needs the size of an `i32` plus the space to store the box’s
-pointer data. The `Nil` variant stores no values, so it needs less space on the
-stack than the `Cons` variant. We now know that any `List` value will take up
-the size of an `i32` plus the size of a box’s pointer data. By using a box,
-we’ve broken the infinite, recursive chain, so the compiler can figure out the
-size it needs to store a `List` value. Figure 15-2 shows what the `Cons`
-variant looks like now.
+A `Cons` variánsnak egy `i32` méretére, plusz a box pointeradatának tárolásához
+szükséges helyre van szüksége. A `Nil` variáns nem tárol értéket, ezért kevesebb
+helyet igényel a stacken, mint a `Cons` variáns. Most már tudjuk, hogy bármely
+`List` érték egy `i32` méretét plusz egy box pointeradatának méretét foglalja el.
+A box használatával megtörtük a végtelen, rekurzív láncot, így a fordító ki tudja
+számítani, mekkora helyre van szüksége egy `List` érték tárolásához. A 15-2. ábra
+mutatja, hogyan néz ki most a `Cons` variáns.
 
-<img alt="A rectangle labeled 'Cons' split into two smaller rectangles. The first smaller rectangle holds the label 'i32', and the second smaller rectangle holds the label 'Box' with one inner rectangle that contains the label 'usize', representing the finite size of the box's pointer." src="img/trpl15-02.svg" class="center" />
+<img alt="Egy „Cons” feliratú téglalap két kisebb téglalapra osztva. Az első kisebb téglalapban az „i32” felirat áll, a második kisebb téglalapban pedig a „Box” felirat, benne egy belső téglalappal, amelyben az „usize” felirat áll, ami a box pointerének véges méretét jelképezi." src="img/trpl15-02.svg" class="center" />
 
-<span class="caption">Figure 15-2: A `List` that is not infinitely sized,
-because `Cons` holds a `Box`</span>
+<span class="caption">15-2. ábra: Egy `List`, amely nem végtelen méretű, mert a
+`Cons` egy `Box`-ot tartalmaz</span>
 
-Boxes provide only the indirection and heap allocation; they don’t have any
-other special capabilities, like those we’ll see with the other smart pointer
-types. They also don’t have the performance overhead that these special
-capabilities incur, so they can be useful in cases like the cons list where the
-indirection is the only feature we need. We’ll look at more use cases for boxes
-in Chapter 18.
+A boxok csak az indirekciót és a heapen való lefoglalást biztosítják; nincs
+semmilyen más különleges képességük, mint amilyeneket a többi smart pointer
+típusnál látni fogunk. Ugyanakkor a teljesítménybeli többletköltségük sincs meg,
+amellyel ezek a különleges képességek járnak, így hasznosak lehetnek olyan
+esetekben, mint a cons lista, ahol az indirekció az egyetlen szükséges képesség.
+A boxok további felhasználási eseteit a 18. fejezetben nézzük meg.
 
-The `Box<T>` type is a smart pointer because it implements the `Deref` trait,
-which allows `Box<T>` values to be treated like references. When a `Box<T>`
-value goes out of scope, the heap data that the box is pointing to is cleaned
-up as well because of the `Drop` trait implementation. These two traits will be
-even more important to the functionality provided by the other smart pointer
-types we’ll discuss in the rest of this chapter. Let’s explore these two traits
-in more detail.
+A `Box<T>` típus azért smart pointer, mert implementálja a `Deref` trait-et,
+amely lehetővé teszi, hogy a `Box<T>` értékeket referenciaként kezeljük. Amikor
+egy `Box<T>` érték kilép a hatóköréből, a `Drop` trait implementációja miatt a
+heapen lévő adat is felszabadul, amelyre a box mutat. Ez a két trait még
+fontosabb lesz a többi smart pointer típus által nyújtott funkcionalitásban,
+amelyekről a fejezet hátralévő részében lesz szó. Nézzük meg részletesebben ezt a
+két trait-et.
 
 [trait-objects]: ch18-02-trait-objects.html#using-trait-objects-to-abstract-over-shared-behavior

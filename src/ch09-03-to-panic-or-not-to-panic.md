@@ -1,153 +1,159 @@
-## To `panic!` or Not to `panic!` {#to-panic-or-not-to-panic}
+## `panic!` vagy mégsem `panic!`? {#to-panic-or-not-to-panic}
 
-So, how do you decide when you should call `panic!` and when you should return
-`Result`? When code panics, there’s no way to recover. You could call `panic!`
-for any error situation, whether there’s a possible way to recover or not, but
-then you’re making the decision that a situation is unrecoverable on behalf of
-the calling code. When you choose to return a `Result` value, you give the
-calling code options. The calling code could choose to attempt to recover in a
-way that’s appropriate for its situation, or it could decide that an `Err`
-value in this case is unrecoverable, so it can call `panic!` and turn your
-recoverable error into an unrecoverable one. Therefore, returning `Result` is a
-good default choice when you’re defining a function that might fail.
+Hogyan döntöd el hát, mikor kell `panic!`-ot hívnod, és mikor kell `Result`-ot
+visszaadnod? Ha a kód panicot vált ki, nincs mód a helyreállásra. Bármelyik
+hibahelyzetben hívhatnál `panic!`-ot, akár van lehetőség a helyreállásra, akár
+nincs, csakhogy ezzel a hívó kód helyett döntenéd el, hogy a helyzet
+helyrehozhatatlan. Ha a `Result` érték visszaadását választod, választási
+lehetőséget adsz a hívó kódnak. A hívó kód dönthet úgy, hogy a saját
+helyzetéhez illő módon próbál helyreállni, vagy úgy is, hogy az `Err` érték
+ebben az esetben helyrehozhatatlan, így hívhat `panic!`-ot, és a helyrehozható
+hibádat helyrehozhatatlanná alakíthatja. Ezért a `Result` visszaadása jó
+alapértelmezett választás, amikor olyan függvényt definiálsz, amely elbukhat.
 
-In situations such as examples, prototype code, and tests, it’s more
-appropriate to write code that panics instead of returning a `Result`. Let’s
-explore why, then discuss situations in which the compiler can’t tell that
-failure is impossible, but you as a human can. The chapter will conclude with
-some general guidelines on how to decide whether to panic in library code.
+Bizonyos helyzetekben – például példakódban, prototípuskódban és tesztekben –
+helyénvalóbb olyan kódot írni, amely panicot vált ki, ahelyett hogy `Result`-ot
+adna vissza. Nézzük meg, miért, majd beszéljünk azokról a helyzetekről,
+amelyekben a fordító nem tudja megállapítani, hogy a hiba lehetetlen, te
+viszont emberként igen. A fejezetet néhány általános irányelvvel zárjuk arról,
+hogyan dönts a panicról library kódban.
 
-### Examples, Prototype Code, and Tests
+### Példák, prototípuskód és tesztek
 
-When you’re writing an example to illustrate some concept, also including
-robust error-handling code can make the example less clear. In examples, it’s
-understood that a call to a method like `unwrap` that could panic is meant as a
-placeholder for the way you’d want your application to handle errors, which can
-differ based on what the rest of your code is doing.
+Amikor egy fogalom szemléltetésére példát írsz, a robusztus hibakezelő kód
+beemelése kevésbé érthetővé teheti a példát. A példákban magától értetődő, hogy
+egy olyan metódus hívása, mint az `unwrap`, amely panicot válthat ki, csupán
+helykitöltő arra a módra, ahogyan az alkalmazásoddal kezeltetni szeretnéd a
+hibákat – ez pedig attól függően változhat, mit csinál a kódod többi része.
 
-Similarly, the `unwrap` and `expect` methods are very handy when you’re
-prototyping and you’re not yet ready to decide how to handle errors. They leave
-clear markers in your code for when you’re ready to make your program more
-robust.
+Hasonlóképpen az `unwrap` és az `expect` metódus nagyon kézre áll
+prototípuskészítés közben, amikor még nem állsz készen annak eldöntésére,
+hogyan kezeld a hibákat. Világos jelöléseket hagynak a kódodban arra az időre,
+amikor készen állsz a programod robusztusabbá tételére.
 
-If a method call fails in a test, you’d want the whole test to fail, even if
-that method isn’t the functionality under test. Because `panic!` is how a test
-is marked as a failure, calling `unwrap` or `expect` is exactly what should
-happen.
+Ha egy metódushívás elbukik egy tesztben, azt szeretnéd, hogy az egész teszt
+elbukjon, még akkor is, ha nem az a metódus a tesztelt funkcionalitás. Mivel a
+`panic!` az a mód, ahogyan egy teszt bukottnak minősül, az `unwrap` vagy az
+`expect` hívása pontosan az, aminek történnie kell.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="cases-in-which-you-have-more-information-than-the-compiler"></a>
 
-### When You Have More Information Than the Compiler
+### Amikor több információd van, mint a fordítónak
 
-It would also be appropriate to call `expect` when you have some other logic
-that ensures that the `Result` will have an `Ok` value, but the logic isn’t
-something the compiler understands. You’ll still have a `Result` value that you
-need to handle: Whatever operation you’re calling still has the possibility of
-failing in general, even though it’s logically impossible in your particular
-situation. If you can ensure by manually inspecting the code that you’ll never
-have an `Err` variant, it’s perfectly acceptable to call `expect` and document
-the reason you think you’ll never have an `Err` variant in the argument text.
-Here’s an example:
+Az `expect` hívása akkor is helyénvaló, ha van valamilyen más logikád, amely
+biztosítja, hogy a `Result` `Ok` értéket fog tartalmazni, csakhogy ezt a
+logikát a fordító nem érti. Ettől még kapsz egy `Result` értéket, amelyet
+kezelned kell: a hívott művelet általánosságban továbbra is elbukhat, még ha a
+te konkrét helyzetedben logikailag lehetetlen is. Ha a kód kézi átvizsgálásával
+biztosítani tudod, hogy soha nem kapsz `Err` variánst, teljesen elfogadható az
+`expect` hívása, és az, hogy az argumentum szövegében dokumentálod, miért
+gondolod, hogy soha nem lesz `Err` variánsod. Íme egy példa:
 
 ```rust
 {{#rustdoc_include ../listings/ch09-error-handling/no-listing-08-unwrap-that-cant-fail/src/main.rs:here}}
 ```
 
-We’re creating an `IpAddr` instance by parsing a hardcoded string. We can see
-that `127.0.0.1` is a valid IP address, so it’s acceptable to use `expect`
-here. However, having a hardcoded, valid string doesn’t change the return type
-of the `parse` method: We still get a `Result` value, and the compiler will
-still make us handle the `Result` as if the `Err` variant is a possibility
-because the compiler isn’t smart enough to see that this string is always a
-valid IP address. If the IP address string came from a user rather than being
-hardcoded into the program and therefore _did_ have a possibility of failure,
-we’d definitely want to handle the `Result` in a more robust way instead.
-Mentioning the assumption that this IP address is hardcoded will prompt us to
-change `expect` to better error-handling code if, in the future, we need to get
-the IP address from some other source instead.
+Egy `IpAddr` példányt hozunk létre egy beégetett string feldolgozásával.
+Látjuk, hogy a `127.0.0.1` érvényes IP-cím, ezért itt elfogadható az `expect`
+használata. Attól azonban, hogy egy beégetett, érvényes stringünk van, még nem
+változik meg a `parse` metódus visszatérési típusa: továbbra is `Result`
+értéket kapunk, és a fordító továbbra is arra kényszerít, hogy úgy kezeljük a
+`Result`-ot, mintha az `Err` variáns is lehetséges volna, mert a fordító nem
+elég okos ahhoz, hogy lássa: ez a string mindig érvényes IP-cím. Ha az
+IP-címet tartalmazó string a felhasználótól érkezne ahelyett, hogy a programba
+lenne beégetve, és így _valóban_ lenne hibalehetőség, mindenképpen
+robusztusabb módon szeretnénk kezelni a `Result`-ot. Ha megemlítjük azt a
+feltevést, hogy ez az IP-cím be van égetve, az arra ösztönöz majd minket, hogy
+az `expect`-et jobb hibakezelő kódra cseréljük, ha a jövőben más forrásból kell
+megszereznünk az IP-címet.
 
-### Guidelines for Error Handling {#guidelines-for-error-handling}
+### Hibakezelési irányelvek {#guidelines-for-error-handling}
 
-It’s advisable to have your code panic when it’s possible that your code could
-end up in a bad state. In this context, a _bad state_ is when some assumption,
-guarantee, contract, or invariant has been broken, such as when invalid values,
-contradictory values, or missing values are passed to your code—plus one or
-more of the following:
+Ajánlott panicot kiváltani a kódodban akkor, ha előfordulhat, hogy a kód rossz
+állapotba kerül. Ebben az összefüggésben _rossz állapotról_ akkor beszélünk,
+amikor valamilyen feltevés, garancia, szerződés vagy invariáns sérül – például
+amikor érvénytelen, ellentmondó vagy hiányzó értékek jutnak el a kódodhoz –, és
+emellett az alábbiak közül egy vagy több is teljesül:
 
-- The bad state is something that is unexpected, as opposed to something that
-  will likely happen occasionally, like a user entering data in the wrong
-  format.
-- Your code after this point needs to rely on not being in this bad state,
-  rather than checking for the problem at every step.
-- There’s not a good way to encode this information in the types you use. We’ll
-  work through an example of what we mean in [“Encoding States and Behavior as
-  Types”][encoding]<!-- ignore --> in Chapter 18.
+- A rossz állapot valami váratlan, nem pedig olyasmi, ami időnként
+  valószínűleg megtörténik, mint amikor a felhasználó rossz formátumban ad meg
+  adatot.
+- Az ezen a ponton túli kódodnak arra kell támaszkodnia, hogy nincs ebben a
+  rossz állapotban, ahelyett hogy minden lépésnél ellenőrizné a problémát.
+- Nincs jó mód arra, hogy ezt az információt a használt típusokba kódold. Egy
+  példán keresztül mutatjuk meg, mire gondolunk, a 18. fejezet [„Állapotok és
+  viselkedés kódolása típusokként”][encoding]<!-- ignore --> című részében.
 
-If someone calls your code and passes in values that don’t make sense, it’s
-best to return an error if you can so that the user of the library can decide
-what they want to do in that case. However, in cases where continuing could be
-insecure or harmful, the best choice might be to call `panic!` and alert the
-person using your library to the bug in their code so that they can fix it
-during development. Similarly, `panic!` is often appropriate if you’re calling
-external code that is out of your control and returns an invalid state that you
-have no way of fixing.
+Ha valaki meghívja a kódodat, és értelmetlen értékeket ad át, a legjobb, ha
+lehetőség szerint hibát adsz vissza, hogy a library felhasználója eldönthesse,
+mit szeretne tenni ebben az esetben. Azokban az esetekben viszont, amikor a
+folytatás nem lenne biztonságos vagy egyenesen káros volna, a legjobb választás
+az lehet, hogy `panic!`-ot hívsz, és figyelmezteted a libraryd használóját a
+kódjában lévő hibára, hogy még a fejlesztés során kijavíthassa. Hasonlóképpen
+gyakran helyénvaló a `panic!`, ha olyan külső kódot hívsz, amely nincs a te
+irányításod alatt, és érvénytelen állapotot ad vissza, amit sehogy sem tudsz
+kijavítani.
 
-However, when failure is expected, it’s more appropriate to return a `Result`
-than to make a `panic!` call. Examples include a parser being given malformed
-data or an HTTP request returning a status that indicates you have hit a rate
-limit. In these cases, returning a `Result` indicates that failure is an
-expected possibility that the calling code must decide how to handle.
+Amikor viszont a hiba várható, helyénvalóbb `Result`-ot visszaadni, mint
+`panic!`-ot hívni. Ilyen például, amikor egy parser hibás formátumú adatot kap,
+vagy amikor egy HTTP-kérés olyan státuszt ad vissza, amely azt jelzi, hogy
+elérted a kéréskorlátot. Ezekben az esetekben a `Result` visszaadása azt jelzi,
+hogy a hiba várható lehetőség, és a hívó kódnak kell eldöntenie, hogyan kezeli.
 
-When your code performs an operation that could put a user at risk if it’s
-called using invalid values, your code should verify the values are valid first
-and panic if the values aren’t valid. This is mostly for safety reasons:
-Attempting to operate on invalid data can expose your code to vulnerabilities.
-This is the main reason the standard library will call `panic!` if you attempt
-an out-of-bounds memory access: Trying to access memory that doesn’t belong to
-the current data structure is a common security problem. Functions often have
-_contracts_: Their behavior is only guaranteed if the inputs meet particular
-requirements. Panicking when the contract is violated makes sense because a
-contract violation always indicates a caller-side bug, and it’s not a kind of
-error you want the calling code to have to explicitly handle. In fact, there’s
-no reasonable way for calling code to recover; the calling _programmers_ need
-to fix the code. Contracts for a function, especially when a violation will
-cause a panic, should be explained in the API documentation for the function.
+Ha a kódod olyan műveletet végez, amely veszélybe sodorhatja a felhasználót,
+amennyiben érvénytelen értékekkel hívják meg, a kódodnak először ellenőriznie
+kell, hogy az értékek érvényesek-e, és panicot kell kiváltania, ha nem azok.
+Ennek elsősorban biztonsági okai vannak: az érvénytelen adatokon végzett
+műveletek sebezhetőségeknek tehetik ki a kódodat. Főként ezért hív `panic!`-ot
+a standard könyvtár, ha határon kívüli memóriaelérést kísérelsz meg: olyan
+memóriához hozzáférni, amely nem az aktuális adatszerkezethez tartozik, gyakori
+biztonsági probléma. A függvényeknek gyakran vannak _szerződéseik_: a
+viselkedésük csak akkor garantált, ha a bemenetek megfelelnek bizonyos
+követelményeknek. Van értelme panicot kiváltani a szerződés megsértésekor,
+mert a szerződés megsértése mindig a hívó oldalán lévő hibára utal, és nem
+olyan hiba, amelyet a hívó kóddal kifejezetten kezeltetni szeretnél. Valójában
+nincs is ésszerű mód arra, hogy a hívó kód helyreálljon; a hívó
+_programozóknak_ kell kijavítaniuk a kódot. Egy függvény szerződéseit –
+különösen, ha a megsértésük panicot okoz – el kell magyarázni a függvény
+API-dokumentációjában.
 
-However, having lots of error checks in all of your functions would be verbose
-and annoying. Fortunately, you can use Rust’s type system (and thus the type
-checking done by the compiler) to do many of the checks for you. If your
-function has a particular type as a parameter, you can proceed with your code’s
-logic knowing that the compiler has already ensured that you have a valid
-value. For example, if you have a type rather than an `Option`, your program
-expects to have _something_ rather than _nothing_. Your code then doesn’t have
-to handle two cases for the `Some` and `None` variants: It will only have one
-case for definitely having a value. Code trying to pass nothing to your
-function won’t even compile, so your function doesn’t have to check for that
-case at runtime. Another example is using an unsigned integer type such as
-`u32`, which ensures that the parameter is never negative.
+Ha viszont az összes függvényedben rengeteg hibaellenőrzés lenne, az
+bőbeszédű és bosszantó volna. Szerencsére a Rust típusrendszerét (és így a
+fordító által végzett típusellenőrzést) használhatod arra, hogy sok ellenőrzést
+elvégezzen helyetted. Ha a függvényednek egy adott típusú paramétere van, a
+kódod logikájával úgy haladhatsz tovább, hogy tudod: a fordító már
+gondoskodott róla, hogy érvényes értéked legyen. Ha például `Option` helyett
+egy konkrét típusod van, a programod _valamit_ vár, nem pedig _semmit_. A
+kódodnak ekkor nem kell két esetet kezelnie a `Some` és a `None` variánsra:
+csak egyetlen esete lesz, amikor biztosan van érték. Az a kód, amely semmit
+próbálna átadni a függvényednek, le sem fordul, így a függvényednek futásidőben
+nem is kell erre az esetre ellenőriznie. Egy másik példa az előjel nélküli
+egész típus, például az `u32` használata, amely biztosítja, hogy a paraméter
+soha nem negatív.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="creating-custom-types-for-validation"></a>
 
-### Custom Types for Validation
+### Egyedi típusok az érvényesítéshez
 
-Let’s take the idea of using Rust’s type system to ensure that we have a valid
-value one step further and look at creating a custom type for validation.
-Recall the guessing game in Chapter 2 in which our code asked the user to guess
-a number between 1 and 100. We never validated that the user’s guess was
-between those numbers before checking it against our secret number; we only
-validated that the guess was positive. In this case, the consequences were not
-very dire: Our output of “Too high” or “Too low” would still be correct. But it
-would be a useful enhancement to guide the user toward valid guesses and have
-different behavior when the user guesses a number that’s out of range versus
-when the user types, for example, letters instead.
+Vigyük egy lépéssel tovább azt az ötletet, hogy a Rust típusrendszerével
+biztosítjuk az érvényes érték meglétét, és nézzük meg, hogyan hozhatunk létre
+egyedi típust az érvényesítéshez. Emlékezz vissza a 2. fejezet kitalálós
+játékára, amelyben a kódunk arra kérte a felhasználót, hogy tippeljen meg egy 1
+és 100 közötti számot. Sosem ellenőriztük, hogy a felhasználó tippje e két szám
+közé esik-e, mielőtt összevetettük volna a titkos számunkkal; csak azt
+ellenőriztük, hogy a tipp pozitív. Ebben az esetben a következmények nem voltak
+túl súlyosak: a „Too high” vagy „Too low” kimenetünk így is helyes lett volna.
+Hasznos fejlesztés lenne azonban a felhasználót az érvényes tippek felé
+terelni, és másképp viselkedni, amikor a felhasználó tartományon kívüli számot
+tippel, mint amikor például betűket ír be.
 
-One way to do this would be to parse the guess as an `i32` instead of only a
-`u32` to allow potentially negative numbers, and then add a check for the
-number being in range, like so:
+Ennek egyik módja az lenne, hogy a tippet `i32`-ként dolgozzuk fel a puszta
+`u32` helyett, hogy az esetleges negatív számokat is megengedjük, majd
+hozzáadunk egy ellenőrzést arra, hogy a szám a tartományon belül van-e, így:
 
 <Listing file-name="src/main.rs">
 
@@ -157,25 +163,26 @@ number being in range, like so:
 
 </Listing>
 
-The `if` expression checks whether our value is out of range, tells the user
-about the problem, and calls `continue` to start the next iteration of the loop
-and ask for another guess. After the `if` expression, we can proceed with the
-comparisons between `guess` and the secret number knowing that `guess` is
-between 1 and 100.
+Az `if` kifejezés ellenőrzi, hogy az értékünk kívül esik-e a tartományon,
+tájékoztatja a felhasználót a problémáról, és meghívja a `continue`-t, hogy
+elindítsa a ciklus következő iterációját, és új tippet kérjen. Az `if` kifejezés
+után folytathatjuk a `guess` és a titkos szám összehasonlítását, tudva, hogy a
+`guess` 1 és 100 közé esik.
 
-However, this is not an ideal solution: If it were absolutely critical that the
-program only operated on values between 1 and 100, and it had many functions
-with this requirement, having a check like this in every function would be
-tedious (and might impact performance).
+Ez azonban nem ideális megoldás: ha teljesen kritikus volna, hogy a program
+csak 1 és 100 közötti értékekkel dolgozzon, és sok függvény támasztaná ezt a
+követelményt, fárasztó lenne minden függvénybe ilyen ellenőrzést tenni (és a
+teljesítményre is hatással lehetne).
 
-Instead, we can make a new type in a dedicated module and put the validations
-in a function to create an instance of the type rather than repeating the
-validations everywhere. That way, it’s safe for functions to use the new type
-in their signatures and confidently use the values they receive. Listing 9-13
-shows one way to define a `Guess` type that will only create an instance of
-`Guess` if the `new` function receives a value between 1 and 100.
+Ehelyett létrehozhatunk egy új típust egy külön modulban, és az érvényesítéseket
+egy olyan függvénybe tehetjük, amely a típus egy példányát hozza létre, ahelyett
+hogy az érvényesítéseket mindenütt megismételnénk. Így biztonságos, ha a
+függvények az új típust használják a szignatúrájukban, és magabiztosan
+használják a kapott értékeket. A 9-13. listázás egy módot mutat a `Guess` típus
+definiálására, amely csak akkor hoz létre `Guess` példányt, ha a `new` függvény
+1 és 100 közötti értéket kap.
 
-<Listing number="9-13" caption="A `Guess` type that will only continue with values between 1 and 100" file-name="src/guessing_game.rs">
+<Listing number="9-13" caption="Egy `Guess` típus, amely csak 1 és 100 közötti értékekkel folytatja" file-name="src/guessing_game.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-13/src/guessing_game.rs}}
@@ -183,54 +190,58 @@ shows one way to define a `Guess` type that will only create an instance of
 
 </Listing>
 
-Note that this code in *src/guessing_game.rs* depends on adding a module
-declaration `mod guessing_game;` in *src/lib.rs* that we haven’t shown here.
-Within this new module’s file, we define a struct named `Guess` that has a
-field named `value` that holds an `i32`. This is where the number will be
-stored.
+Vedd figyelembe, hogy a *src/guessing_game.rs* fájlban lévő kód feltételezi,
+hogy a *src/lib.rs* fájlban szerepel egy `mod guessing_game;` modul-deklaráció,
+amelyet itt nem mutattunk meg. Ebben az új modulfájlban definiálunk egy `Guess`
+nevű structot, amelynek van egy `value` nevű mezője, ez pedig egy `i32`-t tárol.
+Itt fog tárolódni a szám.
 
-Then, we implement an associated function named `new` on `Guess` that creates
-instances of `Guess` values. The `new` function is defined to have one
-parameter named `value` of type `i32` and to return a `Guess`. The code in the
-body of the `new` function tests `value` to make sure it’s between 1 and 100.
-If `value` doesn’t pass this test, we make a `panic!` call, which will alert
-the programmer who is writing the calling code that they have a bug they need
-to fix, because creating a `Guess` with a `value` outside this range would
-violate the contract that `Guess::new` is relying on. The conditions in which
-`Guess::new` might panic should be discussed in its public-facing API
-documentation; we’ll cover documentation conventions indicating the possibility
-of a `panic!` in the API documentation that you create in Chapter 14. If
-`value` does pass the test, we create a new `Guess` with its `value` field set
-to the `value` parameter and return the `Guess`.
+Ezután implementálunk egy `new` nevű asszociált függvényt a `Guess`-en, amely
+`Guess` értékek példányait hozza létre. A `new` függvényt úgy definiáljuk, hogy
+egyetlen `value` nevű, `i32` típusú paramétere legyen, és `Guess`-t adjon
+vissza. A `new` függvény törzsében lévő kód megvizsgálja a `value`-t, hogy 1 és
+100 közé esik-e. Ha a `value` nem megy át ezen a teszten, `panic!` hívást
+hajtunk végre, ami figyelmezteti a hívó kódot író programozót, hogy van egy
+javítandó hiba a kódjában, mert egy ezen a tartományon kívüli `value`-jú `Guess`
+létrehozása megsértené azt a szerződést, amelyre a `Guess::new` támaszkodik.
+Azokat a feltételeket, amelyek mellett a `Guess::new` panicot válthat ki, a
+nyilvános API-dokumentációjában érdemes tárgyalni; a 14. fejezetben szólunk
+majd azokról a dokumentációs konvenciókról, amelyekkel az általad készített
+API-dokumentációban jelezheted a `panic!` lehetőségét. Ha a `value` átmegy a
+teszten, létrehozunk egy új `Guess`-t, amelynek a `value` mezőjét a `value`
+paraméterre állítjuk, és visszaadjuk a `Guess`-t.
 
-Next, we implement a method named `value` that borrows `self`, doesn’t have any
-other parameters, and returns an `i32`. This kind of method is sometimes called
-a _getter_ because its purpose is to get some data from its fields and return
-it. This public method is necessary because the `value` field of the `Guess`
-struct is private. It’s important that the `value` field be private so that
-code using the `Guess` struct is not allowed to set `value` directly: Code
-outside the `guessing_game` module _must_ use the `Guess::new` function to
-create an instance of `Guess`, thereby ensuring that there’s no way for a
-`Guess` to have a `value` that hasn’t been checked by the conditions in the
-`Guess::new` function.
+Ezután implementálunk egy `value` nevű metódust, amely kölcsönveszi a
+`self`-et, nincs más paramétere, és `i32`-t ad vissza. Az ilyen metódust néha
+_getternek_ nevezik, mert az a célja, hogy valamilyen adatot kiolvasson a
+mezőkből, és visszaadja. Erre a nyilvános metódusra azért van szükség, mert a
+`Guess` struct `value` mezője privát. Fontos, hogy a `value` mező privát
+legyen, így a `Guess` structot használó kód nem állíthatja be közvetlenül a
+`value`-t: a `guessing_game` modulon kívüli kódnak _muszáj_ a `Guess::new`
+függvényt használnia egy `Guess` példány létrehozásához, ezzel biztosítva, hogy
+egy `Guess`-nek semmiképp ne lehessen olyan `value`-ja, amelyet a `Guess::new`
+függvény feltételei ne ellenőriztek volna.
 
-A function that has a parameter or returns only numbers between 1 and 100 could
-then declare in its signature that it takes or returns a `Guess` rather than an
-`i32` and wouldn’t need to do any additional checks in its body.
+Egy olyan függvény, amelynek paramétere csak 1 és 100 közötti szám, vagy amely
+csak ilyet ad vissza, ezután a szignatúrájában deklarálhatja, hogy `i32` helyett
+`Guess`-t vesz át vagy ad vissza, és a törzsében nem kellene további
+ellenőrzéseket végeznie.
 
-## Summary
+## Összefoglalás
 
-Rust’s error-handling features are designed to help you write more robust code.
-The `panic!` macro signals that your program is in a state it can’t handle and
-lets you tell the process to stop instead of trying to proceed with invalid or
-incorrect values. The `Result` enum uses Rust’s type system to indicate that
-operations might fail in a way that your code could recover from. You can use
-`Result` to tell code that calls your code that it needs to handle potential
-success or failure as well. Using `panic!` and `Result` in the appropriate
-situations will make your code more reliable in the face of inevitable problems.
+A Rust hibakezelési eszközeit arra tervezték, hogy robusztusabb kód írásában
+segítsenek. A `panic!` makró azt jelzi, hogy a programod olyan állapotba
+került, amelyet nem tud kezelni, és lehetővé teszi, hogy leállítsd a
+folyamatot, ahelyett hogy érvénytelen vagy hibás értékekkel próbálnál
+továbbhaladni. A `Result` enum a Rust típusrendszerét használja annak
+jelzésére, hogy egy művelet olyan módon hiúsulhat meg, amelyből a kódod helyre
+tud állni. A `Result` segítségével a kódodat hívó kóddal is közölheted, hogy
+neki is kezelnie kell a lehetséges sikert vagy hibát. Ha a `panic!`-ot és a
+`Result`-ot a megfelelő helyzetekben használod, a kódod megbízhatóbb lesz az
+elkerülhetetlen problémákkal szemben.
 
-Now that you’ve seen useful ways that the standard library uses generics with
-the `Option` and `Result` enums, we’ll talk about how generics work and how you
-can use them in your code.
+Most, hogy láttad, milyen hasznos módokon használja a standard könyvtár a
+generikusokat az `Option` és a `Result` enummal, beszéljünk arról, hogyan
+működnek a generikusok, és hogyan használhatod őket a kódodban.
 
 [encoding]: ch18-03-oo-design-patterns.html#encoding-states-and-behavior-as-types

@@ -2,37 +2,39 @@
 
 <a id="traits-defining-shared-behavior"></a>
 
-## Defining Shared Behavior with Traits
+## Osztott viselkedés definiálása trait-ekkel
 
-A _trait_ defines the functionality a particular type has and can share with
-other types. We can use traits to define shared behavior in an abstract way. We
-can use _trait bounds_ to specify that a generic type can be any type that has
-certain behavior.
+A _trait_ azt írja le, milyen funkcionalitással rendelkezik egy adott típus, és
+mit oszthat meg más típusokkal. A trait-ek segítségével absztrakt módon
+definiálhatunk osztott viselkedést. A _trait bound_-okkal pedig megadhatjuk,
+hogy egy generikus típus bármilyen olyan típus lehet, amely egy bizonyos
+viselkedéssel rendelkezik.
 
-> Note: Traits are similar to a feature often called _interfaces_ in other
-> languages, although with some differences.
+> Megjegyzés: A trait-ek hasonlítanak arra, amit más nyelvekben gyakran
+> _interfésznek_ neveznek, bár akadnak eltérések.
 
-### Defining a Trait
+### Trait definiálása
 
-A type’s behavior consists of the methods we can call on that type. Different
-types share the same behavior if we can call the same methods on all of those
-types. Trait definitions are a way to group method signatures together to
-define a set of behaviors necessary to accomplish some purpose.
+Egy típus viselkedését azok a metódusok alkotják, amelyeket meghívhatunk az
+adott típuson. Különböző típusok akkor osztoznak ugyanazon a viselkedésen, ha
+mindegyiken meghívhatjuk ugyanazokat a metódusokat. A trait-definíciók arra
+valók, hogy metódus-szignatúrákat csoportosítsunk, és így definiáljuk azt a
+viselkedéshalmazt, amely egy adott cél eléréséhez szükséges.
 
-For example, let’s say we have multiple structs that hold various kinds and
-amounts of text: a `NewsArticle` struct that holds a news story filed in a
-particular location and a `SocialPost` that can have, at most, 280 characters
-along with metadata that indicates whether it was a new post, a repost, or a
-reply to another post.
+Tegyük fel például, hogy több struct-unk van, amelyek különféle fajtájú és
+mennyiségű szöveget tárolnak: egy `NewsArticle` struct, amely egy adott helyen
+készült hírt tárol, és egy `SocialPost`, amely legfeljebb 280 karaktert
+tartalmazhat, valamint metaadatokat arról, hogy új bejegyzésről, egy másik
+bejegyzés megosztásáról vagy egy bejegyzésre adott válaszról van-e szó.
 
-We want to make a media aggregator library crate named `aggregator` that can
-display summaries of data that might be stored in a `NewsArticle` or
-`SocialPost` instance. To do this, we need a summary from each type, and we’ll
-request that summary by calling a `summarize` method on an instance. Listing
-10-12 shows the definition of a public `Summary` trait that expresses this
-behavior.
+Szeretnénk készíteni egy `aggregator` nevű médiaaggregátor library crate-et,
+amely meg tudja jeleníteni a `NewsArticle` vagy `SocialPost` példányokban
+esetleg tárolt adatok összefoglalóit. Ehhez minden típustól kérnünk kell egy
+összefoglalót, mégpedig úgy, hogy meghívjuk a példányon a `summarize` metódust.
+A 10-12. lista a publikus `Summary` trait definícióját mutatja, amely ezt a
+viselkedést fejezi ki.
 
-<Listing number="10-12" file-name="src/lib.rs" caption="A `Summary` trait that consists of the behavior provided by a `summarize` method">
+<Listing number="10-12" file-name="src/lib.rs" caption="Egy `Summary` trait, amely a `summarize` metódus által nyújtott viselkedésből áll">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-12/src/lib.rs}}
@@ -40,33 +42,35 @@ behavior.
 
 </Listing>
 
-Here, we declare a trait using the `trait` keyword and then the trait’s name,
-which is `Summary` in this case. We also declare the trait as `pub` so that
-crates depending on this crate can make use of this trait too, as we’ll see in
-a few examples. Inside the curly brackets, we declare the method signatures
-that describe the behaviors of the types that implement this trait, which in
-this case is `fn summarize(&self) -> String`.
+Itt a `trait` kulcsszóval deklarálunk egy trait-et, majd megadjuk a trait
+nevét, ami ebben az esetben `Summary`. A trait-et `pub`-ként is deklaráljuk,
+hogy az ettől a crate-től függő crate-ek szintén használhassák, amint azt
+néhány példában látni fogjuk. A kapcsos zárójelek között deklaráljuk azokat a
+metódus-szignatúrákat, amelyek a trait-et implementáló típusok viselkedését
+írják le; ez ebben az esetben az `fn summarize(&self) -> String`.
 
-After the method signature, instead of providing an implementation within curly
-brackets, we use a semicolon. Each type implementing this trait must provide
-its own custom behavior for the body of the method. The compiler will enforce
-that any type that has the `Summary` trait will have the method `summarize`
-defined with this signature exactly.
+A metódus-szignatúra után nem kapcsos zárójelben adunk meg egy implementációt,
+hanem pontosvesszőt teszünk. Minden típusnak, amely ezt a trait-et
+implementálja, saját, egyedi viselkedést kell adnia a metódus törzsének. A
+fordító kikényszeríti, hogy minden olyan típuson, amely rendelkezik a `Summary`
+trait-tel, pontosan ezzel a szignatúrával legyen definiálva a `summarize`
+metódus.
 
-A trait can have multiple methods in its body: The method signatures are listed
-one per line, and each line ends in a semicolon.
+Egy trait törzsében több metódus is lehet: a metódus-szignatúrák soronként egy
+darab szerepelnek, és minden sor pontosvesszővel zárul.
 
-### Implementing a Trait on a Type {#implementing-a-trait-on-a-type}
+### Trait implementálása egy típuson {#implementing-a-trait-on-a-type}
 
-Now that we’ve defined the desired signatures of the `Summary` trait’s methods,
-we can implement it on the types in our media aggregator. Listing 10-13 shows
-an implementation of the `Summary` trait on the `NewsArticle` struct that uses
-the headline, the author, and the location to create the return value of
-`summarize`. For the `SocialPost` struct, we define `summarize` as the username
-followed by the entire text of the post, assuming that the post content is
-already limited to 280 characters.
+Most, hogy definiáltuk a `Summary` trait metódusainak kívánt szignatúráit,
+implementálhatjuk a trait-et a médiaaggregátorunk típusain. A 10-13. lista a
+`Summary` trait implementációját mutatja a `NewsArticle` structon, amely a
+címet, a szerzőt és a helyszínt használja a `summarize` visszatérési értékének
+összeállításához. A `SocialPost` struct esetében a `summarize` metódust úgy
+definiáljuk, hogy a felhasználónevet adja vissza, utána pedig a bejegyzés
+teljes szövegét, feltételezve, hogy a bejegyzés tartalma már eleve 280
+karakterre van korlátozva.
 
-<Listing number="10-13" file-name="src/lib.rs" caption="Implementing the `Summary` trait on the `NewsArticle` and `SocialPost` types">
+<Listing number="10-13" file-name="src/lib.rs" caption="A `Summary` trait implementálása a `NewsArticle` és a `SocialPost` típuson">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-13/src/lib.rs:here}}
@@ -74,64 +78,67 @@ already limited to 280 characters.
 
 </Listing>
 
-Implementing a trait on a type is similar to implementing regular methods. The
-difference is that after `impl`, we put the trait name we want to implement,
-then use the `for` keyword, and then specify the name of the type we want to
-implement the trait for. Within the `impl` block, we put the method signatures
-that the trait definition has defined. Instead of adding a semicolon after each
-signature, we use curly brackets and fill in the method body with the specific
-behavior that we want the methods of the trait to have for the particular type.
+Egy trait implementálása egy típuson hasonlít a szokásos metódusok
+implementálásához. A különbség az, hogy az `impl` után az implementálandó trait
+nevét írjuk, majd a `for` kulcsszót használjuk, végül megadjuk annak a típusnak
+a nevét, amelyre a trait-et implementálni akarjuk. Az `impl` blokkon belül
+azokat a metódus-szignatúrákat írjuk le, amelyeket a trait-definíció megadott.
+A szignatúrák után nem pontosvesszőt teszünk, hanem kapcsos zárójeleket, és a
+metódus törzsét kitöltjük azzal a konkrét viselkedéssel, amelyet a trait
+metódusaitól az adott típus esetében elvárunk.
 
-Now that the library has implemented the `Summary` trait on `NewsArticle` and
-`SocialPost`, users of the crate can call the trait methods on instances of
-`NewsArticle` and `SocialPost` in the same way we call regular methods. The only
-difference is that the user must bring the trait into scope as well as the
-types. Here’s an example of how a binary crate could use our `aggregator`
-library crate:
+Most, hogy a library implementálta a `Summary` trait-et a `NewsArticle` és a
+`SocialPost` típuson, a crate felhasználói ugyanúgy hívhatják meg a trait
+metódusait a `NewsArticle` és a `SocialPost` példányain, ahogyan a szokásos
+metódusokat hívjuk. Az egyetlen különbség, hogy a felhasználónak a típusok
+mellett magát a trait-et is be kell hoznia a hatókörbe. Íme egy példa arra,
+hogyan használhatná egy binary crate az `aggregator` library crate-ünket:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-01-calling-trait-method/src/main.rs}}
 ```
 
-This code prints `1 new post: horse_ebooks: of course, as you probably already
-know, people`.
+Ez a kód a következőt írja ki: `1 new post: horse_ebooks: of course, as you
+probably already know, people`.
 
-Other crates that depend on the `aggregator` crate can also bring the `Summary`
-trait into scope to implement `Summary` on their own types. One restriction to
-note is that we can implement a trait on a type only if either the trait or the
-type, or both, are local to our crate. For example, we can implement standard
-library traits like `Display` on a custom type like `SocialPost` as part of our
-`aggregator` crate functionality because the type `SocialPost` is local to our
-`aggregator` crate. We can also implement `Summary` on `Vec<T>` in our
-`aggregator` crate because the trait `Summary` is local to our `aggregator`
-crate.
+Más crate-ek, amelyek az `aggregator` crate-től függenek, szintén behozhatják a
+hatókörbe a `Summary` trait-et, hogy implementálják a `Summary`-t a saját
+típusaikon. Egy fontos megkötés, hogy egy trait-et csak akkor implementálhatunk
+egy típuson, ha vagy a trait, vagy a típus, vagy mindkettő lokális a
+crate-ünkhöz. Például implementálhatunk standard könyvtárbeli trait-eket, mint
+a `Display`, egy saját típuson, mint a `SocialPost`, az `aggregator` crate-ünk
+funkcionalitásának részeként, mert a `SocialPost` típus lokális az `aggregator`
+crate-ünkhöz. A `Summary` trait-et is implementálhatjuk a `Vec<T>` típuson az
+`aggregator` crate-ünkben, mert a `Summary` trait lokális az `aggregator`
+crate-ünkhöz.
 
-But we can’t implement external traits on external types. For example, we can’t
-implement the `Display` trait on `Vec<T>` within our `aggregator` crate,
-because `Display` and `Vec<T>` are both defined in the standard library and
-aren’t local to our `aggregator` crate. This restriction is part of a property
-called _coherence_, and more specifically the _orphan rule_, so named because
-the parent type is not present. This rule ensures that other people’s code
-can’t break your code and vice versa. Without the rule, two crates could
-implement the same trait for the same type, and Rust wouldn’t know which
-implementation to use.
+Külső trait-eket viszont nem implementálhatunk külső típusokon. Például nem
+implementálhatjuk a `Display` trait-et a `Vec<T>` típuson az `aggregator`
+crate-ünkben, mert a `Display` és a `Vec<T>` egyaránt a standard könyvtárban
+van definiálva, és egyik sem lokális az `aggregator` crate-ünkhöz. Ez a
+megkötés a _koherencia_ nevű tulajdonság része, pontosabban az _orphan rule_
+(árva szabály), amely onnan kapta a nevét, hogy a szülőtípus nincs jelen. Ez a
+szabály biztosítja, hogy mások kódja ne törhesse el a tiédet, és fordítva. A
+szabály nélkül két crate is implementálhatná ugyanazt a trait-et ugyanarra a
+típusra, és a Rust nem tudná, melyik implementációt használja.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="default-implementations"></a>
 
-### Using Default Implementations
+### Alapértelmezett implementációk használata
 
-Sometimes it’s useful to have default behavior for some or all of the methods
-in a trait instead of requiring implementations for all methods on every type.
-Then, as we implement the trait on a particular type, we can keep or override
-each method’s default behavior.
+Néha hasznos, ha egy trait néhány metódusának vagy az összesnek van
+alapértelmezett viselkedése, ahelyett hogy minden típuson minden metódushoz
+implementációt követelnénk meg. Ezután, amikor a trait-et egy adott típuson
+implementáljuk, minden metódus alapértelmezett viselkedését megtarthatjuk vagy
+felülírhatjuk.
 
-In Listing 10-14, we specify a default string for the `summarize` method of the
-`Summary` trait instead of only defining the method signature, as we did in
-Listing 10-12.
+A 10-14. listában a `Summary` trait `summarize` metódusához alapértelmezett
+stringet adunk meg, ahelyett hogy csak a metódus-szignatúrát definiálnánk, mint
+a 10-12. listában.
 
-<Listing number="10-14" file-name="src/lib.rs" caption="Defining a `Summary` trait with a default implementation of the `summarize` method">
+<Listing number="10-14" file-name="src/lib.rs" caption="Egy `Summary` trait definiálása a `summarize` metódus alapértelmezett implementációjával">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-14/src/lib.rs:here}}
@@ -139,94 +146,100 @@ Listing 10-12.
 
 </Listing>
 
-To use a default implementation to summarize instances of `NewsArticle`, we
-specify an empty `impl` block with `impl Summary for NewsArticle {}`.
+Ahhoz, hogy a `NewsArticle` példányainak összefoglalásához az alapértelmezett
+implementációt használjuk, egy üres `impl` blokkot adunk meg így:
+`impl Summary for NewsArticle {}`.
 
-Even though we’re no longer defining the `summarize` method on `NewsArticle`
-directly, we’ve provided a default implementation and specified that
-`NewsArticle` implements the `Summary` trait. As a result, we can still call
-the `summarize` method on an instance of `NewsArticle`, like this:
+Bár már nem definiáljuk közvetlenül a `summarize` metódust a `NewsArticle`
+típuson, adtunk egy alapértelmezett implementációt, és megadtuk, hogy a
+`NewsArticle` implementálja a `Summary` trait-et. Ennek eredményeként továbbra
+is meghívhatjuk a `summarize` metódust egy `NewsArticle` példányon, így:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-02-calling-default-impl/src/main.rs:here}}
 ```
 
-This code prints `New article available! (Read more...)`.
+Ez a kód a következőt írja ki: `New article available! (Read more...)`.
 
-Creating a default implementation doesn’t require us to change anything about
-the implementation of `Summary` on `SocialPost` in Listing 10-13. The reason is
-that the syntax for overriding a default implementation is the same as the
-syntax for implementing a trait method that doesn’t have a default
-implementation.
+Az alapértelmezett implementáció létrehozása nem teszi szükségessé, hogy
+bármit megváltoztassunk a `Summary` `SocialPost`-on való implementációján a
+10-13. listában. Ennek az az oka, hogy egy alapértelmezett implementáció
+felülírásának szintaxisa megegyezik annak a trait-metódusnak az implementálási
+szintaxisával, amelynek nincs alapértelmezett implementációja.
 
-Default implementations can call other methods in the same trait, even if those
-other methods don’t have a default implementation. In this way, a trait can
-provide a lot of useful functionality and only require implementors to specify
-a small part of it. For example, we could define the `Summary` trait to have a
-`summarize_author` method whose implementation is required, and then define a
-`summarize` method that has a default implementation that calls the
-`summarize_author` method:
+Az alapértelmezett implementációk meghívhatják ugyanannak a trait-nek más
+metódusait is, még akkor is, ha azoknak a metódusoknak nincs alapértelmezett
+implementációjuk. Így egy trait sok hasznos funkcionalitást nyújthat, miközben
+az implementálóktól csak egy kis részt követel meg. Definiálhatnánk például a
+`Summary` trait-et úgy, hogy legyen egy `summarize_author` metódusa, amelynek
+az implementációja kötelező, majd definiálhatnánk egy `summarize` metódust,
+amelynek alapértelmezett implementációja meghívja a `summarize_author`
+metódust:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-03-default-impl-calls-other-methods/src/lib.rs:here}}
 ```
 
-To use this version of `Summary`, we only need to define `summarize_author`
-when we implement the trait on a type:
+A `Summary` ezen változatának használatához csak a `summarize_author` metódust
+kell definiálnunk, amikor a trait-et egy típuson implementáljuk:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-03-default-impl-calls-other-methods/src/lib.rs:impl}}
 ```
 
-After we define `summarize_author`, we can call `summarize` on instances of the
-`SocialPost` struct, and the default implementation of `summarize` will call the
-definition of `summarize_author` that we’ve provided. Because we’ve implemented
-`summarize_author`, the `Summary` trait has given us the behavior of the
-`summarize` method without requiring us to write any more code. Here’s what
-that looks like:
+Miután definiáltuk a `summarize_author` metódust, meghívhatjuk a `summarize`
+metódust a `SocialPost` struct példányain, és a `summarize` alapértelmezett
+implementációja meg fogja hívni a `summarize_author` általunk megadott
+definícióját. Mivel implementáltuk a `summarize_author` metódust, a `Summary`
+trait a `summarize` metódus viselkedését anélkül adta meg nekünk, hogy több
+kódot kellett volna írnunk. Így néz ki mindez:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-03-default-impl-calls-other-methods/src/main.rs:here}}
 ```
 
-This code prints `1 new post: (Read more from @horse_ebooks...)`.
+Ez a kód a következőt írja ki:
+`1 new post: (Read more from @horse_ebooks...)`.
 
-Note that it isn’t possible to call the default implementation from an
-overriding implementation of that same method.
+Fontos megjegyezni, hogy ugyanannak a metódusnak a felülíró implementációjából
+nem lehet meghívni az alapértelmezett implementációt.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="traits-as-parameters"></a>
 
-### Using Traits as Parameters
+### Trait-ek használata paraméterként
 
-Now that you know how to define and implement traits, we can explore how to use
-traits to define functions that accept many different types. We’ll use the
-`Summary` trait we implemented on the `NewsArticle` and `SocialPost` types in
-Listing 10-13 to define a `notify` function that calls the `summarize` method
-on its `item` parameter, which is of some type that implements the `Summary`
-trait. To do this, we use the `impl Trait` syntax, like this:
+Most, hogy tudod, hogyan definiálj és implementálj trait-eket, nézzük meg,
+hogyan használhatók a trait-ek olyan függvények definiálására, amelyek sokféle
+különböző típust fogadnak el. A 10-13. listában a `NewsArticle` és a
+`SocialPost` típuson implementált `Summary` trait-et fogjuk használni egy
+`notify` függvény definiálásához, amely meghívja a `summarize` metódust az
+`item` paraméterén; ez a paraméter olyan típusú, amely implementálja a
+`Summary` trait-et. Ehhez az `impl Trait` szintaxist használjuk, így:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-04-traits-as-parameters/src/lib.rs:here}}
 ```
 
-Instead of a concrete type for the `item` parameter, we specify the `impl`
-keyword and the trait name. This parameter accepts any type that implements the
-specified trait. In the body of `notify`, we can call any methods on `item`
-that come from the `Summary` trait, such as `summarize`. We can call `notify`
-and pass in any instance of `NewsArticle` or `SocialPost`. Code that calls the
-function with any other type, such as a `String` or an `i32`, won’t compile,
-because those types don’t implement `Summary`.
+Az `item` paraméterhez nem konkrét típust adunk meg, hanem az `impl` kulcsszót
+és a trait nevét. Ez a paraméter bármilyen olyan típust elfogad, amely
+implementálja a megadott trait-et. A `notify` törzsében az `item`-en meghívhatunk
+bármilyen metódust, amely a `Summary` trait-től származik, például a
+`summarize` metódust. A `notify` függvényt meghívhatjuk, és átadhatjuk neki a
+`NewsArticle` vagy a `SocialPost` bármelyik példányát. Az a kód, amely bármely
+más típussal hívja meg a függvényt, például egy `String`-gel vagy egy `i32`-vel,
+nem fordul le, mert azok a típusok nem implementálják a `Summary` trait-et.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="fixing-the-largest-function-with-trait-bounds"></a>
 
-#### Trait Bound Syntax
+#### A trait bound szintaxisa
 
-The `impl Trait` syntax works for straightforward cases but is actually syntax
-sugar for a longer form known as a _trait bound_; it looks like this:
+Az `impl Trait` szintaxis egyszerű esetekben jól működik, valójában azonban
+szintaktikai cukorka egy hosszabb alakra, amelyet _trait bound_-nak nevezünk;
+az így néz ki:
 
 ```rust,ignore
 pub fn notify<T: Summary>(item: &T) {
@@ -234,128 +247,134 @@ pub fn notify<T: Summary>(item: &T) {
 }
 ```
 
-This longer form is equivalent to the example in the previous section but is
-more verbose. We place trait bounds with the declaration of the generic type
-parameter after a colon and inside angle brackets.
+Ez a hosszabb alak egyenértékű az előző szakasz példájával, csak bőbeszédűbb. A
+trait bound-okat a generikus típusparaméter deklarációjához írjuk, egy
+kettőspont után, csúcsos zárójeleken belül.
 
-The `impl Trait` syntax is convenient and makes for more concise code in simple
-cases, while the fuller trait bound syntax can express more complexity in other
-cases. For example, we can have two parameters that implement `Summary`. Doing
-so with the `impl Trait` syntax looks like this:
+Az `impl Trait` szintaxis kényelmes, és egyszerű esetekben tömörebb kódot
+eredményez, míg a teljesebb trait bound szintaxis más esetekben bonyolultabb
+dolgokat is ki tud fejezni. Lehet például két olyan paraméterünk, amely
+implementálja a `Summary` trait-et. Az `impl Trait` szintaxissal ez így néz ki:
 
 ```rust,ignore
 pub fn notify(item1: &impl Summary, item2: &impl Summary) {
 ```
 
-Using `impl Trait` is appropriate if we want this function to allow `item1` and
-`item2` to have different types (as long as both types implement `Summary`). If
-we want to force both parameters to have the same type, however, we must use a
-trait bound, like this:
+Az `impl Trait` használata akkor helyénvaló, ha azt szeretnénk, hogy a függvény
+megengedje az `item1` és az `item2` eltérő típusát (feltéve, hogy mindkét típus
+implementálja a `Summary` trait-et). Ha viszont azt akarjuk kikényszeríteni,
+hogy mindkét paraméter ugyanolyan típusú legyen, akkor trait bound-ot kell
+használnunk, így:
 
 ```rust,ignore
 pub fn notify<T: Summary>(item1: &T, item2: &T) {
 ```
 
-The generic type `T` specified as the type of the `item1` and `item2`
-parameters constrains the function such that the concrete type of the value
-passed as an argument for `item1` and `item2` must be the same.
+Az `item1` és az `item2` paraméter típusaként megadott `T` generikus típus úgy
+korlátozza a függvényt, hogy az `item1` és az `item2` argumentumaként átadott
+érték konkrét típusának meg kell egyeznie.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="specifying-multiple-trait-bounds-with-the--syntax"></a>
 
-#### Multiple Trait Bounds with the `+` Syntax
+#### Több trait bound a `+` szintaxissal
 
-We can also specify more than one trait bound. Say we wanted `notify` to use
-display formatting as well as `summarize` on `item`: We specify in the `notify`
-definition that `item` must implement both `Display` and `Summary`. We can do
-so using the `+` syntax:
+Egynél több trait bound-ot is megadhatunk. Tegyük fel, hogy azt szeretnénk, ha
+a `notify` az `item`-en a `summarize` mellett a megjelenítéshez való formázást
+is használhatná: a `notify` definíciójában megadjuk, hogy az `item`-nek a
+`Display` és a `Summary` trait-et is implementálnia kell. Ezt a `+`
+szintaxissal tehetjük meg:
 
 ```rust,ignore
 pub fn notify(item: &(impl Summary + Display)) {
 ```
 
-The `+` syntax is also valid with trait bounds on generic types:
+A `+` szintaxis generikus típusokon lévő trait bound-okkal is használható:
 
 ```rust,ignore
 pub fn notify<T: Summary + Display>(item: &T) {
 ```
 
-With the two trait bounds specified, the body of `notify` can call `summarize`
-and use `{}` to format `item`.
+A két trait bound megadásával a `notify` törzse meghívhatja a `summarize`
+metódust, és a `{}` segítségével formázhatja az `item`-et.
 
-#### Clearer Trait Bounds with `where` Clauses
+#### Átláthatóbb trait bound-ok `where` klózokkal
 
-Using too many trait bounds has its downsides. Each generic has its own trait
-bounds, so functions with multiple generic type parameters can contain lots of
-trait bound information between the function’s name and its parameter list,
-making the function signature hard to read. For this reason, Rust has alternate
-syntax for specifying trait bounds inside a `where` clause after the function
-signature. So, instead of writing this:
+A túl sok trait bound használatának megvannak a hátrányai. Minden generikusnak
+saját trait bound-jai vannak, így a több generikus típusparaméterrel rendelkező
+függvényeknél rengeteg trait bound információ zsúfolódhat a függvény neve és a
+paraméterlistája közé, amitől a függvényszignatúrát nehéz lesz olvasni. Ezért a
+Rustban van egy másik szintaxis is a trait bound-ok megadására: egy `where`
+klóz a függvényszignatúra után. Vagyis ahelyett, hogy ezt írnánk:
 
 ```rust,ignore
 fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {
 ```
 
-we can use a `where` clause, like this:
+használhatunk egy `where` klózt, így:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-07-where-clause/src/lib.rs:here}}
 ```
 
-This function’s signature is less cluttered: The function name, parameter list,
-and return type are close together, similar to a function without lots of trait
-bounds.
+Ennek a függvénynek a szignatúrája kevésbé zsúfolt: a függvény neve, a
+paraméterlista és a visszatérési típus közel van egymáshoz, hasonlóan egy olyan
+függvényhez, amelynek nincs sok trait bound-ja.
 
-### Returning Types That Implement Traits
+### Trait-eket implementáló típusok visszaadása
 
-We can also use the `impl Trait` syntax in the return position to return a
-value of some type that implements a trait, as shown here:
+Az `impl Trait` szintaxist a visszatérési érték helyén is használhatjuk, hogy
+egy trait-et implementáló valamilyen típusú értéket adjunk vissza, ahogy itt
+látható:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-05-returning-impl-trait/src/lib.rs:here}}
 ```
 
-By using `impl Summary` for the return type, we specify that the
-`returns_summarizable` function returns some type that implements the `Summary`
-trait without naming the concrete type. In this case, `returns_summarizable`
-returns a `SocialPost`, but the code calling this function doesn’t need to know
-that.
+Azzal, hogy visszatérési típusként az `impl Summary`-t használjuk, azt adjuk
+meg, hogy a `returns_summarizable` függvény valamilyen olyan típust ad vissza,
+amely implementálja a `Summary` trait-et, anélkül hogy megneveznénk a konkrét
+típust. Ebben az esetben a `returns_summarizable` egy `SocialPost`-ot ad
+vissza, de a függvényt hívó kódnak erről nem kell tudnia.
 
-The ability to specify a return type only by the trait it implements is
-especially useful in the context of closures and iterators, which we cover in
-Chapter 13. Closures and iterators create types that only the compiler knows or
-types that are very long to specify. The `impl Trait` syntax lets you concisely
-specify that a function returns some type that implements the `Iterator` trait
-without needing to write out a very long type.
+Az a lehetőség, hogy a visszatérési típust csak az általa implementált trait
+alapján adjuk meg, különösen hasznos a closure-ök és az iterátorok
+kontextusában, amelyekkel a 13. fejezetben foglalkozunk. A closure-ök és az
+iterátorok olyan típusokat hoznak létre, amelyeket csak a fordító ismer, vagy
+amelyeket nagyon hosszú lenne leírni. Az `impl Trait` szintaxis lehetővé teszi,
+hogy tömören megadd: egy függvény olyan típust ad vissza, amely implementálja
+az `Iterator` trait-et, anélkül hogy egy nagyon hosszú típust kellene kiírnod.
 
-However, you can only use `impl Trait` if you’re returning a single type. For
-example, this code that returns either a `NewsArticle` or a `SocialPost` with
-the return type specified as `impl Summary` wouldn’t work:
+Az `impl Trait` azonban csak akkor használható, ha egyetlen típust adsz vissza.
+Például ez a kód, amely vagy egy `NewsArticle`-t, vagy egy `SocialPost`-ot ad
+vissza `impl Summary` visszatérési típussal, nem működne:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-06-impl-trait-returns-one-type/src/lib.rs:here}}
 ```
 
-Returning either a `NewsArticle` or a `SocialPost` isn’t allowed due to
-restrictions around how the `impl Trait` syntax is implemented in the compiler.
-We’ll cover how to write a function with this behavior in the [“Using Trait
-Objects to Abstract over Shared Behavior”][trait-objects]<!-- ignore -->
-section of Chapter 18.
+Az, hogy vagy egy `NewsArticle`-t, vagy egy `SocialPost`-ot adjunk vissza, nem
+megengedett, mert az `impl Trait` szintaxis fordítóbeli megvalósítása bizonyos
+korlátokkal jár. Azt, hogyan írhatunk ilyen viselkedésű függvényt, a 18. fejezet
+[„Trait objectek használata osztott viselkedés absztrahálására”][trait-objects]<!-- ignore -->
+című szakaszában tárgyaljuk.
 
-### Using Trait Bounds to Conditionally Implement Methods
+### Metódusok feltételes implementálása trait bound-okkal
 
-By using a trait bound with an `impl` block that uses generic type parameters,
-we can implement methods conditionally for types that implement the specified
-traits. For example, the type `Pair<T>` in Listing 10-15 always implements the
-`new` function to return a new instance of `Pair<T>` (recall from the [“Method
-Syntax”][methods]<!-- ignore --> section of Chapter 5 that `Self` is a type
-alias for the type of the `impl` block, which in this case is `Pair<T>`). But
-in the next `impl` block, `Pair<T>` only implements the `cmp_display` method if
-its inner type `T` implements the `PartialOrd` trait that enables comparison
-_and_ the `Display` trait that enables printing.
+Ha egy generikus típusparamétereket használó `impl` blokkban trait bound-ot
+alkalmazunk, feltételesen implementálhatunk metódusokat azokra a típusokra,
+amelyek a megadott trait-eket implementálják. Például a 10-15. listában
+szereplő `Pair<T>` típus mindig implementálja a `new` függvényt, amely egy új
+`Pair<T>` példányt ad vissza (idézd fel az 5. fejezet
+[„Metódusszintaxis”][methods]<!-- ignore --> című szakaszából, hogy a `Self`
+egy típusalias az `impl` blokk típusára, ami ebben az esetben a `Pair<T>`). A
+következő `impl` blokkban viszont a `Pair<T>` csak akkor implementálja a
+`cmp_display` metódust, ha a belső `T` típusa implementálja az
+összehasonlítást lehetővé tevő `PartialOrd` trait-et _és_ a kiírást lehetővé
+tevő `Display` trait-et.
 
-<Listing number="10-15" file-name="src/lib.rs" caption="Conditionally implementing methods on a generic type depending on trait bounds">
+<Listing number="10-15" file-name="src/lib.rs" caption="Metódusok feltételes implementálása egy generikus típuson trait bound-októl függően">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-15/src/lib.rs}}
@@ -363,12 +382,13 @@ _and_ the `Display` trait that enables printing.
 
 </Listing>
 
-We can also conditionally implement a trait for any type that implements
-another trait. Implementations of a trait on any type that satisfies the trait
-bounds are called _blanket implementations_ and are used extensively in the
-Rust standard library. For example, the standard library implements the
-`ToString` trait on any type that implements the `Display` trait. The `impl`
-block in the standard library looks similar to this code:
+Egy trait-et is implementálhatunk feltételesen bármely olyan típusra, amely egy
+másik trait-et implementál. Az olyan implementációkat, amelyek egy trait-et
+minden olyan típusra megvalósítanak, amely kielégíti a trait bound-okat,
+_blanket implementációnak_ nevezzük, és széles körben használják őket a Rust
+standard könyvtárában. A standard könyvtár például minden olyan típusra
+implementálja a `ToString` trait-et, amely implementálja a `Display` trait-et.
+A standard könyvtár `impl` blokkja nagyjából így néz ki:
 
 ```rust,ignore
 impl<T: Display> ToString for T {
@@ -376,29 +396,31 @@ impl<T: Display> ToString for T {
 }
 ```
 
-Because the standard library has this blanket implementation, we can call the
-`to_string` method defined by the `ToString` trait on any type that implements
-the `Display` trait. For example, we can turn integers into their corresponding
-`String` values like this because integers implement `Display`:
+Mivel a standard könyvtárban megvan ez a blanket implementáció, a `ToString`
+trait által definiált `to_string` metódust minden olyan típuson meghívhatjuk,
+amely implementálja a `Display` trait-et. Az egész számokat például azért
+alakíthatjuk így a nekik megfelelő `String` értékekké, mert az egész számok
+implementálják a `Display` trait-et:
 
 ```rust
 let s = 3.to_string();
 ```
 
-Blanket implementations appear in the documentation for the trait in the
-“Implementors” section.
+A blanket implementációk a trait dokumentációjában az „Implementors” szakaszban
+jelennek meg.
 
-Traits and trait bounds let us write code that uses generic type parameters to
-reduce duplication but also specify to the compiler that we want the generic
-type to have particular behavior. The compiler can then use the trait bound
-information to check that all the concrete types used with our code provide the
-correct behavior. In dynamically typed languages, we would get an error at
-runtime if we called a method on a type that didn’t define the method. But Rust
-moves these errors to compile time so that we’re forced to fix the problems
-before our code is even able to run. Additionally, we don’t have to write code
-that checks for behavior at runtime, because we’ve already checked at compile
-time. Doing so improves performance without having to give up the flexibility
-of generics.
+A trait-ek és a trait bound-ok lehetővé teszik, hogy olyan kódot írjunk, amely
+generikus típusparaméterekkel csökkenti a duplikációt, ugyanakkor megadja a
+fordítónak, hogy a generikus típustól egy bizonyos viselkedést várunk el. A
+fordító ezután a trait bound információ alapján ellenőrizni tudja, hogy a
+kódunkkal használt összes konkrét típus nyújtja-e a megfelelő viselkedést. A
+dinamikusan típusos nyelvekben futásidőben kapnánk hibát, ha olyan metódust
+hívnánk meg egy típuson, amely nem definiálja azt a metódust. A Rust viszont
+ezeket a hibákat fordítási időre helyezi át, így kénytelenek vagyunk még azelőtt
+kijavítani a problémákat, hogy a kódunk egyáltalán futni tudna. Ráadásul nem
+kell olyan kódot írnunk, amely futásidőben ellenőrzi a viselkedést, hiszen már
+fordítási időben ellenőriztük. Ezzel javul a teljesítmény anélkül, hogy le
+kellene mondanunk a generikusok rugalmasságáról.
 
 [trait-objects]: ch18-02-trait-objects.html#using-trait-objects-to-abstract-over-shared-behavior
 [methods]: ch05-03-method-syntax.html#method-syntax

@@ -2,29 +2,29 @@
 
 <a id="the-match-control-flow-operator"></a>
 
-## The `match` Control Flow Construct {#the-match-control-flow-construct}
+## A `match` vezérlési szerkezet {#the-match-control-flow-construct}
 
-Rust has an extremely powerful control flow construct called `match` that
-allows you to compare a value against a series of patterns and then execute
-code based on which pattern matches. Patterns can be made up of literal values,
-variable names, wildcards, and many other things; [Chapter
-19][ch19-00-patterns]<!-- ignore --> covers all the different kinds of patterns
-and what they do. The power of `match` comes from the expressiveness of the
-patterns and the fact that the compiler confirms that all possible cases are
-handled.
+A Rustnak van egy rendkívül erős vezérlési szerkezete, a `match`, amellyel egy
+értéket minták sorozatához hasonlíthatsz, majd annak alapján futtathatsz kódot,
+hogy melyik minta illeszkedik. A minták állhatnak literál értékekből,
+változónevekből, helyettesítő szimbólumokból és sok minden másból; a [19.
+fejezet][ch19-00-patterns]<!-- ignore --> az összes mintafajtát és azok
+működését bemutatja. A `match` ereje a minták kifejezőerejéből fakad, valamint
+abból, hogy a fordító ellenőrzi: minden lehetséges esetet kezelsz.
 
-Think of a `match` expression as being like a coin-sorting machine: Coins slide
-down a track with variously sized holes along it, and each coin falls through
-the first hole it encounters that it fits into. In the same way, values go
-through each pattern in a `match`, and at the first pattern the value “fits,”
-the value falls into the associated code block to be used during execution.
+Gondolj a `match` kifejezésre úgy, mint egy pénzérme-válogató gépre: az érmék
+egy sínen csúsznak lefelé, amelyen különböző méretű lyukak sorakoznak, és
+minden érme az első olyan lyukon esik át, amelybe belefér. Ugyanígy az értékek
+is végighaladnak a `match` mintáin, és az első olyan mintánál, amelybe az érték
+„belefér”, az érték beleesik a hozzá tartozó kódblokkba, amely a végrehajtás
+során felhasználja.
 
-Speaking of coins, let’s use them as an example using `match`! We can write a
-function that takes an unknown US coin and, in a similar way as the counting
-machine, determines which coin it is and returns its value in cents, as shown
-in Listing 6-3.
+Ha már az érméknél tartunk, használjuk őket példaként a `match` bemutatására!
+Írhatunk egy függvényt, amely egy ismeretlen amerikai érmét kap, és a
+számlálógéphez hasonló módon eldönti, melyik érméről van szó, majd visszaadja
+az értékét centben, ahogy a 6-3. listában látható.
 
-<Listing number="6-3" caption="An enum and a `match` expression that has the variants of the enum as its patterns">
+<Listing number="6-3" caption="Egy enum és egy `match` kifejezés, amelynek mintái az enum variánsai">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-03/src/main.rs:here}}
@@ -32,53 +32,57 @@ in Listing 6-3.
 
 </Listing>
 
-Let’s break down the `match` in the `value_in_cents` function. First, we list
-the `match` keyword followed by an expression, which in this case is the value
-`coin`. This seems very similar to a conditional expression used with `if`, but
-there’s a big difference: With `if`, the condition needs to evaluate to a
-Boolean value, but here it can be any type. The type of `coin` in this example
-is the `Coin` enum that we defined on the first line.
+Vegyük szemügyre a `value_in_cents` függvényben lévő `match`-et. Először
+kiírjuk a `match` kulcsszót, utána pedig egy kifejezést, amely ebben az esetben
+a `coin` érték. Ez nagyon hasonlít az `if`-nél használt feltételes
+kifejezéshez, van azonban egy nagy különbség: az `if`-nél a feltételnek logikai
+értéket kell adnia, itt viszont bármilyen típus lehet. A `coin` típusa ebben a
+példában a `Coin` enum, amelyet az első sorban definiáltunk.
 
-Next are the `match` arms. An arm has two parts: a pattern and some code. The
-first arm here has a pattern that is the value `Coin::Penny` and then the `=>`
-operator that separates the pattern and the code to run. The code in this case
-is just the value `1`. Each arm is separated from the next with a comma.
+Ezután következnek a `match`-ágak. Egy ág két részből áll: egy mintából és
+valamennyi kódból. Az itteni első ág mintája a `Coin::Penny` érték, ezt követi
+a `=>` operátor, amely elválasztja a mintát a futtatandó kódtól. A kód ebben az
+esetben csupán az `1` érték. Az egyes ágakat vessző választja el a
+következőtől.
 
-When the `match` expression executes, it compares the resultant value against
-the pattern of each arm, in order. If a pattern matches the value, the code
-associated with that pattern is executed. If that pattern doesn’t match the
-value, execution continues to the next arm, much as in a coin-sorting machine.
-We can have as many arms as we need: In Listing 6-3, our `match` has four arms.
+Amikor a `match` kifejezés lefut, a kapott értéket sorban összehasonlítja
+minden ág mintájával. Ha egy minta illeszkedik az értékre, a mintához tartozó
+kód lefut. Ha az adott minta nem illeszkedik az értékre, a végrehajtás a
+következő ággal folytatódik, nagyjából úgy, mint az érmeválogató gépben.
+Annyi águnk lehet, amennyire szükségünk van: a 6-3. listában a `match`-ünknek
+négy ága van.
 
-The code associated with each arm is an expression, and the resultant value of
-the expression in the matching arm is the value that gets returned for the
-entire `match` expression.
+Az egyes ágakhoz tartozó kód egy kifejezés, és az illeszkedő ágban lévő
+kifejezés eredménye lesz az az érték, amelyet az egész `match` kifejezés
+visszaad.
 
-We don’t typically use curly brackets if the match arm code is short, as it is
-in Listing 6-3 where each arm just returns a value. If you want to run multiple
-lines of code in a match arm, you must use curly brackets, and the comma
-following the arm is then optional. For example, the following code prints
-“Lucky penny!” every time the method is called with a `Coin::Penny`, but it
-still returns the last value of the block, `1`:
+Általában nem használunk kapcsos zárójeleket, ha a `match`-ág kódja rövid,
+ahogy a 6-3. listában is, ahol minden ág csupán egy értéket ad vissza. Ha több
+sornyi kódot szeretnél futtatni egy `match`-ágban, kapcsos zárójeleket kell
+használnod, és az ágat követő vessző ilyenkor elhagyható. Például a következő
+kód minden alkalommal kiírja, hogy „Lucky penny!”, amikor a metódust egy
+`Coin::Penny` értékkel hívjuk meg, de továbbra is a blokk utolsó értékét, az
+`1`-et adja vissza:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-08-match-arm-multiple-lines/src/main.rs:here}}
 ```
 
-### Patterns That Bind to Values {#patterns-that-bind-to-values}
+### Értékekhez kötő minták {#patterns-that-bind-to-values}
 
-Another useful feature of match arms is that they can bind to the parts of the
-values that match the pattern. This is how we can extract values out of enum
-variants.
+A `match`-ágak másik hasznos tulajdonsága, hogy hozzá tudnak kötődni a mintára
+illeszkedő értékek részeihez. Így tudunk értékeket kinyerni az enum
+variánsaiból.
 
-As an example, let’s change one of our enum variants to hold data inside it.
-From 1999 through 2008, the United States minted quarters with different
-designs for each of the 50 states on one side. No other coins got state
-designs, so only quarters have this extra value. We can add this information to
-our `enum` by changing the `Quarter` variant to include a `UsState` value
-stored inside it, which we’ve done in Listing 6-4.
+Példaként változtassuk meg az egyik enum-variánsunkat úgy, hogy adatot
+tároljon. 1999 és 2008 között az Egyesült Államok olyan negyeddollárosokat
+vert, amelyek egyik oldalán mind az 50 államnak külön mintázata volt. Más
+érmék nem kaptak állammintákat, így csak a negyeddollárosoknak van ez a
+többletértékük. Ezt az információt úgy adhatjuk hozzá az `enum`-unkhoz, hogy a
+`Quarter` variánst kiegészítjük egy benne tárolt `UsState` értékkel; ezt
+tettük meg a 6-4. listában.
 
-<Listing number="6-4" caption="A `Coin` enum in which the `Quarter` variant also holds a `UsState` value">
+<Listing number="6-4" caption="Egy `Coin` enum, amelyben a `Quarter` variáns egy `UsState` értéket is tárol">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-04/src/main.rs:here}}
@@ -86,49 +90,51 @@ stored inside it, which we’ve done in Listing 6-4.
 
 </Listing>
 
-Let’s imagine that a friend is trying to collect all 50 state quarters. While
-we sort our loose change by coin type, we’ll also call out the name of the
-state associated with each quarter so that if it’s one our friend doesn’t have,
-they can add it to their collection.
+Képzeljük el, hogy egy barátunk mind az 50 állam negyeddollárosát gyűjti.
+Miközben érmetípus szerint válogatjuk az aprópénzünket, minden negyeddolláros
+esetén hangosan bemondjuk a hozzá tartozó állam nevét is, hogy ha éppen olyan
+akad a kezünkbe, amelyik a barátunknak még nincs meg, hozzátehesse a
+gyűjteményéhez.
 
-In the match expression for this code, we add a variable called `state` to the
-pattern that matches values of the variant `Coin::Quarter`. When a
-`Coin::Quarter` matches, the `state` variable will bind to the value of that
-quarter’s state. Then, we can use `state` in the code for that arm, like so:
+Ennek a kódnak a `match` kifejezésében egy `state` nevű változót adunk ahhoz a
+mintához, amely a `Coin::Quarter` variáns értékeire illeszkedik. Amikor egy
+`Coin::Quarter` illeszkedik, a `state` változó hozzákötődik az adott
+negyeddolláros államának értékéhez. Ezután az adott ág kódjában használhatjuk a
+`state` változót, így:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-09-variable-in-pattern/src/main.rs:here}}
 ```
 
-If we were to call `value_in_cents(Coin::Quarter(UsState::Alaska))`, `coin`
-would be `Coin::Quarter(UsState::Alaska)`. When we compare that value with each
-of the match arms, none of them match until we reach `Coin::Quarter(state)`. At
-that point, the binding for `state` will be the value `UsState::Alaska`. We can
-then use that binding in the `println!` expression, thus getting the inner
-state value out of the `Coin` enum variant for `Quarter`.
+Ha meghívnánk a `value_in_cents(Coin::Quarter(UsState::Alaska))` függvényt, a
+`coin` értéke `Coin::Quarter(UsState::Alaska)` lenne. Amikor ezt az értéket
+összehasonlítjuk az egyes `match`-ágakkal, egyik sem illeszkedik, amíg el nem
+érünk a `Coin::Quarter(state)` ágig. Ezen a ponton a `state` kötése az
+`UsState::Alaska` érték lesz. Ezt a kötést ezután felhasználhatjuk a
+`println!` kifejezésben, így kinyerve a belső állam értékét a `Coin` enum
+`Quarter` variánsából.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="matching-with-optiont"></a>
 
-### The `Option<T>` `match` Pattern
+### Az `Option<T>` illesztése `match`-csel
 
 
-In the previous section, we wanted to get the inner `T` value out of the `Some`
-case when using `Option<T>`; we can also handle `Option<T>` using `match`, as
-we did with the `Coin` enum! Instead of comparing coins, we’ll compare the
-variants of `Option<T>`, but the way the `match` expression works remains the
-same.
+Az előző szakaszban a `Some` esetből akartuk kinyerni a belső `T` értéket az
+`Option<T>` használatakor; az `Option<T>`-t `match` segítségével is kezelhetjük,
+ahogyan a `Coin` enummal tettük! Érmék helyett most az `Option<T>` variánsait
+hasonlítjuk össze, de a `match` kifejezés működése ugyanaz marad.
 
-Let’s say we want to write a function that takes an `Option<i32>` and, if
-there’s a value inside, adds 1 to that value. If there isn’t a value inside,
-the function should return the `None` value and not attempt to perform any
-operations.
+Tegyük fel, hogy egy olyan függvényt szeretnénk írni, amely egy `Option<i32>`
+értéket kap, és ha van benne érték, hozzáad 1-et. Ha nincs benne érték, a
+függvény adja vissza a `None` értéket, és ne próbáljon meg semmilyen műveletet
+végrehajtani.
 
-This function is very easy to write, thanks to `match`, and will look like
-Listing 6-5.
+Ezt a függvényt a `match`-nek köszönhetően nagyon könnyű megírni, és a 6-5.
+listában láthatóhoz hasonlóan fog kinézni.
 
-<Listing number="6-5" caption="A function that uses a `match` expression on an `Option<i32>`">
+<Listing number="6-5" caption="Egy függvény, amely `match` kifejezést használ egy `Option<i32>` értéken">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:here}}
@@ -136,130 +142,136 @@ Listing 6-5.
 
 </Listing>
 
-Let’s examine the first execution of `plus_one` in more detail. When we call
-`plus_one(five)`, the variable `x` in the body of `plus_one` will have the
-value `Some(5)`. We then compare that against each match arm:
+Vizsgáljuk meg részletesebben a `plus_one` első végrehajtását. Amikor meghívjuk
+a `plus_one(five)` függvényt, a `plus_one` törzsében lévő `x` változó értéke
+`Some(5)` lesz. Ezt hasonlítjuk össze ezután minden egyes `match`-ággal:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:first_arm}}
 ```
 
-The `Some(5)` value doesn’t match the pattern `None`, so we continue to the
-next arm:
+A `Some(5)` érték nem illeszkedik a `None` mintára, ezért továbblépünk a
+következő ágra:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:second_arm}}
 ```
 
-Does `Some(5)` match `Some(i)`? It does! We have the same variant. The `i`
-binds to the value contained in `Some`, so `i` takes the value `5`. The code in
-the match arm is then executed, so we add 1 to the value of `i` and create a
-new `Some` value with our total `6` inside.
+Illeszkedik a `Some(5)` a `Some(i)` mintára? Igen! Ugyanarról a variánsról van
+szó. Az `i` hozzákötődik a `Some`-ban tárolt értékhez, tehát az `i` felveszi az
+`5` értéket. Ezután lefut a `match`-ág kódja, vagyis hozzáadunk 1-et az `i`
+értékéhez, és létrehozunk egy új `Some` értéket, amelyben a `6` összegünk van.
 
-Now let’s consider the second call of `plus_one` in Listing 6-5, where `x` is
-`None`. We enter the `match` and compare to the first arm:
+Most nézzük meg a `plus_one` második hívását a 6-5. listában, ahol az `x`
+értéke `None`. Belépünk a `match`-be, és összehasonlítjuk az első ággal:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:first_arm}}
 ```
 
-It matches! There’s no value to add to, so the program stops and returns the
-`None` value on the right side of `=>`. Because the first arm matched, no other
-arms are compared.
+Illeszkedik! Nincs érték, amihez hozzáadhatnánk, ezért a program megáll, és a
+`=>` jobb oldalán álló `None` értéket adja vissza. Mivel az első ág
+illeszkedett, a további ágakkal már nem történik összehasonlítás.
 
-Combining `match` and enums is useful in many situations. You’ll see this
-pattern a lot in Rust code: `match` against an enum, bind a variable to the
-data inside, and then execute code based on it. It’s a bit tricky at first, but
-once you get used to it, you’ll wish you had it in all languages. It’s
-consistently a user favorite.
+A `match` és az enumok együttes használata sok helyzetben hasznos. Ezt a mintát
+gyakran fogod látni Rust-kódban: `match`-elünk egy enumra, hozzákötünk egy
+változót a benne lévő adathoz, majd ez alapján futtatunk kódot. Elsőre kicsit
+trükkös, de ha egyszer megszokod, azt fogod kívánni, bárcsak minden nyelvben
+lenne ilyen. Rendre a felhasználók egyik kedvence.
 
-### Matches Are Exhaustive
+### A `match`-ek kimerítőek
 
-There’s one other aspect of `match` we need to discuss: The arms’ patterns must
-cover all possibilities. Consider this version of our `plus_one` function,
-which has a bug and won’t compile:
+Van a `match`-nek még egy tulajdonsága, amelyet meg kell beszélnünk: az ágak
+mintáinak minden lehetőséget le kell fedniük. Nézd meg a `plus_one`
+függvényünk következő változatát, amelyben van egy hiba, és nem fordul le:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-10-non-exhaustive-match/src/main.rs:here}}
 ```
 
-We didn’t handle the `None` case, so this code will cause a bug. Luckily, it’s
-a bug Rust knows how to catch. If we try to compile this code, we’ll get this
-error:
+Nem kezeltük a `None` esetet, így ez a kód hibát fog okozni. Szerencsére olyan
+hibáról van szó, amelyet a Rust észre tud venni. Ha megpróbáljuk lefordítani
+ezt a kódot, a következő hibát kapjuk:
 
 ```console
 {{#include ../listings/ch06-enums-and-pattern-matching/no-listing-10-non-exhaustive-match/output.txt}}
 ```
 
-Rust knows that we didn’t cover every possible case and even knows which
-pattern we forgot! Matches in Rust are _exhaustive_: We must exhaust every last
-possibility in order for the code to be valid. Especially in the case of
-`Option<T>`, when Rust prevents us from forgetting to explicitly handle the
-`None` case, it protects us from assuming that we have a value when we might
-have null, thus making the billion-dollar mistake discussed earlier impossible.
+A Rust tudja, hogy nem fedtük le az összes lehetséges esetet, sőt azt is tudja,
+melyik mintát felejtettük el! A `match`-ek a Rustban _kimerítőek_: az utolsó
+lehetőségig ki kell merítenünk az eseteket ahhoz, hogy a kód érvényes legyen.
+Különösen az `Option<T>` esetében, amikor a Rust megakadályozza, hogy
+elfelejtsük kifejezetten kezelni a `None` esetet, ez megóv attól, hogy értéket
+feltételezzünk ott, ahol esetleg null van, és ezzel lehetetlenné teszi a
+korábban tárgyalt milliárd dolláros hibát.
 
-### Catch-All Patterns and the `_` Placeholder
+### Mindent elkapó minták és a `_` helykitöltő
 
-Using enums, we can also take special actions for a few particular values, but
-for all other values take one default action. Imagine we’re implementing a game
-where, if you roll a 3 on a dice roll, your player doesn’t move but instead
-gets a fancy new hat. If you roll a 7, your player loses a fancy hat. For all
-other values, your player moves that number of spaces on the game board. Here’s
-a `match` that implements that logic, with the result of the dice roll
-hardcoded rather than a random value, and all other logic represented by
-functions without bodies because actually implementing them is out of scope for
-this example:
+Az enumok segítségével néhány konkrét értékre külön műveletet végezhetünk,
+minden más értékre pedig egyetlen alapértelmezett műveletet. Képzeld el, hogy
+egy játékot implementálunk, amelyben ha 3-at dobsz a kockával, a játékosod nem
+lép, hanem kap egy elegáns új kalapot. Ha 7-est dobsz, a játékosod elveszít egy
+elegáns kalapot. Minden más érték esetén a játékosod annyi mezőt lép a
+játéktáblán. Íme egy `match`, amely ezt a logikát valósítja meg úgy, hogy a
+kockadobás eredménye véletlen érték helyett rögzítve van, a többi logikát pedig
+törzs nélküli függvények képviselik, mert a tényleges implementálásuk kívül
+esik ennek a példának a keretein:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-15-binding-catchall/src/main.rs:here}}
 ```
 
-For the first two arms, the patterns are the literal values `3` and `7`. For
-the last arm that covers every other possible value, the pattern is the
-variable we’ve chosen to name `other`. The code that runs for the `other` arm
-uses the variable by passing it to the `move_player` function.
+Az első két ágban a minták a `3` és a `7` literál értékek. Az utolsó ágban,
+amely minden más lehetséges értéket lefed, a minta az a változó, amelyet az
+`other` névre kereszteltünk. Az `other` ághoz tartozó kód úgy használja ezt a
+változót, hogy átadja a `move_player` függvénynek.
 
-This code compiles, even though we haven’t listed all the possible values a
-`u8` can have, because the last pattern will match all values not specifically
-listed. This catch-all pattern meets the requirement that `match` must be
-exhaustive. Note that we have to put the catch-all arm last because the
-patterns are evaluated in order. If we had put the catch-all arm earlier, the
-other arms would never run, so Rust will warn us if we add arms after a
-catch-all!
+Ez a kód lefordul, pedig nem soroltuk fel az összes lehetséges értéket, amelyet
+egy `u8` felvehet, mert az utolsó minta minden kifejezetten fel nem sorolt
+értékre illeszkedik. Ez a mindent elkapó minta teljesíti azt a követelményt,
+hogy a `match`-nek kimerítőnek kell lennie. Vedd észre, hogy a mindent elkapó
+ágat a végére kell tennünk, mert a minták kiértékelése sorrendben történik. Ha
+korábbra tettük volna a mindent elkapó ágat, a többi ág soha nem futna le,
+ezért a Rust figyelmeztet minket, ha egy mindent elkapó ág után további ágakat
+veszünk fel!
 
-Rust also has a pattern we can use when we want a catch-all but don’t want to
-_use_ the value in the catch-all pattern: `_` is a special pattern that matches
-any value and does not bind to that value. This tells Rust we aren’t going to
-use the value, so Rust won’t warn us about an unused variable.
+A Rustnak van egy olyan mintája is, amelyet akkor használhatunk, ha mindent el
+akarunk kapni, de nem akarjuk _használni_ az értéket a mindent elkapó mintában:
+a `_` egy speciális minta, amely bármilyen értékre illeszkedik, és nem kötődik
+hozzá az értékhez. Ez azt jelzi a Rustnak, hogy nem fogjuk használni az
+értéket, így a Rust nem figyelmeztet minket nem használt változóra.
 
-Let’s change the rules of the game: Now, if you roll anything other than a 3 or
-a 7, you must roll again. We no longer need to use the catch-all value, so we
-can change our code to use `_` instead of the variable named `other`:
+Változtassuk meg a játék szabályait: mostantól, ha 3-tól és 7-től eltérő
+bármit dobsz, újra kell dobnod. Már nincs szükségünk a mindent elkapó érték
+használatára, ezért a kódunkat átírhatjuk úgy, hogy az `other` nevű változó
+helyett `_`-t használjon:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-16-underscore-catchall/src/main.rs:here}}
 ```
 
-This example also meets the exhaustiveness requirement because we’re explicitly
-ignoring all other values in the last arm; we haven’t forgotten anything.
+Ez a példa szintén teljesíti a kimerítőségi követelményt, mert az utolsó ágban
+kifejezetten figyelmen kívül hagyunk minden más értéket; nem felejtettünk el
+semmit.
 
-Finally, we’ll change the rules of the game one more time so that nothing else
-happens on your turn if you roll anything other than a 3 or a 7. We can express
-that by using the unit value (the empty tuple type we mentioned in [“The Tuple
-Type”][tuples]<!-- ignore --> section) as the code that goes with the `_` arm:
+Végül még egyszer megváltoztatjuk a játék szabályait úgy, hogy semmi más ne
+történjen a körödben, ha 3-tól és 7-től eltérő bármit dobsz. Ezt úgy
+fejezhetjük ki, hogy a `_` ághoz tartozó kódként a unit értéket (a [„A tuple
+típus”][tuples]<!-- ignore --> szakaszban említett üres tuple típust)
+használjuk:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-17-underscore-unit/src/main.rs:here}}
 ```
 
-Here, we’re telling Rust explicitly that we aren’t going to use any other value
-that doesn’t match a pattern in an earlier arm, and we don’t want to run any
-code in this case.
+Itt kifejezetten megmondjuk a Rustnak, hogy nem fogunk használni semmilyen más
+értéket, amely nem illeszkedik egy korábbi ág mintájára, és ebben az esetben
+nem akarunk kódot futtatni.
 
-There’s more about patterns and matching that we’ll cover in [Chapter
-19][ch19-00-patterns]<!-- ignore -->. For now, we’re going to move on to the
-`if let` syntax, which can be useful in situations where the `match` expression
-is a bit wordy.
+A mintákról és az illesztésről még sok mindent elmondunk a [19.
+fejezetben][ch19-00-patterns]<!-- ignore -->. Egyelőre továbblépünk az `if let`
+szintaxisra, amely olyan helyzetekben lehet hasznos, ahol a `match` kifejezés
+kissé bőbeszédű.
 
 [tuples]: ch03-02-data-types.html#the-tuple-type
 [ch19-00-patterns]: ch19-00-patterns.html

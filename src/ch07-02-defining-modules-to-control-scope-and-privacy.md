@@ -2,57 +2,61 @@
 
 <a id="defining-modules-to-control-scope-and-privacy"></a>
 
-## Control Scope and Privacy with Modules
+## Hatókör és láthatóság szabályozása modulokkal
 
-In this section, we’ll talk about modules and other parts of the module system,
-namely _paths_, which allow you to name items; the `use` keyword that brings a
-path into scope; and the `pub` keyword to make items public. We’ll also discuss
-the `as` keyword, external packages, and the glob operator.
+Ebben a szakaszban a modulokról és a modulrendszer további részeiről lesz szó,
+nevezetesen az _útvonalakról_, amelyekkel elemeket nevezhetsz meg; a `use`
+kulcsszóról, amely egy útvonalat behoz a hatókörbe; valamint a `pub`
+kulcsszóról, amellyel nyilvánossá tehetsz elemeket. Szó lesz még az `as`
+kulcsszóról, a külső csomagokról és a glob operátorról.
 
-### Modules Cheat Sheet
+### Modulok – gyorstalpaló
 
-Before we get to the details of modules and paths, here we provide a quick
-reference on how modules, paths, the `use` keyword, and the `pub` keyword work
-in the compiler, and how most developers organize their code. We’ll be going
-through examples of each of these rules throughout this chapter, but this is a
-great place to refer to as a reminder of how modules work.
+Mielőtt belemennénk a modulok és az útvonalak részleteibe, itt adunk egy gyors
+összefoglalót arról, hogyan működnek a modulok, az útvonalak, a `use` és a
+`pub` kulcsszó a fordítóban, és hogy a fejlesztők többsége hogyan szervezi a
+kódját. Mindegyik szabályra hozunk példákat a fejezet során, de ez a rész
+kiválóan használható emlékeztetőként arról, hogyan működnek a modulok.
 
-- **Start from the crate root**: When compiling a crate, the compiler first
-  looks in the crate root file (usually _src/lib.rs_ for a library crate and
-  _src/main.rs_ for a binary crate) for code to compile.
-- **Declaring modules**: In the crate root file, you can declare new modules;
-  say you declare a “garden” module with `mod garden;`. The compiler will look
-  for the module’s code in these places:
-  - Inline, within curly brackets that replace the semicolon following `mod
-    garden`
-  - In the file _src/garden.rs_
-  - In the file _src/garden/mod.rs_
-- **Declaring submodules**: In any file other than the crate root, you can
-  declare submodules. For example, you might declare `mod vegetables;` in
-  _src/garden.rs_. The compiler will look for the submodule’s code within the
-  directory named for the parent module in these places:
-  - Inline, directly following `mod vegetables`, within curly brackets instead
-    of the semicolon
-  - In the file _src/garden/vegetables.rs_
-  - In the file _src/garden/vegetables/mod.rs_
-- **Paths to code in modules**: Once a module is part of your crate, you can
-  refer to code in that module from anywhere else in that same crate, as long
-  as the privacy rules allow, using the path to the code. For example, an
-  `Asparagus` type in the garden vegetables module would be found at
-  `crate::garden::vegetables::Asparagus`.
-- **Private vs. public**: Code within a module is private from its parent
-  modules by default. To make a module public, declare it with `pub mod`
-  instead of `mod`. To make items within a public module public as well, use
-  `pub` before their declarations.
-- **The `use` keyword**: Within a scope, the `use` keyword creates shortcuts to
-  items to reduce repetition of long paths. In any scope that can refer to
-  `crate::garden::vegetables::Asparagus`, you can create a shortcut with `use
-  crate::garden::vegetables::Asparagus;`, and from then on you only need to
-  write `Asparagus` to make use of that type in the scope.
+- **Indulj a crate rootból**: Egy crate fordításakor a fordító először a crate
+  root fájlban (ez általában library crate esetén az _src/lib.rs_, binary crate
+  esetén az _src/main.rs_) keresi a lefordítandó kódot.
+- **Modulok deklarálása**: A crate root fájlban új modulokat deklarálhatsz;
+  tegyük fel, hogy a `mod garden;` sorral deklarálsz egy „garden” modult. A
+  fordító a következő helyeken keresi a modul kódját:
+  - Beágyazva, azokban a kapcsos zárójelekben, amelyek a `mod garden` utáni
+    pontosvesszőt helyettesítik
+  - Az _src/garden.rs_ fájlban
+  - Az _src/garden/mod.rs_ fájlban
+- **Almodulok deklarálása**: A crate rooton kívüli bármelyik fájlban
+  deklarálhatsz almodulokat. Például az _src/garden.rs_ fájlban deklarálhatod a
+  `mod vegetables;` sort. A fordító a szülőmodulról elnevezett könyvtáron belül
+  a következő helyeken keresi az almodul kódját:
+  - Beágyazva, közvetlenül a `mod vegetables` után, pontosvessző helyett
+    kapcsos zárójelek között
+  - Az _src/garden/vegetables.rs_ fájlban
+  - Az _src/garden/vegetables/mod.rs_ fájlban
+- **Modulokban lévő kód útvonalai**: Amint egy modul a crate-ed része lett, a
+  benne lévő kódra ugyanazon a crate-en belül bárhonnan hivatkozhatsz a kódhoz
+  vezető útvonallal, amennyiben a láthatósági szabályok ezt megengedik. Például
+  a garden vegetables modulban lévő `Asparagus` típus a
+  `crate::garden::vegetables::Asparagus` útvonalon található meg.
+- **Privát kontra nyilvános**: A modulon belüli kód alapértelmezés szerint
+  privát a szülőmoduljaihoz képest. Ha nyilvánossá akarsz tenni egy modult, a
+  `mod` helyett a `pub mod` szerkezettel deklaráld. Ha egy nyilvános modulon
+  belüli elemeket is nyilvánossá akarod tenni, írj `pub` kulcsszót a
+  deklarációik elé.
+- **A `use` kulcsszó**: Egy hatókörön belül a `use` kulcsszó rövidítéseket hoz
+  létre elemekhez, hogy csökkentse a hosszú útvonalak ismétlődését. Bármelyik
+  olyan hatókörben, amely hivatkozhat a
+  `crate::garden::vegetables::Asparagus` útvonalra, létrehozhatsz egy
+  rövidítést a `use crate::garden::vegetables::Asparagus;` sorral, és onnantól
+  kezdve elég csak `Asparagus`-t írnod, ha az adott hatókörben használni
+  szeretnéd ezt a típust.
 
-Here, we create a binary crate named `backyard` that illustrates these rules.
-The crate’s directory, also named _backyard_, contains these files and
-directories:
+Itt létrehozunk egy `backyard` nevű binary crate-et, amely szemlélteti ezeket a
+szabályokat. A crate könyvtára, amelynek szintén _backyard_ a neve, a következő
+fájlokat és könyvtárakat tartalmazza:
 
 ```text
 backyard
@@ -65,7 +69,8 @@ backyard
     └── main.rs
 ```
 
-The crate root file in this case is _src/main.rs_, and it contains:
+A crate root fájl ebben az esetben az _src/main.rs_, és a következőt
+tartalmazza:
 
 <Listing file-name="src/main.rs">
 
@@ -75,8 +80,8 @@ The crate root file in this case is _src/main.rs_, and it contains:
 
 </Listing>
 
-The `pub mod garden;` line tells the compiler to include the code it finds in
-_src/garden.rs_, which is:
+A `pub mod garden;` sor azt mondja a fordítónak, hogy vegye bele azt a kódot,
+amelyet az _src/garden.rs_ fájlban talál, ez pedig a következő:
 
 <Listing file-name="src/garden.rs">
 
@@ -86,43 +91,46 @@ _src/garden.rs_, which is:
 
 </Listing>
 
-Here, `pub mod vegetables;` means the code in _src/garden/vegetables.rs_ is
-included too. That code is:
+Itt a `pub mod vegetables;` azt jelenti, hogy az _src/garden/vegetables.rs_
+fájlban lévő kód is bekerül. Ez a kód a következő:
 
 ```rust,noplayground,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/quick-reference-example/src/garden/vegetables.rs}}
 ```
 
-Now let’s get into the details of these rules and demonstrate them in action!
+Most pedig nézzük meg ezeknek a szabályoknak a részleteit, és lássuk őket
+működés közben!
 
-### Grouping Related Code in Modules
+### Összetartozó kód csoportosítása modulokban
 
-_Modules_ let us organize code within a crate for readability and easy reuse.
-Modules also allow us to control the _privacy_ of items because code within a
-module is private by default. Private items are internal implementation details
-not available for outside use. We can choose to make modules and the items
-within them public, which exposes them to allow external code to use and depend
-on them.
+A _modulok_ lehetővé teszik, hogy a crate-en belül úgy szervezzük a kódot, hogy
+az olvasható és könnyen újrafelhasználható legyen. A modulokkal az elemek
+_láthatóságát_ is szabályozhatjuk, mert a modulon belüli kód alapértelmezés
+szerint privát. A privát elemek olyan belső implementációs részletek, amelyek
+kívülről nem használhatók. Dönthetünk úgy, hogy nyilvánossá tesszük a modulokat
+és a bennük lévő elemeket, amivel közzétesszük őket, hogy külső kód is
+használhassa őket, és függhessen tőlük.
 
-As an example, let’s write a library crate that provides the functionality of a
-restaurant. We’ll define the signatures of functions but leave their bodies
-empty to concentrate on the organization of the code rather than the
-implementation of a restaurant.
+Példaként írjunk egy library crate-et, amely egy étterem működését valósítja
+meg. A függvények szignatúráit definiáljuk, de a törzsüket üresen hagyjuk, hogy
+a kód szervezésére koncentrálhassunk az étterem tényleges implementációja
+helyett.
 
-In the restaurant industry, some parts of a restaurant are referred to as front
-of house and others as back of house. _Front of house_ is where customers are;
-this encompasses where the hosts seat customers, servers take orders and
-payment, and bartenders make drinks. _Back of house_ is where the chefs and
-cooks work in the kitchen, dishwashers clean up, and managers do administrative
-work.
+Az éttermi szakmában az étterem egyes részeit „front of house”-nak, másokat
+„back of house”-nak neveznek. A _front of house_ (vendégtér) az, ahol a
+vendégek vannak; ide tartozik, ahol a hostessek leültetik a vendégeket, ahol a
+felszolgálók felveszik a rendelést és a fizetést intézik, és ahol a pultosok
+elkészítik az italokat. A _back of house_ (hátsó rész) az, ahol a séfek és a
+szakácsok dolgoznak a konyhában, ahol a mosogatók takarítanak, és ahol a
+vezetők az adminisztratív munkát végzik.
 
-To structure our crate in this way, we can organize its functions into nested
-modules. Create a new library named `restaurant` by running `cargo new
-restaurant --lib`. Then, enter the code in Listing 7-1 into _src/lib.rs_ to
-define some modules and function signatures; this code is the front of house
-section.
+Ahhoz, hogy így strukturáljuk a crate-ünket, egymásba ágyazott modulokba
+szervezhetjük a függvényeit. Hozz létre egy `restaurant` nevű új könyvtárat a
+`cargo new restaurant --lib` parancs futtatásával. Ezután írd be a 7-1. lista
+kódját az _src/lib.rs_ fájlba, hogy definiálj néhány modult és
+függvényszignatúrát; ez a kód a front of house rész.
 
-<Listing number="7-1" file-name="src/lib.rs" caption="A `front_of_house` module containing other modules that then contain functions">
+<Listing number="7-1" file-name="src/lib.rs" caption="Egy `front_of_house` modul, amely további modulokat tartalmaz, azok pedig függvényeket">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-01/src/lib.rs}}
@@ -130,27 +138,28 @@ section.
 
 </Listing>
 
-We define a module with the `mod` keyword followed by the name of the module
-(in this case, `front_of_house`). The body of the module then goes inside curly
-brackets. Inside modules, we can place other modules, as in this case with the
-modules `hosting` and `serving`. Modules can also hold definitions for other
-items, such as structs, enums, constants, traits, and as in Listing 7-1,
-functions.
+Egy modult a `mod` kulcsszóval definiálunk, amelyet a modul neve követ (ebben
+az esetben `front_of_house`). A modul törzse ezután kapcsos zárójelek közé
+kerül. A modulokba további modulokat helyezhetünk, ahogy ebben az esetben a
+`hosting` és a `serving` modult. A modulok más elemek definícióit is
+tartalmazhatják, például struct-okét, enumokét, konstansokét, trait-ekét, és
+ahogy a 7-1. listában, függvényekét.
 
-By using modules, we can group related definitions together and name why
-they’re related. Programmers using this code can navigate the code based on the
-groups rather than having to read through all the definitions, making it easier
-to find the definitions relevant to them. Programmers adding new functionality
-to this code would know where to place the code to keep the program organized.
+A modulok használatával az összetartozó definíciókat egy csoportba foghatjuk,
+és megnevezhetjük, miért tartoznak össze. Az ezt a kódot használó programozók a
+csoportok alapján tájékozódhatnak a kódban ahelyett, hogy az összes definíciót
+végig kellene olvasniuk, így könnyebben megtalálják a számukra fontos
+definíciókat. Azok a programozók, akik új funkcionalitást adnak ehhez a kódhoz,
+tudni fogják, hová tegyék a kódot, hogy a program szervezett maradjon.
 
-Earlier, we mentioned that _src/main.rs_ and _src/lib.rs_ are called _crate
-roots_. The reason for their name is that the contents of either of these two
-files form a module named `crate` at the root of the crate’s module structure,
-known as the _module tree_.
+Korábban említettük, hogy az _src/main.rs_ és az _src/lib.rs_ neve _crate
+root_. Az elnevezés oka az, hogy e két fájl bármelyikének a tartalma egy
+`crate` nevű modult alkot a crate modulszerkezetének gyökerében; ezt a
+szerkezetet _modulfának_ nevezzük.
 
-Listing 7-2 shows the module tree for the structure in Listing 7-1.
+A 7-2. lista a 7-1. listában lévő szerkezet modulfáját mutatja.
 
-<Listing number="7-2" caption="The module tree for the code in Listing 7-1">
+<Listing number="7-2" caption="A 7-1. lista kódjának modulfája">
 
 ```text
 crate
@@ -166,15 +175,15 @@ crate
 
 </Listing>
 
-This tree shows how some of the modules nest inside other modules; for example,
-`hosting` nests inside `front_of_house`. The tree also shows that some modules
-are _siblings_, meaning they’re defined in the same module; `hosting` and
-`serving` are siblings defined within `front_of_house`. If module A is
-contained inside module B, we say that module A is the _child_ of module B and
-that module B is the _parent_ of module A. Notice that the entire module tree
-is rooted under the implicit module named `crate`.
+Ez a fa megmutatja, hogyan ágyazódnak egyes modulok más modulokba; például a
+`hosting` a `front_of_house` modulba ágyazódik. A fából az is látszik, hogy egyes
+modulok _testvérek_, vagyis ugyanabban a modulban vannak definiálva; a
+`hosting` és a `serving` testvérek, amelyeket a `front_of_house` modulon belül
+definiáltunk. Ha az A modul a B modulon belül van, azt mondjuk, hogy az A modul
+a B modul _gyereke_, a B modul pedig az A modul _szülője_. Vedd észre, hogy az
+egész modulfa a `crate` nevű implicit modul alatt gyökerezik.
 
-The module tree might remind you of the filesystem’s directory tree on your
-computer; this is a very apt comparison! Just like directories in a filesystem,
-you use modules to organize your code. And just like files in a directory, we
-need a way to find our modules.
+A modulfa a számítógépeden lévő fájlrendszer könyvtárfájára emlékeztethet; ez
+nagyon találó összehasonlítás! Ahogyan a fájlrendszerben a könyvtárakat, úgy
+használod a modulokat a kódod szervezésére. És ahogyan a könyvtárban lévő
+fájlokat, úgy a moduljainkat is meg kell tudnunk találni valahogyan.

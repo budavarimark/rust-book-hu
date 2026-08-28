@@ -1,65 +1,67 @@
-## Defining an Enum
+## Enum definiálása
 
-Where structs give you a way of grouping together related fields and data, like
-a `Rectangle` with its `width` and `height`, enums give you a way of saying a
-value is one of a possible set of values. For example, we may want to say that
-`Rectangle` is one of a set of possible shapes that also includes `Circle` and
-`Triangle`. To do this, Rust allows us to encode these possibilities as an enum.
+Míg a struct-ok arra adnak módot, hogy összetartozó mezőket és adatokat fogj
+egybe – például egy `Rectangle`-t a `width` és `height` mezőjével –, az enumok
+arra, hogy kimondd: egy érték a lehetséges értékek egy halmazának valamelyik
+eleme. Például mondhatjuk, hogy a `Rectangle` a lehetséges alakzatok egyike,
+amelyek közé a `Circle` és a `Triangle` is tartozik. Ehhez a Rust lehetővé
+teszi, hogy ezeket a lehetőségeket enumként kódoljuk.
 
-Let’s look at a situation we might want to express in code and see why enums
-are useful and more appropriate than structs in this case. Say we need to work
-with IP addresses. Currently, two major standards are used for IP addresses:
-version four and version six. Because these are the only possibilities for an
-IP address that our program will come across, we can _enumerate_ all possible
-variants, which is where enumeration gets its name.
+Nézzünk meg egy olyan helyzetet, amelyet kódban szeretnénk kifejezni, és lássuk,
+miért hasznosak az enumok, és miért illenek ide jobban a struct-oknál. Tegyük
+fel, hogy IP-címekkel kell dolgoznunk. Jelenleg két fő szabvány használatos az
+IP-címekre: a négyes és a hatos verzió. Mivel a programunk számára ez az összes
+lehetőség egy IP-cím esetén, _felsorolhatjuk_ az összes lehetséges változatot –
+innen kapta a nevét a felsorolt típus.
 
-Any IP address can be either a version four or a version six address, but not
-both at the same time. That property of IP addresses makes the enum data
-structure appropriate because an enum value can only be one of its variants.
-Both version four and version six addresses are still fundamentally IP
-addresses, so they should be treated as the same type when the code is handling
-situations that apply to any kind of IP address.
+Bármely IP-cím lehet négyes vagy hatos verziójú cím, de nem lehet egyszerre
+mindkettő. Az IP-címeknek ez a tulajdonsága teszi megfelelővé az enum
+adatszerkezetet, mert egy enum értéke csak az egyik változata lehet. A négyes és
+a hatos verziójú címek egyaránt alapvetően IP-címek, ezért ugyanolyan típusként
+kell kezelni őket, amikor a kód bármilyen IP-címre vonatkozó helyzeteket kezel.
 
-We can express this concept in code by defining an `IpAddrKind` enumeration and
-listing the possible kinds an IP address can be, `V4` and `V6`. These are the
-variants of the enum:
+Ezt a fogalmat kódban úgy fejezhetjük ki, hogy definiálunk egy `IpAddrKind`
+felsorolt típust, és felsoroljuk, milyen fajta lehet egy IP-cím: `V4` és `V6`.
+Ezek az enum változatai:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:def}}
 ```
 
-`IpAddrKind` is now a custom data type that we can use elsewhere in our code.
+Az `IpAddrKind` mostantól egy saját adattípus, amelyet a kódunk más részein is
+használhatunk.
 
-### Enum Values {#enum-values}
+### Enum értékek {#enum-values}
 
-We can create instances of each of the two variants of `IpAddrKind` like this:
+Az `IpAddrKind` két változatának példányait így hozhatjuk létre:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:instance}}
 ```
 
-Note that the variants of the enum are namespaced under its identifier, and we
-use a double colon to separate the two. This is useful because now both values
-`IpAddrKind::V4` and `IpAddrKind::V6` are of the same type: `IpAddrKind`. We
-can then, for instance, define a function that takes any `IpAddrKind`:
+Vedd észre, hogy az enum változatai az enum azonosítója alatti névtérben
+vannak, és a kettőt kettős kettőspont választja el. Ez azért hasznos, mert így
+az `IpAddrKind::V4` és az `IpAddrKind::V6` érték egyaránt ugyanolyan típusú:
+`IpAddrKind`. Ezután például definiálhatunk egy függvényt, amely bármilyen
+`IpAddrKind`-ot átvesz:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:fn}}
 ```
 
-And we can call this function with either variant:
+És ezt a függvényt bármelyik változattal meghívhatjuk:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-01-defining-enums/src/main.rs:fn_call}}
 ```
 
-Using enums has even more advantages. Thinking more about our IP address type,
-at the moment we don’t have a way to store the actual IP address _data_; we
-only know what _kind_ it is. Given that you just learned about structs in
-Chapter 5, you might be tempted to tackle this problem with structs as shown in
-Listing 6-1.
+Az enumok használatának még több előnye van. Ha jobban belegondolunk az
+IP-cím-típusunkba, jelenleg nincs módunk tárolni a tényleges IP-cím _adatot_;
+csak azt tudjuk, milyen _fajtájú_. Mivel az imént tanultál a struct-okról az 5.
+fejezetben, talán kísértést éreznél, hogy struct-okkal old meg ezt a problémát,
+ahogy a 6-1. listában látható.
 
-<Listing number="6-1" caption="Storing the data and `IpAddrKind` variant of an IP address using a `struct`">
+<Listing number="6-1" caption="Egy IP-cím adatának és `IpAddrKind` változatának tárolása `struct` segítségével">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-01/src/main.rs:here}}
@@ -67,51 +69,52 @@ Listing 6-1.
 
 </Listing>
 
-Here, we’ve defined a struct `IpAddr` that has two fields: a `kind` field that
-is of type `IpAddrKind` (the enum we defined previously) and an `address` field
-of type `String`. We have two instances of this struct. The first is `home`,
-and it has the value `IpAddrKind::V4` as its `kind` with associated address
-data of `127.0.0.1`. The second instance is `loopback`. It has the other
-variant of `IpAddrKind` as its `kind` value, `V6`, and has address `::1`
-associated with it. We’ve used a struct to bundle the `kind` and `address`
-values together, so now the variant is associated with the value.
+Itt definiáltunk egy `IpAddr` struct-ot, amelynek két mezője van: egy
+`IpAddrKind` típusú `kind` mező (a korábban definiált enum) és egy `String`
+típusú `address` mező. Ebből a struct-ból két példányunk van. Az első a `home`,
+amelynek `kind` mezője az `IpAddrKind::V4` értéket veszi fel, a hozzá tartozó
+címadat pedig `127.0.0.1`. A második példány a `loopback`. Ennek `kind` értéke
+az `IpAddrKind` másik változata, a `V6`, a hozzá tartozó cím pedig `::1`. A
+struct-tal fogtuk össze a `kind` és az `address` értéket, így a változat most
+már az értékhez tartozik.
 
-However, representing the same concept using just an enum is more concise:
-Rather than an enum inside a struct, we can put data directly into each enum
-variant. This new definition of the `IpAddr` enum says that both `V4` and `V6`
-variants will have associated `String` values:
+Ugyanezt a fogalmat azonban tömörebben fejezhetjük ki pusztán egy enummal: a
+struct-ba ágyazott enum helyett az adatokat közvetlenül az egyes enum
+változatokba tehetjük. Az `IpAddr` enum új definíciója azt mondja ki, hogy a
+`V4` és a `V6` változathoz egyaránt `String` érték tartozik:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-02-enum-with-data/src/main.rs:here}}
 ```
 
-We attach data to each variant of the enum directly, so there is no need for an
-extra struct. Here, it’s also easier to see another detail of how enums work:
-The name of each enum variant that we define also becomes a function that
-constructs an instance of the enum. That is, `IpAddr::V4()` is a function call
-that takes a `String` argument and returns an instance of the `IpAddr` type. We
-automatically get this constructor function defined as a result of defining the
-enum.
+Az adatot közvetlenül az enum egyes változataihoz kapcsoljuk, így nincs szükség
+külön struct-ra. Itt egy másik részlet is jobban látszik abból, hogyan működnek
+az enumok: minden általunk definiált enum változat neve egyben olyan függvény
+is lesz, amely az enum egy példányát állítja elő. Vagyis az `IpAddr::V4()` egy
+függvényhívás, amely egy `String` argumentumot vesz át, és az `IpAddr` típus
+egy példányát adja vissza. Ezt a konstruktorfüggvényt automatikusan megkapjuk
+az enum definiálásának eredményeként.
 
-There’s another advantage to using an enum rather than a struct: Each variant
-can have different types and amounts of associated data. Version four IP
-addresses will always have four numeric components that will have values
-between 0 and 255. If we wanted to store `V4` addresses as four `u8` values but
-still express `V6` addresses as one `String` value, we wouldn’t be able to with
-a struct. Enums handle this case with ease:
+Az enum struct helyetti használatának van még egy előnye: minden változathoz
+eltérő típusú és mennyiségű adat tartozhat. A négyes verziójú IP-címek mindig
+négy számkomponensből állnak, amelyek értéke 0 és 255 közötti. Ha a `V4`
+címeket négy `u8` értékként akarnánk tárolni, de a `V6` címeket továbbra is egy
+`String` értékként kifejezni, ezt struct-tal nem tudnánk megtenni. Az enumok
+könnyedén kezelik ezt az esetet:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-03-variants-with-different-data/src/main.rs:here}}
 ```
 
-We’ve shown several different ways to define data structures to store version
-four and version six IP addresses. However, as it turns out, wanting to store
-IP addresses and encode which kind they are is so common that [the standard
-library has a definition we can use!][IpAddr]<!-- ignore --> Let’s look at how
-the standard library defines `IpAddr`. It has the exact enum and variants that
-we’ve defined and used, but it embeds the address data inside the variants in
-the form of two different structs, which are defined differently for each
-variant:
+Többféle módot is bemutattunk arra, hogyan definiálhatunk adatszerkezeteket a
+négyes és hatos verziójú IP-címek tárolására. Mint kiderül, azonban annyira
+gyakori igény az IP-címek tárolása és annak jelzése, hogy melyik fajtáról van
+szó, hogy [a standard könyvtárban van egy definíció, amelyet
+használhatunk!][IpAddr]<!-- ignore --> Nézzük meg, hogyan definiálja a standard
+könyvtár az `IpAddr`-t. Pontosan azt az enumot és azokat a változatokat
+tartalmazza, amelyeket mi is definiáltunk és használtunk, de a címadatot két
+különböző struct formájában ágyazza a változatokba, amelyeket változatonként
+eltérően definiál:
 
 ```rust
 struct Ipv4Addr {
@@ -128,20 +131,20 @@ enum IpAddr {
 }
 ```
 
-This code illustrates that you can put any kind of data inside an enum variant:
-strings, numeric types, or structs, for example. You can even include another
-enum! Also, standard library types are often not much more complicated than
-what you might come up with.
+Ez a kód azt szemlélteti, hogy bármilyen adatot betehetsz egy enum változatba:
+például sztringeket, numerikus típusokat vagy struct-okat. Akár egy másik
+enumot is beletehetsz! Ráadásul a standard könyvtár típusai gyakran nem sokkal
+bonyolultabbak annál, mint amit magad is kitalálnál.
 
-Note that even though the standard library contains a definition for `IpAddr`,
-we can still create and use our own definition without conflict because we
-haven’t brought the standard library’s definition into our scope. We’ll talk
-more about bringing types into scope in Chapter 7.
+Vedd észre, hogy bár a standard könyvtár tartalmaz egy `IpAddr` definíciót,
+ütközés nélkül létrehozhatjuk és használhatjuk a sajátunkat, mert nem hoztuk be
+a standard könyvtár definícióját a hatókörünkbe. A típusok hatókörbe hozásáról
+bővebben a 7. fejezetben lesz szó.
 
-Let’s look at another example of an enum in Listing 6-2: This one has a wide
-variety of types embedded in its variants.
+Nézzünk meg egy másik enum példát a 6-2. listában: ennek a változataiba
+sokféle típus van beágyazva.
 
-<Listing number="6-2" caption="A `Message` enum whose variants each store different amounts and types of values">
+<Listing number="6-2" caption="Egy `Message` enum, amelynek változatai eltérő mennyiségű és típusú értéket tárolnak">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-02/src/main.rs:here}}
@@ -149,90 +152,90 @@ variety of types embedded in its variants.
 
 </Listing>
 
-This enum has four variants with different types:
+Ennek az enumnak négy változata van, különböző típusokkal:
 
-- `Quit`: Has no data associated with it at all
-- `Move`: Has named fields, like a struct does
-- `Write`: Includes a single `String`
-- `ChangeColor`: Includes three `i32` values
+- `Quit`: egyáltalán nem tartozik hozzá adat
+- `Move`: névvel ellátott mezői vannak, akárcsak egy struct-nak
+- `Write`: egyetlen `String`-et tartalmaz
+- `ChangeColor`: három `i32` értéket tartalmaz
 
-Defining an enum with variants such as the ones in Listing 6-2 is similar to
-defining different kinds of struct definitions, except the enum doesn’t use the
-`struct` keyword and all the variants are grouped together under the `Message`
-type. The following structs could hold the same data that the preceding enum
-variants hold:
+Egy olyan enum definiálása, amelynek a 6-2. listában láthatókhoz hasonló
+változatai vannak, hasonlít különféle struct-definíciók megadásához, azzal a
+különbséggel, hogy az enum nem használja a `struct` kulcsszót, és az összes
+változat egyetlen `Message` típus alá van csoportosítva. A következő struct-ok
+ugyanazokat az adatokat tárolhatnák, mint a fenti enum változatai:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-04-structs-similar-to-message-enum/src/main.rs:here}}
 ```
 
-But if we used the different structs, each of which has its own type, we
-couldn’t as easily define a function to take any of these kinds of messages as
-we could with the `Message` enum defined in Listing 6-2, which is a single type.
+Ha viszont a különböző struct-okat használnánk, amelyek mindegyike saját
+típusú, nem tudnánk olyan könnyen definiálni egy függvényt, amely bármelyik
+fajta üzenetet átveszi, mint a 6-2. listában definiált `Message` enummal, amely
+egyetlen típus.
 
-There is one more similarity between enums and structs: Just as we’re able to
-define methods on structs using `impl`, we’re also able to define methods on
-enums. Here’s a method named `call` that we could define on our `Message` enum:
+Van még egy hasonlóság az enumok és a struct-ok között: ahogy `impl`
+segítségével metódusokat definiálhatunk struct-okon, ugyanúgy definiálhatunk
+metódusokat enumokon is. Íme egy `call` nevű metódus, amelyet a `Message`
+enumunkon definiálhatnánk:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-05-methods-on-enums/src/main.rs:here}}
 ```
 
-The body of the method would use `self` to get the value that we called the
-method on. In this example, we’ve created a variable `m` that has the value
-`Message::Write(String::from("hello"))`, and that is what `self` will be in the
-body of the `call` method when `m.call()` runs.
+A metódus törzse a `self`-fel érné el azt az értéket, amelyen a metódust
+meghívtuk. Ebben a példában létrehoztunk egy `m` változót, amelynek értéke
+`Message::Write(String::from("hello"))`, és ez lesz a `self` a `call` metódus
+törzsében, amikor az `m.call()` lefut.
 
-Let’s look at another enum in the standard library that is very common and
-useful: `Option`.
+Nézzünk meg egy másik, nagyon gyakori és hasznos enumot a standard könyvtárból:
+az `Option`-t.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="the-option-enum-and-its-advantages-over-null-values"></a>
 
-### The `Option` Enum
+### Az `Option` enum
 
-This section explores a case study of `Option`, which is another enum defined
-by the standard library. The `Option` type encodes the very common scenario in
-which a value could be something, or it could be nothing.
+Ez a szakasz az `Option` esettanulmányát járja körül, amely egy másik, a
+standard könyvtár által definiált enum. Az `Option` típus azt a nagyon gyakori
+helyzetet kódolja, amikor egy érték lehet valami, de lehet semmi is.
 
-For example, if you request the first item in a non-empty list, you would get
-a value. If you request the first item in an empty list, you would get nothing.
-Expressing this concept in terms of the type system means the compiler can
-check whether you’ve handled all the cases you should be handling; this
-functionality can prevent bugs that are extremely common in other programming
-languages.
+Ha például egy nem üres lista első elemét kéred le, kapsz egy értéket. Ha egy
+üres lista első elemét kéred le, semmit sem kapsz. Ha ezt a fogalmat a
+típusrendszer nyelvén fejezzük ki, a fordító ellenőrizni tudja, hogy minden
+kezelendő esetet lekezeltél-e; ez a képesség megelőzhet olyan hibákat, amelyek
+más programozási nyelvekben rendkívül gyakoriak.
 
-Programming language design is often thought of in terms of which features you
-include, but the features you exclude are important too. Rust doesn’t have the
-null feature that many other languages have. _Null_ is a value that means there
-is no value there. In languages with null, variables can always be in one of
-two states: null or not-null.
+A programozási nyelvek tervezéséről gyakran abban a keretben gondolkodunk, hogy
+milyen képességeket veszünk bele, pedig a kihagyott képességek is fontosak. A
+Rustban nincs meg a null, amely sok más nyelvben megvan. A _null_ olyan érték,
+amely azt jelenti, hogy nincs ott érték. A nullt ismerő nyelvekben a változók
+mindig két állapot egyikében vannak: null vagy nem null.
 
-In his 2009 presentation “Null References: The Billion Dollar Mistake,” Tony
-Hoare, the inventor of null, had this to say:
+Tony Hoare, a null feltalálója 2009-es „Null References: The Billion Dollar
+Mistake” című előadásában ezt mondta:
 
-> I call it my billion-dollar mistake. At that time, I was designing the first
-> comprehensive type system for references in an object-oriented language. My
-> goal was to ensure that all use of references should be absolutely safe, with
-> checking performed automatically by the compiler. But I couldn’t resist the
-> temptation to put in a null reference, simply because it was so easy to
-> implement. This has led to innumerable errors, vulnerabilities, and system
-> crashes, which have probably caused a billion dollars of pain and damage in
-> the last forty years.
+> Milliárd dolláros hibámnak nevezem. Akkoriban az első átfogó típusrendszert
+> terveztem referenciákhoz egy objektumorientált nyelvben. A célom az volt, hogy
+> a referenciák minden használata teljesen biztonságos legyen, és az
+> ellenőrzést a fordító automatikusan végezze el. De nem tudtam ellenállni a
+> kísértésnek, hogy bevezessem a null referenciát, egyszerűen azért, mert olyan
+> könnyű volt implementálni. Ez megszámlálhatatlan hibához, sebezhetőséghez és
+> rendszerösszeomláshoz vezetett, ami az elmúlt negyven évben valószínűleg
+> milliárd dollárnyi fájdalmat és kárt okozott.
 
-The problem with null values is that if you try to use a null value as a
-not-null value, you’ll get an error of some kind. Because this null or not-null
-property is pervasive, it’s extremely easy to make this kind of error.
+A null értékekkel az a baj, hogy ha egy null értéket nem null értékként
+próbálsz használni, valamilyen hibát kapsz. Mivel ez a null vagy nem null
+tulajdonság mindent áthat, rendkívül könnyű elkövetni ezt a fajta hibát.
 
-However, the concept that null is trying to express is still a useful one: A
-null is a value that is currently invalid or absent for some reason.
+Az a fogalom azonban, amelyet a null kifejezni próbál, továbbra is hasznos: a
+null olyan érték, amely valamilyen okból jelenleg érvénytelen vagy hiányzik.
 
-The problem isn’t really with the concept but with the particular
-implementation. As such, Rust does not have nulls, but it does have an enum
-that can encode the concept of a value being present or absent. This enum is
-`Option<T>`, and it is [defined by the standard library][option]<!-- ignore -->
-as follows:
+A probléma valójában nem a fogalommal van, hanem az adott implementációval. A
+Rustban ezért nincs null, viszont van egy enum, amely képes kódolni azt a
+fogalmat, hogy egy érték jelen van-e vagy hiányzik. Ez az enum az `Option<T>`,
+és a [standard könyvtár így definiálja][option]<!-- ignore -->:
 
 ```rust
 enum Option<T> {
@@ -241,89 +244,88 @@ enum Option<T> {
 }
 ```
 
-The `Option<T>` enum is so useful that it’s even included in the prelude; you
-don’t need to bring it into scope explicitly. Its variants are also included in
-the prelude: You can use `Some` and `None` directly without the `Option::`
-prefix. The `Option<T>` enum is still just a regular enum, and `Some(T)` and
-`None` are still variants of type `Option<T>`.
+Az `Option<T>` enum annyira hasznos, hogy még a prelude része is; nem kell
+kifejezetten hatókörbe hoznod. A változatai is részei a prelude-nak: a `Some`-ot
+és a `None`-t közvetlenül, az `Option::` előtag nélkül használhatod. Az
+`Option<T>` ettől még ugyanolyan hétköznapi enum, a `Some(T)` és a `None` pedig
+továbbra is az `Option<T>` típus változatai.
 
-The `<T>` syntax is a feature of Rust we haven’t talked about yet. It’s a
-generic type parameter, and we’ll cover generics in more detail in Chapter 10.
-For now, all you need to know is that `<T>` means that the `Some` variant of
-the `Option` enum can hold one piece of data of any type, and that each
-concrete type that gets used in place of `T` makes the overall `Option<T>` type
-a different type. Here are some examples of using `Option` values to hold
-number types and char types:
+A `<T>` szintaxis a Rust olyan képessége, amelyről még nem beszéltünk. Ez egy
+generikus típusparaméter, a generikusokkal pedig részletesebben a 10.
+fejezetben foglalkozunk. Egyelőre csak annyit kell tudnod, hogy a `<T>` azt
+jelenti: az `Option` enum `Some` változata egyetlen, tetszőleges típusú
+adatdarabot tarthat, és minden konkrét típus, amely a `T` helyére kerül, más és
+más `Option<T>` típust eredményez. Íme néhány példa arra, hogyan tárolhatunk
+`Option` értékekkel számtípusokat és `char` típusokat:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-06-option-examples/src/main.rs:here}}
 ```
 
-The type of `some_number` is `Option<i32>`. The type of `some_char` is
-`Option<char>`, which is a different type. Rust can infer these types because
-we’ve specified a value inside the `Some` variant. For `absent_number`, Rust
-requires us to annotate the overall `Option` type: The compiler can’t infer the
-type that the corresponding `Some` variant will hold by looking only at a
-`None` value. Here, we tell Rust that we mean for `absent_number` to be of type
-`Option<i32>`.
+A `some_number` típusa `Option<i32>`. A `some_char` típusa `Option<char>`, ami
+másik típus. A Rust ki tudja következtetni ezeket a típusokat, mert a `Some`
+változaton belül megadtunk egy értéket. Az `absent_number` esetében a Rust
+megköveteli, hogy megadjuk a teljes `Option` típust: a fordító pusztán egy
+`None` értéket nézve nem tudja kikövetkeztetni, milyen típust tartana a
+megfelelő `Some` változat. Itt megmondjuk a Rustnak, hogy az `absent_number`
+típusa `Option<i32>` legyen.
 
-When we have a `Some` value, we know that a value is present, and the value is
-held within the `Some`. When we have a `None` value, in some sense it means the
-same thing as null: We don’t have a valid value. So, why is having `Option<T>`
-any better than having null?
+Ha van egy `Some` értékünk, tudjuk, hogy van érték, és az érték a `Some`-on
+belül van. Ha `None` értékünk van, az bizonyos értelemben ugyanazt jelenti, mint
+a null: nincs érvényes értékünk. Miért jobb akkor az `Option<T>`, mint a null?
 
-In short, because `Option<T>` and `T` (where `T` can be any type) are different
-types, the compiler won’t let us use an `Option<T>` value as if it were
-definitely a valid value. For example, this code won’t compile, because it’s
-trying to add an `i8` to an `Option<i8>`:
+Röviden azért, mert az `Option<T>` és a `T` (ahol a `T` bármilyen típus lehet)
+különböző típusok, ezért a fordító nem engedi, hogy egy `Option<T>` értéket úgy
+használjunk, mintha biztosan érvényes érték lenne. Például ez a kód nem fordul
+le, mert egy `i8`-at próbál hozzáadni egy `Option<i8>`-hoz:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-07-cant-use-option-directly/src/main.rs:here}}
 ```
 
-If we run this code, we get an error message like this one:
+Ha lefuttatjuk ezt a kódot, ehhez hasonló hibaüzenetet kapunk:
 
 ```console
 {{#include ../listings/ch06-enums-and-pattern-matching/no-listing-07-cant-use-option-directly/output.txt}}
 ```
 
-Intense! In effect, this error message means that Rust doesn’t understand how
-to add an `i8` and an `Option<i8>`, because they’re different types. When we
-have a value of a type like `i8` in Rust, the compiler will ensure that we
-always have a valid value. We can proceed confidently without having to check
-for null before using that value. Only when we have an `Option<i8>` (or
-whatever type of value we’re working with) do we have to worry about possibly
-not having a value, and the compiler will make sure we handle that case before
-using the value.
+Kemény! Ez a hibaüzenet lényegében azt jelenti, hogy a Rust nem tudja, hogyan
+adjon össze egy `i8`-at és egy `Option<i8>`-at, mert különböző típusok. Amikor
+a Rustban van egy `i8`-hoz hasonló típusú értékünk, a fordító biztosítja, hogy
+mindig érvényes értékünk legyen. Magabiztosan haladhatunk tovább anélkül, hogy
+az érték használata előtt nullra kellene ellenőriznünk. Csak akkor kell
+aggódnunk amiatt, hogy esetleg nincs értékünk, ha `Option<i8>` (vagy bármilyen
+más olyan típusú) értékkel dolgozunk, és a fordító gondoskodik róla, hogy az
+érték használata előtt lekezeljük ezt az esetet.
 
-In other words, you have to convert an `Option<T>` to a `T` before you can
-perform `T` operations with it. Generally, this helps catch one of the most
-common issues with null: assuming that something isn’t null when it actually is.
+Más szóval egy `Option<T>`-t `T`-vé kell alakítanod, mielőtt `T`-műveleteket
+végezhetnél vele. Ez általában segít elkapni a null egyik leggyakoribb
+problémáját: azt a feltételezést, hogy valami nem null, pedig valójában az.
 
-Eliminating the risk of incorrectly assuming a not-null value helps you be more
-confident in your code. In order to have a value that can possibly be null, you
-must explicitly opt in by making the type of that value `Option<T>`. Then, when
-you use that value, you are required to explicitly handle the case when the
-value is null. Everywhere that a value has a type that isn’t an `Option<T>`,
-you _can_ safely assume that the value isn’t null. This was a deliberate design
-decision for Rust to limit null’s pervasiveness and increase the safety of Rust
-code.
+Ha kiiktatjuk annak kockázatát, hogy tévesen nem null értéket feltételezünk,
+magabiztosabbak lehetünk a kódunkban. Ahhoz, hogy egy érték esetleg null
+lehessen, kifejezetten kérned kell ezt azzal, hogy az érték típusa `Option<T>`
+lesz. Ezután, amikor használod azt az értéket, kötelező kifejezetten lekezelned
+azt az esetet, amikor az érték null. Minden olyan helyen, ahol egy érték típusa
+nem `Option<T>`, nyugodtan feltételezheted, hogy az érték nem null. Ez a Rust
+tudatos tervezési döntése volt, hogy korlátozza a null mindent átható jelenlétét
+és növelje a Rust kód biztonságát.
 
-So how do you get the `T` value out of a `Some` variant when you have a value
-of type `Option<T>` so that you can use that value? The `Option<T>` enum has a
-large number of methods that are useful in a variety of situations; you can
-check them out in [its documentation][docs]<!-- ignore -->. Becoming familiar
-with the methods on `Option<T>` will be extremely useful in your journey with
-Rust.
+Hogyan szedjük ki tehát a `T` értéket egy `Some` változatból, ha `Option<T>`
+típusú értékünk van, hogy használhassuk azt az értéket? Az `Option<T>` enumnak
+rengeteg metódusa van, amelyek sokféle helyzetben hasznosak; ezeket [a
+dokumentációjában][docs]<!-- ignore --> nézheted meg. Ha megismerkedsz az
+`Option<T>` metódusaival, az rendkívül hasznos lesz a Rusttal töltött utad
+során.
 
-In general, in order to use an `Option<T>` value, you want to have code that
-will handle each variant. You want some code that will run only when you have a
-`Some(T)` value, and this code is allowed to use the inner `T`. You want some
-other code to run only if you have a `None` value, and that code doesn’t have a
-`T` value available. The `match` expression is a control flow construct that
-does just this when used with enums: It will run different code depending on
-which variant of the enum it has, and that code can use the data inside the
-matching value.
+Általánosságban egy `Option<T>` érték használatához olyan kódra van szükség,
+amely minden változatot lekezel. Kell valamennyi kód, amely csak akkor fut le,
+ha `Some(T)` értékünk van, és ez a kód használhatja a benne lévő `T`-t. Kell
+egy másik kódrészlet, amely csak akkor fut le, ha `None` értékünk van, és ennek
+a kódnak nem áll rendelkezésére `T` érték. A `match` kifejezés olyan
+vezérlésiszerkezet-elem, amely enumokkal használva pontosan ezt teszi: attól
+függően futtat különböző kódot, hogy az enum melyik változata van nála, és ez a
+kód használhatja az illeszkedő értékben lévő adatokat.
 
 [IpAddr]: ../std/net/enum.IpAddr.html
 [option]: ../std/option/enum.Option.html

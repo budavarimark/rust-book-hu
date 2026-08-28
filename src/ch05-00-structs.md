@@ -1,14 +1,17 @@
-# Using Structs to Structure Related Data
+# Struktok használata összetartozó adatok strukturálására
 
-A _struct_, or _structure_, is a custom data type that lets you package
-together and name multiple related values that make up a meaningful group. If
-you’re familiar with an object-oriented language, a struct is like an object’s
-data attributes. In this chapter, we’ll compare and contrast tuples with
-structs to build on what you already know and demonstrate when structs are a
-better way to group data.
+A _struct_ – vagyis _struktúra_ – egy olyan egyéni adattípus, amellyel több
+összetartozó, egy értelmes csoportot alkotó értéket csomagolhatsz össze és
+nevezhetsz el. Ha ismersz valamilyen objektumorientált nyelvet, a struct
+nagyjából olyan, mint egy objektum adatattribútumai. Ebben a fejezetben
+összehasonlítjuk a tuple-öket és a structokat, hogy építsünk arra, amit már
+tudsz, és megmutassuk, mikor jobb módja a structok használata az adatok
+csoportosításának.
 
-We’ll demonstrate how to define and instantiate structs. We’ll discuss how to
-define associated functions, especially the kind of associated functions called
-_methods_, to specify behavior associated with a struct type. Structs and enums
-(discussed in Chapter 6) are the building blocks for creating new types in your
-program’s domain to take full advantage of Rust’s compile-time type checking.
+Bemutatjuk, hogyan definiálhatsz és példányosíthatsz structokat. Szó lesz
+arról, hogyan definiálhatunk asszociált függvényeket – különösen a _metódusok_
+nevű asszociált függvényeket –, amelyekkel egy struct típushoz kapcsolódó
+viselkedést adhatunk meg. A structok és az enumok (amelyekről a 6. fejezetben
+lesz szó) az alapkövei annak, hogy a programod fogalomkörében új típusokat hozz
+létre, és teljes mértékben kihasználd a Rust fordítási idejű
+típusellenőrzését.

@@ -1,11 +1,12 @@
-# Enums and Pattern Matching
+# Enumok és mintaillesztés
 
-In this chapter, we’ll look at enumerations, also referred to as _enums_.
-Enums allow you to define a type by enumerating its possible variants. First
-we’ll define and use an enum to show how an enum can encode meaning along with
-data. Next, we’ll explore a particularly useful enum, called `Option`, which
-expresses that a value can be either something or nothing. Then, we’ll look at
-how pattern matching in the `match` expression makes it easy to run different
-code for different values of an enum. Finally, we’ll cover how the `if let`
-construct is another convenient and concise idiom available to handle enums in
-your code.
+Ebben a fejezetben a felsorolt típusokat vesszük szemügyre, amelyeket _enum_-nak
+is neveznek. Az enumok lehetővé teszik, hogy egy típust a lehetséges
+változatainak felsorolásával definiálj. Először definiálunk és használunk egy
+enumot, hogy megmutassuk, hogyan képes az enum az adatok mellett jelentést is
+hordozni. Ezután megismerkedünk egy különösen hasznos enummal, az `Option`-nel,
+amely azt fejezi ki, hogy egy érték lehet valami, de lehet semmi is. Utána
+megnézzük, hogyan teszi könnyűvé a `match` kifejezésben végzett mintaillesztés,
+hogy egy enum különböző értékeire különböző kód fusson. Végül szó lesz arról,
+hogy az `if let` szerkezet egy másik kényelmes és tömör idióma, amellyel
+enumokat kezelhetsz a kódodban.

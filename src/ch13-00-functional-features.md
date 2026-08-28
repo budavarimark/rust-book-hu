@@ -1,24 +1,26 @@
-# Functional Language Features: Iterators and Closures
+# Funkcionális nyelvi elemek: iterátorok és closure-ök
 
-Rust’s design has taken inspiration from many existing languages and
-techniques, and one significant influence is _functional programming_.
-Programming in a functional style often includes using functions as values by
-passing them in arguments, returning them from other functions, assigning them
-to variables for later execution, and so forth.
+A Rust tervezése sok létező nyelvből és technikából merített ihletet, és az
+egyik jelentős hatás a _funkcionális programozás_. A funkcionális stílusú
+programozásban gyakran előfordul, hogy a függvényeket értékként használjuk:
+argumentumban adjuk át őket, más függvényekből adjuk vissza őket, változókhoz
+rendeljük őket későbbi végrehajtás céljából, és így tovább.
 
-In this chapter, we won’t debate the issue of what functional programming is or
-isn’t but will instead discuss some features of Rust that are similar to
-features in many languages often referred to as functional.
+Ebben a fejezetben nem vitatkozunk azon, mi funkcionális programozás és mi nem,
+hanem inkább a Rust néhány olyan képességét beszéljük meg, amelyek hasonlítanak
+sok, gyakran funkcionálisnak nevezett nyelv képességeihez.
 
-More specifically, we’ll cover:
+Pontosabban a következőket vesszük végig:
 
-- _Closures_, a function-like construct you can store in a variable
-- _Iterators_, a way of processing a series of elements
-- How to use closures and iterators to improve the I/O project in Chapter 12
-- The performance of closures and iterators (spoiler alert: They’re faster than
-  you might think!)
+- A _closure_-ök, azaz a függvényszerű konstrukciók, amelyeket változóban
+  tárolhatsz
+- Az _iterátorok_, azaz elemek sorozatának feldolgozási módja
+- Hogyan használhatók a closure-ök és az iterátorok a 12. fejezetbeli
+  I/O-projekt javítására
+- A closure-ök és az iterátorok teljesítménye (spoiler: gyorsabbak, mint
+  gondolnád!)
 
-We’ve already covered some other Rust features, such as pattern matching and
-enums, that are also influenced by the functional style. Because mastering
-closures and iterators is an important part of writing fast, idiomatic, Rust
-code, we’ll devote this entire chapter to them.
+Már szó volt a Rust néhány más képességéről is – például a mintaillesztésről és
+az enumokról –, amelyekre szintén hatott a funkcionális stílus. Mivel a
+closure-ök és az iterátorok elsajátítása fontos része a gyors, idiomatikus
+Rust-kód írásának, ezt az egész fejezetet nekik szenteljük.

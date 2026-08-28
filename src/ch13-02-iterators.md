@@ -1,17 +1,18 @@
-## Processing a Series of Items with Iterators
+## Elemsorozatok feldolgozása iterátorokkal
 
-The iterator pattern allows you to perform some task on a sequence of items in
-turn. An iterator is responsible for the logic of iterating over each item and
-determining when the sequence has finished. When you use iterators, you don’t
-have to reimplement that logic yourself.
+Az iterátor minta lehetővé teszi, hogy egy elemsorozat minden elemén sorra
+elvégezz valamilyen feladatot. Az iterátor felel az egyes elemeken való
+végighaladás logikájáért és annak eldöntéséért, mikor ért véget a sorozat. Ha
+iterátorokat használsz, ezt a logikát nem kell újra és újra magadnak
+megírnod.
 
-In Rust, iterators are _lazy_, meaning they have no effect until you call
-methods that consume the iterator to use it up. For example, the code in
-Listing 13-10 creates an iterator over the items in the vector `v1` by calling
-the `iter` method defined on `Vec<T>`. This code by itself doesn’t do anything
-useful.
+Rustban az iterátorok _lusták_ (lazy), vagyis addig nincs semmilyen hatásuk,
+amíg meg nem hívsz olyan metódusokat, amelyek elfogyasztják az iterátort. A
+13-10. lista kódja például létrehoz egy iterátort a `v1` vektor elemei fölött a
+`Vec<T>` típuson definiált `iter` metódus meghívásával. Ez a kód önmagában nem
+csinál semmi hasznosat.
 
-<Listing number="13-10" file-name="src/main.rs" caption="Creating an iterator">
+<Listing number="13-10" file-name="src/main.rs" caption="Iterátor létrehozása">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-10/src/main.rs:here}}
@@ -19,18 +20,18 @@ useful.
 
 </Listing>
 
-The iterator is stored in the `v1_iter` variable. Once we’ve created an
-iterator, we can use it in a variety of ways. In Listing 3-5, we iterated over
-an array using a `for` loop to execute some code on each of its items. Under
-the hood, this implicitly created and then consumed an iterator, but we glossed
-over how exactly that works until now.
+Az iterátort a `v1_iter` változó tárolja. Miután létrehoztunk egy iterátort,
+sokféleképpen használhatjuk. A 3-5. listában egy tömbön haladtunk végig `for`
+ciklussal, hogy minden elemén lefuttassunk valamilyen kódot. A motorháztető
+alatt ez implicit módon létrehozott, majd elfogyasztott egy iterátort, de azt,
+hogy ez pontosan hogyan működik, mostanáig elnagyoltuk.
 
-In the example in Listing 13-11, we separate the creation of the iterator from
-the use of the iterator in the `for` loop. When the `for` loop is called using
-the iterator in `v1_iter`, each element in the iterator is used in one
-iteration of the loop, which prints out each value.
+A 13-11. lista példájában elválasztjuk az iterátor létrehozását az iterátor
+`for` ciklusban való használatától. Amikor a `for` ciklust a `v1_iter`-ben lévő
+iterátorral hívjuk meg, az iterátor minden eleme a ciklus egy-egy iterációjában
+kerül felhasználásra, és a ciklus kiírja az egyes értékeket.
 
-<Listing number="13-11" file-name="src/main.rs" caption="Using an iterator in a `for` loop">
+<Listing number="13-11" file-name="src/main.rs" caption="Iterátor használata `for` ciklusban">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-11/src/main.rs:here}}
@@ -38,21 +39,22 @@ iteration of the loop, which prints out each value.
 
 </Listing>
 
-In languages that don’t have iterators provided by their standard libraries,
-you would likely write this same functionality by starting a variable at index
-0, using that variable to index into the vector to get a value, and
-incrementing the variable value in a loop until it reached the total number of
-items in the vector.
+Azokban a nyelvekben, amelyek standard könyvtára nem kínál iterátorokat,
+ugyanezt a funkcionalitást valószínűleg úgy írnád meg, hogy egy változót 0-ról
+indítasz, azzal a változóval indexeled a vektort, hogy megkapj egy értéket,
+majd egy ciklusban növeled a változó értékét, amíg el nem éri a vektorban lévő
+elemek számát.
 
-Iterators handle all of that logic for you, cutting down on repetitive code you
-could potentially mess up. Iterators give you more flexibility to use the same
-logic with many different kinds of sequences, not just data structures you can
-index into, like vectors. Let’s examine how iterators do that.
+Az iterátorok ezt az egész logikát elintézik helyetted, csökkentve az ismétlődő
+kódot, amelyet esetleg elronthatnál. Az iterátorok nagyobb rugalmasságot adnak:
+ugyanazt a logikát sokféle sorozattal használhatod, nem csak olyan
+adatszerkezetekkel, amelyeket indexelni lehet, mint amilyenek a vektorok.
+Nézzük meg, hogyan érik ezt el az iterátorok.
 
-### The `Iterator` Trait and the `next` Method {#the-iterator-trait-and-the-next-method}
+### Az `Iterator` trait és a `next` metódus {#the-iterator-trait-and-the-next-method}
 
-All iterators implement a trait named `Iterator` that is defined in the
-standard library. The definition of the trait looks like this:
+Minden iterátor implementál egy `Iterator` nevű traitet, amelyet a standard
+könyvtár definiál. A trait definíciója így néz ki:
 
 ```rust
 pub trait Iterator {
@@ -64,23 +66,23 @@ pub trait Iterator {
 }
 ```
 
-Notice that this definition uses some new syntax: `type Item` and `Self::Item`,
-which are defining an associated type with this trait. We’ll talk about
-associated types in depth in Chapter 20. For now, all you need to know is that
-this code says implementing the `Iterator` trait requires that you also define
-an `Item` type, and this `Item` type is used in the return type of the `next`
-method. In other words, the `Item` type will be the type returned from the
-iterator.
+Vedd észre, hogy ez a definíció néhány új szintaktikai elemet használ: a `type
+Item` és a `Self::Item` egy asszociált típust definiál ehhez a traithez. Az
+asszociált típusokról részletesen a 20. fejezetben lesz szó. Egyelőre csak
+annyit kell tudnod, hogy ez a kód azt mondja: az `Iterator` trait
+implementálásához definiálnod kell egy `Item` típust is, és ezt az `Item`
+típust használja a `next` metódus visszatérési típusa. Más szóval az `Item`
+típus lesz az a típus, amelyet az iterátor visszaad.
 
-The `Iterator` trait only requires implementors to define one method: the
-`next` method, which returns one item of the iterator at a time, wrapped in
-`Some`, and, when iteration is over, returns `None`.
+Az `Iterator` trait csak egyetlen metódus definiálását követeli meg az
+implementálóktól: a `next` metódusét, amely egyszerre egy elemet ad vissza az
+iterátorból, `Some`-ba csomagolva, az iteráció végén pedig `None`-t ad vissza.
 
-We can call the `next` method on iterators directly; Listing 13-12 demonstrates
-what values are returned from repeated calls to `next` on the iterator created
-from the vector.
+A `next` metódust közvetlenül is meghívhatjuk az iterátorokon; a 13-12. lista
+azt mutatja be, milyen értékeket ad vissza a vektorból létrehozott iterátoron
+ismételten meghívott `next`.
 
-<Listing number="13-12" file-name="src/lib.rs" caption="Calling the `next` method on an iterator">
+<Listing number="13-12" file-name="src/lib.rs" caption="A `next` metódus meghívása egy iterátoron">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-12/src/lib.rs:here}}
@@ -88,37 +90,39 @@ from the vector.
 
 </Listing>
 
-Note that we needed to make `v1_iter` mutable: Calling the `next` method on an
-iterator changes internal state that the iterator uses to keep track of where
-it is in the sequence. In other words, this code _consumes_, or uses up, the
-iterator. Each call to `next` eats up an item from the iterator. We didn’t need
-to make `v1_iter` mutable when we used a `for` loop, because the loop took
-ownership of `v1_iter` and made it mutable behind the scenes.
+Figyeld meg, hogy a `v1_iter`-t módosíthatóvá kellett tennünk: a `next` metódus
+meghívása egy iterátoron megváltoztatja azt a belső állapotot, amellyel az
+iterátor nyilvántartja, hol tart a sorozatban. Más szóval ez a kód
+_elfogyasztja_, azaz felhasználja az iterátort. A `next` minden hívása
+felemészt egy elemet az iterátorból. A `for` ciklus használatakor nem kellett
+módosíthatóvá tennünk a `v1_iter`-t, mert a ciklus átvette a `v1_iter`
+ownershipjét, és a színfalak mögött módosíthatóvá tette.
 
-Also note that the values we get from the calls to `next` are immutable
-references to the values in the vector. The `iter` method produces an iterator
-over immutable references. If we want to create an iterator that takes
-ownership of `v1` and returns owned values, we can call `into_iter` instead of
-`iter`. Similarly, if we want to iterate over mutable references, we can call
-`iter_mut` instead of `iter`.
+Azt is vedd észre, hogy a `next` hívásaiból kapott értékek nem módosítható
+referenciák a vektorban lévő értékekre. Az `iter` metódus nem módosítható
+referenciákon végighaladó iterátort állít elő. Ha olyan iterátort szeretnénk
+létrehozni, amely átveszi a `v1` ownershipjét, és birtokolt értékeket ad
+vissza, akkor az `iter` helyett az `into_iter` metódust hívhatjuk. Hasonlóan,
+ha módosítható referenciákon szeretnénk végighaladni, az `iter` helyett az
+`iter_mut` metódust hívhatjuk.
 
-### Methods That Consume the Iterator
+### Az iterátort elfogyasztó metódusok
 
-The `Iterator` trait has a number of different methods with default
-implementations provided by the standard library; you can find out about these
-methods by looking in the standard library API documentation for the `Iterator`
-trait. Some of these methods call the `next` method in their definition, which
-is why you’re required to implement the `next` method when implementing the
-`Iterator` trait.
+Az `Iterator` traitnek számos különböző metódusa van, amelyekhez a standard
+könyvtár alapértelmezett implementációt ad; ezekről a metódusokról a standard
+könyvtár API-dokumentációjában, az `Iterator` traitnél olvashatsz. Néhány ilyen
+metódus a definíciójában meghívja a `next` metódust, és emiatt kell a `next`
+metódust implementálnod az `Iterator` trait implementálásakor.
 
-Methods that call `next` are called _consuming adapters_ because calling them
-uses up the iterator. One example is the `sum` method, which takes ownership of
-the iterator and iterates through the items by repeatedly calling `next`, thus
-consuming the iterator. As it iterates through, it adds each item to a running
-total and returns the total when iteration is complete. Listing 13-13 has a
-test illustrating a use of the `sum` method.
+Azokat a metódusokat, amelyek meghívják a `next`-et, _fogyasztó adaptereknek_
+nevezzük, mert a hívásuk felhasználja az iterátort. Egy példa erre a `sum`
+metódus, amely átveszi az iterátor ownershipjét, és a `next` ismételt hívásával
+végighalad az elemeken, ezzel elfogyasztva az iterátort. Miközben végighalad
+rajtuk, minden elemet hozzáad egy futó összeghez, és az iteráció végén
+visszaadja az összeget. A 13-13. listában egy teszt szemlélteti a `sum` metódus
+használatát.
 
-<Listing number="13-13" file-name="src/lib.rs" caption="Calling the `sum` method to get the total of all items in the iterator">
+<Listing number="13-13" file-name="src/lib.rs" caption="A `sum` metódus meghívása az iterátor összes elemének összegzéséhez">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-13/src/lib.rs:here}}
@@ -126,22 +130,22 @@ test illustrating a use of the `sum` method.
 
 </Listing>
 
-We aren’t allowed to use `v1_iter` after the call to `sum`, because `sum` takes
-ownership of the iterator we call it on.
+A `sum` hívása után már nem használhatjuk a `v1_iter`-t, mert a `sum` átveszi
+annak az iterátornak az ownershipjét, amelyen meghívjuk.
 
-### Methods That Produce Other Iterators
+### Más iterátorokat előállító metódusok
 
-_Iterator adapters_ are methods defined on the `Iterator` trait that don’t
-consume the iterator. Instead, they produce different iterators by changing
-some aspect of the original iterator.
+Az _iterátor-adapterek_ az `Iterator` traiten definiált olyan metódusok,
+amelyek nem fogyasztják el az iterátort. Ehelyett más iterátorokat állítanak
+elő az eredeti iterátor valamely tulajdonságának megváltoztatásával.
 
-Listing 13-14 shows an example of calling the iterator adapter method `map`,
-which takes a closure to call on each item as the items are iterated through.
-The `map` method returns a new iterator that produces the modified items. The
-closure here creates a new iterator in which each item from the vector will be
-incremented by 1.
+A 13-14. lista példát mutat a `map` iterátor-adapter metódus meghívására, amely
+egy closure-t vár, hogy azt minden elemen meghívja, ahogy végighalad rajtuk. A
+`map` metódus egy új iterátort ad vissza, amely a módosított elemeket állítja
+elő. Az itteni closure olyan új iterátort hoz létre, amelyben a vektor minden
+eleme 1-gyel meg lesz növelve.
 
-<Listing number="13-14" file-name="src/main.rs" caption="Calling the iterator adapter `map` to create a new iterator">
+<Listing number="13-14" file-name="src/main.rs" caption="A `map` iterátor-adapter meghívása új iterátor létrehozásához">
 
 ```rust,not_desired_behavior
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-14/src/main.rs:here}}
@@ -149,25 +153,26 @@ incremented by 1.
 
 </Listing>
 
-However, this code produces a warning:
+Ez a kód azonban figyelmeztetést eredményez:
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-14/output.txt}}
 ```
 
-The code in Listing 13-14 doesn’t do anything; the closure we’ve specified
-never gets called. The warning reminds us why: Iterator adapters are lazy, and
-we need to consume the iterator here.
+A 13-14. lista kódja nem csinál semmit; az általunk megadott closure sosem
+hívódik meg. A figyelmeztetés emlékeztet minket az okára: az
+iterátor-adapterek lusták, és itt el kell fogyasztanunk az iterátort.
 
-To fix this warning and consume the iterator, we’ll use the `collect` method,
-which we used with `env::args` in Listing 12-1. This method consumes the
-iterator and collects the resultant values into a collection data type.
+Hogy megszüntessük ezt a figyelmeztetést, és elfogyasszuk az iterátort, a
+`collect` metódust fogjuk használni, amelyet a 12-1. listában az `env::args`
+metódussal együtt már használtunk. Ez a metódus elfogyasztja az iterátort, és
+az eredményül kapott értékeket összegyűjti egy kollekciótípusba.
 
-In Listing 13-15, we collect the results of iterating over the iterator that’s
-returned from the call to `map` into a vector. This vector will end up
-containing each item from the original vector, incremented by 1.
+A 13-15. listában a `map` hívásából visszakapott iterátoron való végighaladás
+eredményeit gyűjtjük össze egy vektorba. Ez a vektor végül az eredeti vektor
+minden elemét tartalmazni fogja 1-gyel megnövelve.
 
-<Listing number="13-15" file-name="src/main.rs" caption="Calling the `map` method to create a new iterator, and then calling the `collect` method to consume the new iterator and create a vector">
+<Listing number="13-15" file-name="src/main.rs" caption="A `map` metódus meghívása új iterátor létrehozásához, majd a `collect` metódus meghívása az új iterátor elfogyasztásához és egy vektor létrehozásához">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-15/src/main.rs:here}}
@@ -175,35 +180,36 @@ containing each item from the original vector, incremented by 1.
 
 </Listing>
 
-Because `map` takes a closure, we can specify any operation we want to perform
-on each item. This is a great example of how closures let you customize some
-behavior while reusing the iteration behavior that the `Iterator` trait
-provides.
+Mivel a `map` closure-t vár, bármilyen műveletet megadhatunk, amelyet az egyes
+elemeken el szeretnénk végezni. Ez remek példa arra, hogyan teszik lehetővé a
+closure-ök valamilyen viselkedés testreszabását, miközben újrahasznosítod az
+`Iterator` trait által nyújtott iterálási viselkedést.
 
-You can chain multiple calls to iterator adapters to perform complex actions in
-a readable way. But because all iterators are lazy, you have to call one of the
-consuming adapter methods to get results from calls to iterator adapters.
+Több iterátor-adapter-hívást is láncba fűzhetsz, hogy összetett műveleteket
+végezz olvasható módon. De mivel minden iterátor lusta, meg kell hívnod
+valamelyik fogyasztó adapter metódust, hogy eredményt kapj az
+iterátor-adapterek hívásaiból.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-closures-that-capture-their-environment"></a>
 
-### Closures That Capture Their Environment
+### A környezetüket elkapó closure-ök
 
-Many iterator adapters take closures as arguments, and commonly the closures
-we’ll specify as arguments to iterator adapters will be closures that capture
-their environment.
+Sok iterátor-adapter closure-t vár argumentumként, és az
+iterátor-adaptereknek argumentumként megadott closure-ök gyakran olyanok,
+amelyek elkapják a környezetüket.
 
-For this example, we’ll use the `filter` method that takes a closure. The
-closure gets an item from the iterator and returns a `bool`. If the closure
-returns `true`, the value will be included in the iterator produced by
-`filter`. If the closure returns `false`, the value won’t be included.
+Ehhez a példához a `filter` metódust használjuk, amely egy closure-t vár. A
+closure megkap egy elemet az iterátorból, és egy `bool` értéket ad vissza. Ha a
+closure `true` értéket ad vissza, az érték bekerül a `filter` által előállított
+iterátorba. Ha a closure `false` értéket ad vissza, az érték nem kerül bele.
 
-In Listing 13-16, we use `filter` with a closure that captures the `shoe_size`
-variable from its environment to iterate over a collection of `Shoe` struct
-instances. It will return only shoes that are the specified size.
+A 13-16. listában a `filter`-t olyan closure-rel használjuk, amely elkapja a
+`shoe_size` változót a környezetéből, hogy végighaladjunk `Shoe` struct
+példányok egy kollekcióján. Csak a megadott méretű cipőket adja vissza.
 
-<Listing number="13-16" file-name="src/lib.rs" caption="Using the `filter` method with a closure that captures `shoe_size`">
+<Listing number="13-16" file-name="src/lib.rs" caption="A `filter` metódus használata olyan closure-rel, amely elkapja a `shoe_size` változót">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-16/src/lib.rs}}
@@ -211,19 +217,22 @@ instances. It will return only shoes that are the specified size.
 
 </Listing>
 
-The `shoes_in_size` function takes ownership of a vector of shoes and a shoe
-size as parameters. It returns a vector containing only shoes of the specified
-size.
+A `shoes_in_size` függvény paraméterként átveszi egy cipőket tartalmazó vektor
+ownershipjét és egy cipőméretet. Olyan vektort ad vissza, amely csak a megadott
+méretű cipőket tartalmazza.
 
-In the body of `shoes_in_size`, we call `into_iter` to create an iterator that
-takes ownership of the vector. Then, we call `filter` to adapt that iterator
-into a new iterator that only contains elements for which the closure returns
-`true`.
+A `shoes_in_size` törzsében meghívjuk az `into_iter` metódust, hogy
+létrehozzunk egy olyan iterátort, amely átveszi a vektor ownershipjét. Ezután
+meghívjuk a
+`filter`-t, hogy azt az iterátort olyan új iterátorrá alakítsuk, amely csak
+azokat az elemeket tartalmazza, amelyekre a closure `true` értéket ad vissza.
 
-The closure captures the `shoe_size` parameter from the environment and
-compares the value with each shoe’s size, keeping only shoes of the size
-specified. Finally, calling `collect` gathers the values returned by the
-adapted iterator into a vector that’s returned by the function.
+A closure elkapja a `shoe_size` paramétert a környezetből, és összehasonlítja
+az értékét minden cipő méretével, csak a megadott méretű cipőket tartva meg.
+Végül
+a `collect` hívása az átalakított iterátor által visszaadott értékeket egy
+vektorba gyűjti, amelyet a függvény visszaad.
 
-The test shows that when we call `shoes_in_size`, we get back only shoes that
-have the same size as the value we specified.
+A teszt megmutatja, hogy amikor meghívjuk a `shoes_in_size` függvényt, csak
+olyan cipőket kapunk vissza, amelyek mérete megegyezik az általunk megadott
+értékkel.

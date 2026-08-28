@@ -1,67 +1,70 @@
-## Test Organization
+## A tesztek szervezése
 
-As mentioned at the start of the chapter, testing is a complex discipline, and
-different people use different terminology and organization. The Rust community
-thinks about tests in terms of two main categories: unit tests and integration
-tests. _Unit tests_ are small and more focused, testing one module in isolation
-at a time, and can test private interfaces. _Integration tests_ are entirely
-external to your library and use your code in the same way any other external
-code would, using only the public interface and potentially exercising multiple
-modules per test.
+Ahogy a fejezet elején említettük, a tesztelés összetett szakterület, és
+különböző emberek különböző terminológiát és szervezési módot használnak. A Rust
+közössége két fő kategóriában gondolkodik a tesztekről: egységtesztek és
+integrációs tesztek. Az _egységtesztek_ kicsik és fókuszáltabbak, egyszerre egy
+modult tesztelnek elszigetelten, és a privát interfészeket is tesztelhetik. Az
+_integrációs tesztek_ teljesen kívül esnek a könyvtáradon, és ugyanúgy
+használják a kódodat, ahogy bármely más külső kód tenné: csak a publikus
+interfészt veszik igénybe, és tesztenként több modult is mozgásba hozhatnak.
 
-Writing both kinds of tests is important to ensure that the pieces of your
-library are doing what you expect them to, separately and together.
+Mindkét tesztfajta megírása fontos ahhoz, hogy megbizonyosodj róla: a könyvtárad
+darabjai külön-külön és együtt is azt teszik, amit elvársz tőlük.
 
-### Unit Tests
+### Egységtesztek
 
-The purpose of unit tests is to test each unit of code in isolation from the
-rest of the code to quickly pinpoint where code is and isn’t working as
-expected. You’ll put unit tests in the _src_ directory in each file with the
-code that they’re testing. The convention is to create a module named `tests`
-in each file to contain the test functions and to annotate the module with
-`cfg(test)`.
+Az egységtesztek célja az, hogy a kód minden egyes egységét a kód többi részétől
+elszigetelten teszteljék, így gyorsan kideríthető, hol működik a kód az elvárt
+módon, és hol nem. Az egységteszteket az _src_ könyvtárban, abban a fájlban
+helyezed el, amelyben a tesztelt kód is van. A bevett szokás az, hogy minden
+fájlban létrehozol egy `tests` nevű modult a tesztfüggvények számára, és a
+modult a `cfg(test)` attribútummal jelölöd meg.
 
-#### The `tests` Module and `#[cfg(test)]`
+#### A `tests` modul és a `#[cfg(test)]`
 
-The `#[cfg(test)]` annotation on the `tests` module tells Rust to compile and
-run the test code only when you run `cargo test`, not when you run `cargo
-build`. This saves compile time when you only want to build the library and
-saves space in the resultant compiled artifact because the tests are not
-included. You’ll see that because integration tests go in a different
-directory, they don’t need the `#[cfg(test)]` annotation. However, because unit
-tests go in the same files as the code, you’ll use `#[cfg(test)]` to specify
-that they shouldn’t be included in the compiled result.
+A `tests` modulon szereplő `#[cfg(test)]` annotáció azt mondja meg a Rustnak,
+hogy a tesztkódot csak akkor fordítsa le és futtassa, amikor a `cargo test`
+parancsot adod ki, a `cargo build` esetén viszont ne. Ez fordítási időt takarít
+meg, amikor csak a könyvtárat akarod lefordítani, és helyet spórol az így
+keletkező lefordított artifactban, mert a tesztek nem kerülnek bele. Látni
+fogod, hogy az integrációs teszteknek nincs szükségük a `#[cfg(test)]`
+annotációra, mivel külön könyvtárba kerülnek. Az egységtesztek viszont
+ugyanabban a fájlban vannak, mint a kód, ezért a `#[cfg(test)]` segítségével
+jelzed, hogy ne kerüljenek bele a lefordított eredménybe.
 
-Recall that when we generated the new `adder` project in the first section of
-this chapter, Cargo generated this code for us:
+Emlékezz vissza: amikor a fejezet első szakaszában létrehoztuk az új `adder`
+projektet, a Cargo ezt a kódot generálta nekünk:
 
-<span class="filename">Filename: src/lib.rs</span>
+<span class="filename">Fájlnév: src/lib.rs</span>
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-01/src/lib.rs}}
 ```
 
-On the automatically generated `tests` module, the attribute `cfg` stands for
-_configuration_ and tells Rust that the following item should only be included
-given a certain configuration option. In this case, the configuration option is
-`test`, which is provided by Rust for compiling and running tests. By using the
-`cfg` attribute, Cargo compiles our test code only if we actively run the tests
-with `cargo test`. This includes any helper functions that might be within this
-module, in addition to the functions annotated with `#[test]`.
+Az automatikusan generált `tests` modulon a `cfg` attribútum a _configuration_
+(konfiguráció) rövidítése, és azt közli a Rusttal, hogy az utána következő elem
+csak egy adott konfigurációs beállítás mellett kerüljön bele a fordításba. Ebben
+az esetben a konfigurációs beállítás a `test`, amelyet a Rust biztosít a tesztek
+fordításához és futtatásához. A `cfg` attribútum használatával a Cargo csak
+akkor fordítja le a tesztkódunkat, ha ténylegesen futtatjuk a teszteket a `cargo
+test` paranccsal. Ez a `#[test]` annotációval ellátott függvényeken túl minden
+olyan segédfüggvényre is vonatkozik, amely ebben a modulban lehet.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="testing-private-functions"></a>
 
-#### Private Function Tests
+#### Privát függvények tesztelése
 
-There’s debate within the testing community about whether or not private
-functions should be tested directly, and other languages make it difficult or
-impossible to test private functions. Regardless of which testing ideology you
-adhere to, Rust’s privacy rules do allow you to test private functions.
-Consider the code in Listing 11-12 with the private function `internal_adder`.
+A tesztelői közösségen belül vita folyik arról, hogy a privát függvényeket
+kell-e közvetlenül tesztelni, más nyelvek pedig megnehezítik vagy egyenesen
+lehetetlenné teszik a privát függvények tesztelését. Bármelyik tesztelési
+szemléletet is követed, a Rust láthatósági szabályai lehetővé teszik a privát
+függvények tesztelését. Nézzük meg a 11-12. listában szereplő kódot az
+`internal_adder` privát függvénnyel.
 
-<Listing number="11-12" file-name="src/lib.rs" caption="Testing a private function">
+<Listing number="11-12" file-name="src/lib.rs" caption="Egy privát függvény tesztelése">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-12/src/lib.rs}}
@@ -69,35 +72,37 @@ Consider the code in Listing 11-12 with the private function `internal_adder`.
 
 </Listing>
 
-Note that the `internal_adder` function is not marked as `pub`. Tests are just
-Rust code, and the `tests` module is just another module. As we discussed in
-[“Paths for Referring to an Item in the Module Tree”][paths]<!-- ignore -->,
-items in child modules can use the items in their ancestor modules. In this
-test, we bring all of the items belonging to the `tests` module’s parent into
-scope with `use super::*`, and then the test can call `internal_adder`. If you
-don’t think private functions should be tested, there’s nothing in Rust that
-will compel you to do so.
+Figyeld meg, hogy az `internal_adder` függvény nincs `pub`-ként megjelölve. A
+tesztek is csak Rust-kódok, a `tests` modul pedig csak egy modul a többi közül.
+Ahogy az [„Útvonalak a modulfában lévő elemekre való
+hivatkozáshoz”][paths]<!-- ignore --> részben tárgyaltuk, a gyermekmodulokban
+lévő elemek használhatják az őseik moduljaiban lévő elemeket. Ebben a tesztben a
+`use super::*` segítségével hatókörbe hozzuk a `tests` modul szülőjéhez tartozó
+összes elemet, így a teszt meg tudja hívni az `internal_adder` függvényt. Ha
+szerinted a privát függvényeket nem kellene tesztelni, a Rustban semmi nem
+kényszerít erre.
 
-### Integration Tests
+### Integrációs tesztek
 
-In Rust, integration tests are entirely external to your library. They use your
-library in the same way any other code would, which means they can only call
-functions that are part of your library’s public API. Their purpose is to test
-whether many parts of your library work together correctly. Units of code that
-work correctly on their own could have problems when integrated, so test
-coverage of the integrated code is important as well. To create integration
-tests, you first need a _tests_ directory.
+A Rustban az integrációs tesztek teljesen kívül esnek a könyvtáradon. Ugyanúgy
+használják a könyvtáradat, ahogy bármely más kód tenné, ami azt jelenti, hogy
+csak olyan függvényeket hívhatnak meg, amelyek a könyvtárad publikus API-jának
+részei. A céljuk annak tesztelése, hogy a könyvtárad számos része helyesen
+működik-e együtt. A kód önmagukban helyesen működő egységei az integráció után
+hibásan viselkedhetnek, ezért az integrált kód tesztlefedettsége is fontos. Az
+integrációs tesztek létrehozásához először egy _tests_ könyvtárra van szükséged.
 
-#### The _tests_ Directory
+#### A _tests_ könyvtár
 
-We create a _tests_ directory at the top level of our project directory, next
-to _src_. Cargo knows to look for integration test files in this directory. We
-can then make as many test files as we want, and Cargo will compile each of the
-files as an individual crate.
+Hozzunk létre egy _tests_ könyvtárat a projektkönyvtárunk legfelső szintjén, az
+_src_ mellett. A Cargo tudja, hogy ebben a könyvtárban kell keresnie az
+integrációs tesztek fájljait. Ezután annyi tesztfájlt hozhatunk létre, amennyit
+csak akarunk, és a Cargo mindegyik fájlt önálló crate-ként fordítja le.
 
-Let’s create an integration test. With the code in Listing 11-12 still in the
-_src/lib.rs_ file, make a _tests_ directory, and create a new file named
-_tests/integration_test.rs_. Your directory structure should look like this:
+Készítsünk egy integrációs tesztet. Hagyd a 11-12. lista kódját az _src/lib.rs_
+fájlban, hozz létre egy _tests_ könyvtárat, és benne egy
+_tests/integration_test.rs_ nevű új fájlt. A könyvtárszerkezetednek így kell
+kinéznie:
 
 ```text
 adder
@@ -109,9 +114,9 @@ adder
     └── integration_test.rs
 ```
 
-Enter the code in Listing 11-13 into the _tests/integration_test.rs_ file.
+Írd be a 11-13. listában szereplő kódot a _tests/integration_test.rs_ fájlba.
 
-<Listing number="11-13" file-name="tests/integration_test.rs" caption="An integration test of a function in the `adder` crate">
+<Listing number="11-13" file-name="tests/integration_test.rs" caption="Az `adder` crate egyik függvényének integrációs tesztje">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-13/tests/integration_test.rs}}
@@ -119,85 +124,90 @@ Enter the code in Listing 11-13 into the _tests/integration_test.rs_ file.
 
 </Listing>
 
-Each file in the _tests_ directory is a separate crate, so we need to bring our
-library into each test crate’s scope. For that reason, we add `use
-adder::add_two;` at the top of the code, which we didn’t need in the unit tests.
+A _tests_ könyvtár minden fájlja külön crate, ezért minden egyes tesztcrate
+hatókörébe be kell hoznunk a könyvtárunkat. Emiatt írjuk a kód elejére a `use
+adder::add_two;` sort, amire az egységteszteknél nem volt szükségünk.
 
-We don’t need to annotate any code in _tests/integration_test.rs_ with
-`#[cfg(test)]`. Cargo treats the _tests_ directory specially and compiles files
-in this directory only when we run `cargo test`. Run `cargo test` now:
+A _tests/integration_test.rs_ fájlban semmilyen kódot nem kell a `#[cfg(test)]`
+annotációval ellátnunk. A Cargo külön kezeli a _tests_ könyvtárat, és az ebben a
+könyvtárban lévő fájlokat csak akkor fordítja le, amikor a `cargo test`
+parancsot futtatjuk. Futtassuk most a `cargo test` parancsot:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-13/output.txt}}
 ```
 
-The three sections of output include the unit tests, the integration test, and
-the doc tests. Note that if any test in a section fails, the following sections
-will not be run. For example, if a unit test fails, there won’t be any output
-for integration and doc tests, because those tests will only be run if all unit
-tests are passing.
+A kimenet három szakasza az egységteszteket, az integrációs tesztet és a
+dokumentációs teszteket tartalmazza. Vedd figyelembe, hogy ha egy szakaszban
+bármelyik teszt elbukik, a következő szakaszok nem futnak le. Ha például egy
+egységteszt bukik el, semmilyen kimenet nem lesz az integrációs és a
+dokumentációs tesztekhez, mert azok csak akkor futnak le, ha minden egységteszt
+sikeres.
 
-The first section for the unit tests is the same as we’ve been seeing: one line
-for each unit test (one named `internal` that we added in Listing 11-12) and
-then a summary line for the unit tests.
+Az egységtesztekhez tartozó első szakasz ugyanaz, mint amit eddig is láttunk:
+egy sor minden egységteszthez (egy `internal` nevű, amelyet a 11-12. listában
+adtunk hozzá), majd egy összegző sor az egységtesztekről.
 
-The integration tests section starts with the line `Running
-tests/integration_test.rs`. Next, there is a line for each test function in
-that integration test and a summary line for the results of the integration
-test just before the `Doc-tests adder` section starts.
+Az integrációs tesztek szakasza a `Running tests/integration_test.rs` sorral
+kezdődik. Ezután egy-egy sor következik az integrációs teszt minden
+tesztfüggvényéhez, majd egy összegző sor az integrációs teszt eredményéről,
+közvetlenül a `Doc-tests adder` szakasz kezdete előtt.
 
-Each integration test file has its own section, so if we add more files in the
-_tests_ directory, there will be more integration test sections.
+Minden integrációs tesztfájlnak megvan a maga szakasza, tehát ha több fájlt
+adunk hozzá a _tests_ könyvtárhoz, több integrációs teszt szakasz lesz.
 
-We can still run a particular integration test function by specifying the test
-function’s name as an argument to `cargo test`. To run all the tests in a
-particular integration test file, use the `--test` argument of `cargo test`
-followed by the name of the file:
+Egy adott integrációs tesztfüggvényt továbbra is futtathatunk úgy, hogy a
+tesztfüggvény nevét argumentumként megadjuk a `cargo test` parancsnak. Ha egy
+adott integrációs tesztfájl összes tesztjét akarod futtatni, használd a `cargo
+test` `--test` argumentumát, amelyet a fájl neve követ:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/output-only-05-single-integration/output.txt}}
 ```
 
-This command runs only the tests in the _tests/integration_test.rs_ file.
+Ez a parancs csak a _tests/integration_test.rs_ fájlban lévő teszteket futtatja
+le.
 
-#### Submodules in Integration Tests
+#### Almodulok az integrációs tesztekben
 
-As you add more integration tests, you might want to make more files in the
-_tests_ directory to help organize them; for example, you can group the test
-functions by the functionality they’re testing. As mentioned earlier, each file
-in the _tests_ directory is compiled as its own separate crate, which is useful
-for creating separate scopes to more closely imitate the way end users will be
-using your crate. However, this means files in the _tests_ directory don’t
-share the same behavior as files in _src_ do, as you learned in Chapter 7
-regarding how to separate code into modules and files.
+Ahogy egyre több integrációs tesztet adsz hozzá, elképzelhető, hogy több fájlt
+akarsz létrehozni a _tests_ könyvtárban, hogy jobban rendszerezhesd őket;
+csoportosíthatod például a tesztfüggvényeket az általuk tesztelt funkcionalitás
+szerint. Ahogy korábban említettük, a _tests_ könyvtár minden fájlja önálló
+crate-ként fordul le, ami hasznos külön hatókörök létrehozásához, hogy jobban
+utánozzuk azt, ahogyan a végfelhasználók használni fogják a crate-edet. Ez
+viszont azt is jelenti, hogy a _tests_ könyvtárban lévő fájlok nem ugyanúgy
+viselkednek, mint az _src_ fájljai, ahogy azt a 7. fejezetben a kód modulokra és
+fájlokra bontásáról tanultad.
 
-The different behavior of _tests_ directory files is most noticeable when you
-have a set of helper functions to use in multiple integration test files, and
-you try to follow the steps in the [“Separating Modules into Different
-Files”][separating-modules-into-files]<!-- ignore --> section of Chapter 7 to
-extract them into a common module. For example, if we create _tests/common.rs_
-and place a function named `setup` in it, we can add some code to `setup` that
-we want to call from multiple test functions in multiple test files:
+A _tests_ könyvtár fájljainak eltérő viselkedése akkor a legszembetűnőbb, amikor
+van egy sor segédfüggvényed, amelyet több integrációs tesztfájlban is használni
+szeretnél, és megpróbálod követni a 7. fejezet [„Modulok szétválasztása külön
+fájlokba”][separating-modules-into-files]<!-- ignore --> című szakaszának
+lépéseit, hogy ezeket egy közös modulba emeld ki. Ha például létrehozzuk a
+_tests/common.rs_ fájlt, és elhelyezünk benne egy `setup` nevű függvényt,
+írhatunk a `setup` függvénybe olyan kódot, amelyet több tesztfájl több
+tesztfüggvényéből is meg akarunk hívni:
 
-<span class="filename">Filename: tests/common.rs</span>
+<span class="filename">Fájlnév: tests/common.rs</span>
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-12-shared-test-code-problem/tests/common.rs}}
 ```
 
-When we run the tests again, we’ll see a new section in the test output for the
-_common.rs_ file, even though this file doesn’t contain any test functions nor
-did we call the `setup` function from anywhere:
+Amikor újra lefuttatjuk a teszteket, egy új szakaszt látunk a tesztek
+kimenetében a _common.rs_ fájlhoz, pedig ez a fájl egyetlen tesztfüggvényt sem
+tartalmaz, és a `setup` függvényt sem hívtuk meg sehonnan:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-12-shared-test-code-problem/output.txt}}
 ```
 
-Having `common` appear in the test results with `running 0 tests` displayed for
-it is not what we wanted. We just wanted to share some code with the other
-integration test files. To avoid having `common` appear in the test output,
-instead of creating _tests/common.rs_, we’ll create _tests/common/mod.rs_. The
-project directory now looks like this:
+Nem ezt akartuk, hogy a `common` megjelenjen a tesztek eredményei között a
+`running 0 tests` felirattal. Csak meg akartunk osztani némi kódot a többi
+integrációs tesztfájllal. Ahhoz, hogy a `common` ne jelenjen meg a tesztek
+kimenetében, a _tests/common.rs_ helyett a _tests/common/mod.rs_ fájlt hozzuk
+létre. A projektkönyvtár most így néz ki:
 
 ```text
 ├── Cargo.lock
@@ -210,56 +220,63 @@ project directory now looks like this:
     └── integration_test.rs
 ```
 
-This is the older naming convention that Rust also understands that we mentioned
-in [“Alternate File Paths”][alt-paths]<!-- ignore --> in Chapter 7. Naming the
-file this way tells Rust not to treat the `common` module as an integration test
-file. When we move the `setup` function code into _tests/common/mod.rs_ and
-delete the _tests/common.rs_ file, the section in the test output will no longer
-appear. Files in subdirectories of the _tests_ directory don’t get compiled as
-separate crates or have sections in the test output.
+Ez az a régebbi elnevezési konvenció, amelyet a Rust szintén megért, és amelyet
+a 7. fejezet [„Alternatív fájlútvonalak”][alt-paths]<!-- ignore --> szakaszában
+említettünk. Ha így nevezed el a fájlt, azzal azt mondod a Rustnak, hogy ne
+kezelje a `common` modult integrációs tesztfájlként. Amikor a `setup` függvény
+kódját átmozgatjuk a _tests/common/mod.rs_ fájlba, és töröljük a
+_tests/common.rs_ fájlt, a tesztek kimenetében lévő szakasz többé nem jelenik
+meg. A _tests_ könyvtár alkönyvtáraiban lévő fájlok nem fordulnak le külön
+crate-ként, és nem kapnak szakaszt a tesztek kimenetében.
 
-After we’ve created _tests/common/mod.rs_, we can use it from any of the
-integration test files as a module. Here’s an example of calling the `setup`
-function from the `it_adds_two` test in _tests/integration_test.rs_:
+Miután létrehoztuk a _tests/common/mod.rs_ fájlt, bármelyik integrációs
+tesztfájlból modulként használhatjuk. Íme egy példa arra, hogyan hívjuk meg a
+`setup` függvényt az `it_adds_two` tesztből a _tests/integration_test.rs_
+fájlban:
 
-<span class="filename">Filename: tests/integration_test.rs</span>
+<span class="filename">Fájlnév: tests/integration_test.rs</span>
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-13-fix-shared-test-code-problem/tests/integration_test.rs}}
 ```
 
-Note that the `mod common;` declaration is the same as the module declaration
-we demonstrated in Listing 7-21. Then, in the test function, we can call the
-`common::setup()` function.
+Figyeld meg, hogy a `mod common;` deklaráció ugyanaz, mint az a
+modul-deklaráció, amelyet a 7-21. listában mutattunk be. Ezután a
+tesztfüggvényben meghívhatjuk a `common::setup()` függvényt.
 
-#### Integration Tests for Binary Crates
+#### Binary crate-ek integrációs tesztjei
 
-If our project is a binary crate that only contains a _src/main.rs_ file and
-doesn’t have a _src/lib.rs_ file, we can’t create integration tests in the
-_tests_ directory and bring functions defined in the _src/main.rs_ file into
-scope with a `use` statement. Only library crates expose functions that other
-crates can use; binary crates are meant to be run on their own.
+Ha a projektünk olyan binary crate, amely csak egy _src/main.rs_ fájlt
+tartalmaz, és nincs benne _src/lib.rs_ fájl, akkor nem hozhatunk létre
+integrációs teszteket a _tests_ könyvtárban, és nem hozhatjuk hatókörbe egy
+`use` utasítással az _src/main.rs_ fájlban definiált függvényeket. Csak a
+library crate-ek tesznek elérhetővé olyan függvényeket, amelyeket más crate-ek
+használhatnak; a binary crate-eket önálló futtatásra szánták.
 
-This is one of the reasons Rust projects that provide a binary have a
-straightforward _src/main.rs_ file that calls logic that lives in the
-_src/lib.rs_ file. Using that structure, integration tests _can_ test the
-library crate with `use` to make the important functionality available. If the
-important functionality works, the small amount of code in the _src/main.rs_
-file will work as well, and that small amount of code doesn’t need to be tested.
+Ez az egyik oka annak, hogy azok a Rust-projektek, amelyek binárist
+biztosítanak, egyszerű _src/main.rs_ fájlt tartalmaznak, amely az _src/lib.rs_
+fájlban lévő logikát hívja meg. Ezzel a szerkezettel az integrációs tesztek
+_tudják_ tesztelni a library crate-et a `use` segítségével, elérhetővé téve a
+fontos funkcionalitást. Ha a fontos funkcionalitás működik, akkor az
+_src/main.rs_ fájlban lévő kevés kód is működni fog, és azt a kevés kódot nem
+kell tesztelni.
 
-## Summary
+## Összefoglalás
 
-Rust’s testing features provide a way to specify how code should function to
-ensure that it continues to work as you expect, even as you make changes. Unit
-tests exercise different parts of a library separately and can test private
-implementation details. Integration tests check that many parts of the library
-work together correctly, and they use the library’s public API to test the code
-in the same way external code will use it. Even though Rust’s type system and
-ownership rules help prevent some kinds of bugs, tests are still important to
-reduce logic bugs having to do with how your code is expected to behave.
+A Rust tesztelési képességei módot adnak arra, hogy megadd, hogyan kellene
+működnie a kódnak, így biztosítva, hogy az továbbra is az elvárásaid szerint
+működjön, még akkor is, ha változtatásokat végzel rajta. Az egységtesztek
+külön-külön mozgatják meg egy könyvtár különböző részeit, és a privát
+implementációs részleteket is tesztelhetik. Az integrációs tesztek azt
+ellenőrzik, hogy a könyvtár számos része helyesen működik-e együtt, és a
+könyvtár publikus API-ját használják a kód tesztelésére, ugyanúgy, ahogy a külső
+kód is használni fogja. Bár a Rust típusrendszere és ownership-szabályai
+segítenek megelőzni bizonyos fajta hibákat, a tesztek továbbra is fontosak azon
+logikai hibák csökkentéséhez, amelyek a kódod elvárt viselkedéséhez
+kapcsolódnak.
 
-Let’s combine the knowledge you learned in this chapter and in previous
-chapters to work on a project!
+Kapcsoljuk össze az ebben a fejezetben és a korábbi fejezetekben tanultakat, és
+dolgozzunk egy projekten!
 
 [paths]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
 [separating-modules-into-files]: ch07-05-separating-modules-into-different-files.html

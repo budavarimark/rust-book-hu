@@ -1,34 +1,37 @@
-## Paths for Referring to an Item in the Module Tree
+## Útvonalak a modulfa elemeire való hivatkozáshoz
 
-To show Rust where to find an item in a module tree, we use a path in the same
-way we use a path when navigating a filesystem. To call a function, we need to
-know its path.
+Ahhoz, hogy megmutassuk a Rustnak, hol találja meg egy elemet a modulfában,
+útvonalat használunk, ugyanúgy, ahogy egy fájlrendszerben való navigáláskor is
+útvonalat használunk. Egy függvény hívásához ismernünk kell az útvonalát.
 
-A path can take two forms:
+Egy útvonal kétféle alakot ölthet:
 
-- An _absolute path_ is the full path starting from a crate root; for code
-  from an external crate, the absolute path begins with the crate name, and for
-  code from the current crate, it starts with the literal `crate`.
-- A _relative path_ starts from the current module and uses `self`, `super`, or
-  an identifier in the current module.
+- Az _abszolút útvonal_ a teljes útvonal, amely egy crate gyökeréből indul;
+  külső crate-ből származó kód esetén az abszolút útvonal a crate nevével
+  kezdődik, az aktuális crate kódja esetén pedig a szó szerinti `crate`
+  kulcsszóval.
+- A _relatív útvonal_ az aktuális modulból indul, és a `self`, a `super` vagy
+  egy, az aktuális modulban lévő azonosító áll az elején.
 
-Both absolute and relative paths are followed by one or more identifiers
-separated by double colons (`::`).
+Az abszolút és a relatív útvonalakat egyaránt kettős kettősponttal (`::`)
+elválasztott azonosítók követik.
 
-Returning to Listing 7-1, say we want to call the `add_to_waitlist` function.
-This is the same as asking: What’s the path of the `add_to_waitlist` function?
-Listing 7-3 contains Listing 7-1 with some of the modules and functions removed.
+Térjünk vissza a 7-1. listához, és tegyük fel, hogy meg akarjuk hívni az
+`add_to_waitlist` függvényt. Ez ugyanaz a kérdés, mint hogy: mi az
+`add_to_waitlist` függvény útvonala? A 7-3. lista a 7-1. listát tartalmazza,
+néhány modult és függvényt elhagyva belőle.
 
-We’ll show two ways to call the `add_to_waitlist` function from a new function,
-`eat_at_restaurant`, defined in the crate root. These paths are correct, but
-there’s another problem remaining that will prevent this example from compiling
-as is. We’ll explain why in a bit.
+Két módot mutatunk be arra, hogyan hívható meg az `add_to_waitlist` függvény egy
+új, a crate gyökerében definiált `eat_at_restaurant` függvényből. Ezek az
+útvonalak helyesek, de van még egy másik probléma, amely megakadályozza, hogy ez
+a példa így, ahogy van, lefordulhasson. Kicsit később elmagyarázzuk, miért.
 
-The `eat_at_restaurant` function is part of our library crate’s public API, so
-we mark it with the `pub` keyword. In the [“Exposing Paths with the `pub`
-Keyword”][pub]<!-- ignore --> section, we’ll go into more detail about `pub`.
+Az `eat_at_restaurant` függvény a library crate-ünk nyilvános API-jának része,
+ezért a `pub` kulcsszóval jelöljük meg. A [„Útvonalak közzététele a `pub`
+kulcsszóval”][pub]<!-- ignore --> című szakaszban részletesebben is szó lesz a
+`pub`-ról.
 
-<Listing number="7-3" file-name="src/lib.rs" caption="Calling the `add_to_waitlist` function using absolute and relative paths">
+<Listing number="7-3" file-name="src/lib.rs" caption="Az `add_to_waitlist` függvény hívása abszolút és relatív útvonallal">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-03/src/lib.rs}}
@@ -36,39 +39,41 @@ Keyword”][pub]<!-- ignore --> section, we’ll go into more detail about `pub`
 
 </Listing>
 
-The first time we call the `add_to_waitlist` function in `eat_at_restaurant`,
-we use an absolute path. The `add_to_waitlist` function is defined in the same
-crate as `eat_at_restaurant`, which means we can use the `crate` keyword to
-start an absolute path. We then include each of the successive modules until we
-make our way to `add_to_waitlist`. You can imagine a filesystem with the same
-structure: We’d specify the path `/front_of_house/hosting/add_to_waitlist` to
-run the `add_to_waitlist` program; using the `crate` name to start from the
-crate root is like using `/` to start from the filesystem root in your shell.
+Amikor először hívjuk meg az `add_to_waitlist` függvényt az
+`eat_at_restaurant`-ban, abszolút útvonalat használunk. Az `add_to_waitlist`
+függvény ugyanabban a crate-ben van definiálva, mint az `eat_at_restaurant`, ami
+azt jelenti, hogy az abszolút útvonalat a `crate` kulcsszóval kezdhetjük. Ezután
+felsoroljuk az egymást követő modulokat, amíg el nem jutunk az
+`add_to_waitlist`-ig. Képzelj el egy ugyanilyen szerkezetű fájlrendszert: az
+`add_to_waitlist` program futtatásához a
+`/front_of_house/hosting/add_to_waitlist` útvonalat adnánk meg; a `crate` névvel
+a crate gyökeréből indulni olyan, mint a shellben `/`-rel a fájlrendszer
+gyökeréből indulni.
 
-The second time we call `add_to_waitlist` in `eat_at_restaurant`, we use a
-relative path. The path starts with `front_of_house`, the name of the module
-defined at the same level of the module tree as `eat_at_restaurant`. Here the
-filesystem equivalent would be using the path
-`front_of_house/hosting/add_to_waitlist`. Starting with a module name means
-that the path is relative.
+Amikor másodszor hívjuk meg az `add_to_waitlist` függvényt az
+`eat_at_restaurant`-ban, relatív útvonalat használunk. Az útvonal a
+`front_of_house`-zal kezdődik, annak a modulnak a nevével, amely a modulfa
+ugyanazon szintjén van definiálva, mint az `eat_at_restaurant`. A fájlrendszeres
+megfelelője itt a `front_of_house/hosting/add_to_waitlist` útvonal használata
+lenne. Ha az útvonal egy modul nevével kezdődik, az azt jelenti, hogy relatív.
 
-Choosing whether to use a relative or absolute path is a decision you’ll make
-based on your project, and it depends on whether you’re more likely to move
-item definition code separately from or together with the code that uses the
-item. For example, if we moved the `front_of_house` module and the
-`eat_at_restaurant` function into a module named `customer_experience`, we’d
-need to update the absolute path to `add_to_waitlist`, but the relative path
-would still be valid. However, if we moved the `eat_at_restaurant` function
-separately into a module named `dining`, the absolute path to the
-`add_to_waitlist` call would stay the same, but the relative path would need to
-be updated. Our preference in general is to specify absolute paths because it’s
-more likely we’ll want to move code definitions and item calls independently of
-each other.
+Az, hogy relatív vagy abszolút útvonalat használsz-e, olyan döntés, amelyet a
+projekted alapján hozol meg, és attól függ, hogy valószínűbb-e, hogy az elemet
+definiáló kódot az elemet használó kódtól külön vagy azzal együtt mozgatod. Ha
+például a `front_of_house` modult és az `eat_at_restaurant` függvényt egy
+`customer_experience` nevű modulba mozgatnánk, frissítenünk kellene az
+`add_to_waitlist`-hez vezető abszolút útvonalat, a relatív útvonal viszont
+továbbra is érvényes maradna. Ha viszont csak az `eat_at_restaurant` függvényt
+mozgatnánk külön egy `dining` nevű modulba, az `add_to_waitlist` hívásához
+vezető abszolút útvonal változatlan maradna, a relatív útvonalat viszont
+frissíteni kellene. Általában az abszolút útvonalak megadását részesítjük
+előnyben, mert valószínűbb, hogy a kóddefiníciókat és az elemek hívásait
+egymástól függetlenül akarjuk mozgatni.
 
-Let’s try to compile Listing 7-3 and find out why it won’t compile yet! The
-errors we get are shown in Listing 7-4.
+Próbáljuk meg lefordítani a 7-3. listát, és derítsük ki, miért nem fordul le
+egyelőre! A kapott hibákat a 7-4. lista mutatja.
 
-<Listing number="7-4" caption="Compiler errors from building the code in Listing 7-3">
+<Listing number="7-4" caption="A 7-3. listában szereplő kód fordításakor kapott fordítói hibák">
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-03/output.txt}}
@@ -76,35 +81,38 @@ errors we get are shown in Listing 7-4.
 
 </Listing>
 
-The error messages say that module `hosting` is private. In other words, we
-have the correct paths for the `hosting` module and the `add_to_waitlist`
-function, but Rust won’t let us use them because it doesn’t have access to the
-private sections. In Rust, all items (functions, methods, structs, enums,
-modules, and constants) are private to parent modules by default. If you want
-to make an item like a function or struct private, you put it in a module.
+A hibaüzenetek azt mondják, hogy a `hosting` modul privát. Más szóval a
+`hosting` modulhoz és az `add_to_waitlist` függvényhez vezető útvonalaink
+helyesek, de a Rust nem engedi őket használni, mert nincs hozzáférése a privát
+részekhez. A Rustban minden elem (függvény, metódus, struct, enum, modul és
+konstans) alapértelmezés szerint privát a szülőmodulok felé. Ha egy elemet,
+például egy függvényt vagy egy structot priváttá akarsz tenni, tedd egy modulba.
 
-Items in a parent module can’t use the private items inside child modules, but
-items in child modules can use the items in their ancestor modules. This is
-because child modules wrap and hide their implementation details, but the child
-modules can see the context in which they’re defined. To continue with our
-metaphor, think of the privacy rules as being like the back office of a
-restaurant: What goes on in there is private to restaurant customers, but
-office managers can see and do everything in the restaurant they operate.
+Egy szülőmodul elemei nem használhatják a gyermekmodulokon belüli privát
+elemeket, a gyermekmodulok elemei viszont használhatják az őseik moduljaiban
+lévő elemeket. Ez azért van, mert a gyermekmodulok becsomagolják és elrejtik az
+implementációs részleteiket, a gyermekmodulok viszont látják azt a környezetet,
+amelyben definiálva vannak. Hogy folytassuk a hasonlatunkat: gondolj a
+privátsági szabályokra úgy, mint egy étterem hátsó irodájára: ami ott bent
+történik, az az étterem vendégei elől el van zárva, az irodavezetők viszont
+mindent látnak és mindent megtehetnek abban az étteremben, amelyet üzemeltetnek.
 
-Rust chose to have the module system function this way so that hiding inner
-implementation details is the default. That way, you know which parts of the
-inner code you can change without breaking the outer code. However, Rust does
-give you the option to expose inner parts of child modules’ code to outer
-ancestor modules by using the `pub` keyword to make an item public.
+A Rust azért választotta ezt a működést a modulrendszer számára, hogy a belső
+implementációs részletek elrejtése legyen az alapértelmezés. Így tudod, a belső
+kód mely részeit változtathatod meg anélkül, hogy a külső kód elromlana. A Rust
+azonban lehetőséget ad arra, hogy a gyermekmodulok kódjának belső részeit a
+külső ősmodulok számára is elérhetővé tedd: ehhez a `pub` kulcsszóval kell
+nyilvánossá tenned az adott elemet.
 
-### Exposing Paths with the `pub` Keyword {#exposing-paths-with-the-pub-keyword}
+### Útvonalak közzététele a `pub` kulcsszóval {#exposing-paths-with-the-pub-keyword}
 
-Let’s return to the error in Listing 7-4 that told us the `hosting` module is
-private. We want the `eat_at_restaurant` function in the parent module to have
-access to the `add_to_waitlist` function in the child module, so we mark the
-`hosting` module with the `pub` keyword, as shown in Listing 7-5.
+Térjünk vissza a 7-4. listában látott hibához, amely azt mondta, hogy a
+`hosting` modul privát. Azt szeretnénk, hogy a szülőmodulban lévő
+`eat_at_restaurant` függvény hozzáférjen a gyermekmodulban lévő
+`add_to_waitlist` függvényhez, ezért a `hosting` modult a `pub` kulcsszóval
+jelöljük meg, ahogy a 7-5. lista mutatja.
 
-<Listing number="7-5" file-name="src/lib.rs" caption="Declaring the `hosting` module as `pub` to use it from `eat_at_restaurant`">
+<Listing number="7-5" file-name="src/lib.rs" caption="A `hosting` modul `pub`-ként való deklarálása, hogy használhassuk az `eat_at_restaurant`-ból">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-05/src/lib.rs:here}}
@@ -112,10 +120,10 @@ access to the `add_to_waitlist` function in the child module, so we mark the
 
 </Listing>
 
-Unfortunately, the code in Listing 7-5 still results in compiler errors, as
-shown in Listing 7-6.
+Sajnos a 7-5. listában szereplő kód továbbra is fordítási hibákat eredményez,
+ahogy azt a 7-6. lista mutatja.
 
-<Listing number="7-6" caption="Compiler errors from building the code in Listing 7-5">
+<Listing number="7-6" caption="A 7-5. listában szereplő kód fordításakor kapott fordítói hibák">
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-05/output.txt}}
@@ -123,23 +131,24 @@ shown in Listing 7-6.
 
 </Listing>
 
-What happened? Adding the `pub` keyword in front of `mod hosting` makes the
-module public. With this change, if we can access `front_of_house`, we can
-access `hosting`. But the _contents_ of `hosting` are still private; making the
-module public doesn’t make its contents public. The `pub` keyword on a module
-only lets code in its ancestor modules refer to it, not access its inner code.
-Because modules are containers, there’s not much we can do by only making the
-module public; we need to go further and choose to make one or more of the
-items within the module public as well.
+Mi történt? A `pub` kulcsszó hozzáadása a `mod hosting` elé nyilvánossá teszi a
+modult. Ezzel a változtatással, ha hozzáférünk a `front_of_house`-hoz, akkor
+hozzáférünk a `hosting`-hoz is. A `hosting` _tartalma_ azonban továbbra is
+privát: attól, hogy a modult nyilvánossá tesszük, még nem lesz nyilvános a
+tartalma. Egy modulon a `pub` kulcsszó csak azt engedi meg, hogy az ősmoduljai
+kódja hivatkozzon rá, azt nem, hogy hozzáférjen a belső kódjához. Mivel a
+modulok tárolók, nem sokra megyünk azzal, ha csak magát a modult tesszük
+nyilvánossá; tovább kell lépnünk, és a modulon belüli elemek közül is
+nyilvánossá kell tennünk egyet vagy többet.
 
-The errors in Listing 7-6 say that the `add_to_waitlist` function is private.
-The privacy rules apply to structs, enums, functions, and methods as well as
-modules.
+A 7-6. listában látható hibák azt mondják, hogy az `add_to_waitlist` függvény
+privát. A privátsági szabályok a structokra, az enumokra, a függvényekre és a
+metódusokra ugyanúgy vonatkoznak, mint a modulokra.
 
-Let’s also make the `add_to_waitlist` function public by adding the `pub`
-keyword before its definition, as in Listing 7-7.
+Tegyük nyilvánossá az `add_to_waitlist` függvényt is a `pub` kulcsszónak a
+definíciója elé írásával, ahogy a 7-7. listában látható.
 
-<Listing number="7-7" file-name="src/lib.rs" caption="Adding the `pub` keyword to `mod hosting` and `fn add_to_waitlist` lets us call the function from `eat_at_restaurant`.">
+<Listing number="7-7" file-name="src/lib.rs" caption="A `pub` kulcsszó hozzáadása a `mod hosting`-hoz és az `fn add_to_waitlist`-hez lehetővé teszi, hogy meghívjuk a függvényt az `eat_at_restaurant`-ból.">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-07/src/lib.rs:here}}
@@ -147,73 +156,76 @@ keyword before its definition, as in Listing 7-7.
 
 </Listing>
 
-Now the code will compile! To see why adding the `pub` keyword lets us use
-these paths in `eat_at_restaurant` with respect to the privacy rules, let’s
-look at the absolute and the relative paths.
+Most már le fog fordulni a kód! Hogy lássuk, a `pub` kulcsszó hozzáadása miért
+teszi lehetővé ezeknek az útvonalaknak a használatát az `eat_at_restaurant`-ban
+a privátsági szabályok fényében, nézzük meg az abszolút és a relatív útvonalat.
 
-In the absolute path, we start with `crate`, the root of our crate’s module
-tree. The `front_of_house` module is defined in the crate root. While
-`front_of_house` isn’t public, because the `eat_at_restaurant` function is
-defined in the same module as `front_of_house` (that is, `eat_at_restaurant`
-and `front_of_house` are siblings), we can refer to `front_of_house` from
-`eat_at_restaurant`. Next is the `hosting` module marked with `pub`. We can
-access the parent module of `hosting`, so we can access `hosting`. Finally, the
-`add_to_waitlist` function is marked with `pub`, and we can access its parent
-module, so this function call works!
+Az abszolút útvonalban a `crate`-tel kezdünk, a crate-ünk modulfájának
+gyökerével. A `front_of_house` modul a crate gyökerében van definiálva. Bár a
+`front_of_house` nem nyilvános, mégis hivatkozhatunk rá az
+`eat_at_restaurant`-ból, mert az `eat_at_restaurant` függvény ugyanabban a
+modulban van definiálva, mint a `front_of_house` (azaz az `eat_at_restaurant` és
+a `front_of_house` testvérek). Ezt követi a `pub`-bal megjelölt `hosting` modul.
+A `hosting` szülőmodulját elérjük, tehát a `hosting`-ot is elérjük. Végül az
+`add_to_waitlist` függvény `pub`-bal van megjelölve, a szülőmodulját pedig
+elérjük, így ez a függvényhívás működik!
 
-In the relative path, the logic is the same as the absolute path except for the
-first step: Rather than starting from the crate root, the path starts from
-`front_of_house`. The `front_of_house` module is defined within the same module
-as `eat_at_restaurant`, so the relative path starting from the module in which
-`eat_at_restaurant` is defined works. Then, because `hosting` and
-`add_to_waitlist` are marked with `pub`, the rest of the path works, and this
-function call is valid!
+A relatív útvonalban a logika ugyanaz, mint az abszolút útvonal esetében, csak
+az első lépés más: az útvonal nem a crate gyökeréből indul, hanem a
+`front_of_house`-ból. A `front_of_house` modul ugyanabban a modulban van
+definiálva, mint az `eat_at_restaurant`, így az abból a modulból induló relatív
+útvonal működik, amelyben az `eat_at_restaurant` definiálva van. Ezután, mivel a
+`hosting` és az `add_to_waitlist` `pub`-bal van megjelölve, az útvonal többi
+része is működik, és ez a függvényhívás érvényes!
 
-If you plan to share your library crate so that other projects can use your
-code, your public API is your contract with users of your crate that determines
-how they can interact with your code. There are many considerations around
-managing changes to your public API to make it easier for people to depend on
-your crate. These considerations are beyond the scope of this book; if you’re
-interested in this topic, see [the Rust API Guidelines][api-guidelines].
+Ha azt tervezed, hogy megosztod a library crate-edet, hogy más projektek is
+használhassák a kódodat, akkor a nyilvános API-d az a szerződés a crate-ed
+felhasználóival, amely meghatározza, hogyan léphetnek kapcsolatba a kódoddal. A
+nyilvános API változásainak kezelése körül sok megfontolandó szempont van, hogy
+az emberek könnyebben építhessenek a crate-edre. Ezek a szempontok kívül esnek e
+könyv keretein; ha érdekel a téma, nézd meg
+[a Rust API-irányelveket][api-guidelines].
 
-> #### Best Practices for Packages with a Binary and a Library
+> #### Bevált gyakorlatok binary és library crate-et is tartalmazó csomagokhoz
 >
-> We mentioned that a package can contain both a _src/main.rs_ binary crate
-> root as well as a _src/lib.rs_ library crate root, and both crates will have
-> the package name by default. Typically, packages with this pattern of
-> containing both a library and a binary crate will have just enough code in the
-> binary crate to start an executable that calls code defined in the library
-> crate. This lets other projects benefit from the most functionality that the
-> package provides because the library crate’s code can be shared.
+> Említettük, hogy egy csomag tartalmazhat egy _src/main.rs_ binary crate
+> gyökeret és egy _src/lib.rs_ library crate gyökeret is, és alapértelmezés
+> szerint mindkét crate a csomag nevét viseli. Az ilyen, library és binary
+> crate-et is tartalmazó mintát követő csomagokban a binary crate jellemzően
+> épp csak annyi kódot tartalmaz, amennyi elindít egy futtatható programot,
+> amely a library crate-ben definiált kódot hívja meg. Így más projektek is
+> élvezhetik a csomag által nyújtott funkcionalitás legnagyobb részét, mert a
+> library crate kódja megosztható.
 >
-> The module tree should be defined in _src/lib.rs_. Then, any public items can
-> be used in the binary crate by starting paths with the name of the package.
-> The binary crate becomes a user of the library crate just like a completely
-> external crate would use the library crate: It can only use the public API.
-> This helps you design a good API; not only are you the author, but you’re
-> also a client!
+> A modulfát a _src/lib.rs_ fájlban érdemes definiálni. Ezután bármely
+> nyilvános elem használható a binary crate-ben, ha az útvonalakat a csomag
+> nevével kezded. A binary crate a library crate felhasználójává válik, éppen
+> úgy, ahogy egy teljesen külső crate használná a library crate-et: kizárólag a
+> nyilvános API-t használhatja. Ez segít jó API-t tervezni; nemcsak a szerzője
+> vagy, hanem az ügyfele is!
 >
-> In [Chapter 12][ch12]<!-- ignore -->, we’ll demonstrate this organizational
-> practice with a command line program that will contain both a binary crate
-> and a library crate.
+> A [12. fejezetben][ch12]<!-- ignore --> ezt a szervezési gyakorlatot egy
+> parancssori programmal mutatjuk be, amely binary és library crate-et is
+> tartalmaz majd.
 
-### Starting Relative Paths with `super`
+### Relatív útvonalak indítása a `super` kulcsszóval
 
-We can construct relative paths that begin in the parent module, rather than
-the current module or the crate root, by using `super` at the start of the
-path. This is like starting a filesystem path with the `..` syntax that means
-to go to the parent directory. Using `super` allows us to reference an item
-that we know is in the parent module, which can make rearranging the module
-tree easier when the module is closely related to the parent but the parent
-might be moved elsewhere in the module tree someday.
+Olyan relatív útvonalakat is fel tudunk építeni, amelyek nem az aktuális
+modulból vagy a crate gyökeréből, hanem a szülőmodulból indulnak: ehhez a
+`super`-t kell az útvonal elejére írni. Ez olyan, mint amikor egy
+fájlrendszerbeli útvonalat a `..` szintaxissal kezdünk, ami a szülőkönyvtárba
+lépést jelenti. A `super` használatával olyan elemre hivatkozhatunk, amelyről
+tudjuk, hogy a szülőmodulban van, és ez megkönnyítheti a modulfa átrendezését,
+amikor a modul szorosan kapcsolódik a szülőjéhez, a szülő viszont egy nap
+esetleg máshová kerül a modulfában.
 
-Consider the code in Listing 7-8 that models the situation in which a chef
-fixes an incorrect order and personally brings it out to the customer. The
-function `fix_incorrect_order` defined in the `back_of_house` module calls the
-function `deliver_order` defined in the parent module by specifying the path to
-`deliver_order`, starting with `super`.
+Nézd meg a 7-8. listában szereplő kódot, amely azt a helyzetet modellezi,
+amikor egy szakács kijavít egy hibás rendelést, és személyesen viszi ki a
+vendégnek. A `back_of_house` modulban definiált `fix_incorrect_order` függvény
+meghívja a szülőmodulban definiált `deliver_order` függvényt úgy, hogy megadja a
+`deliver_order`-höz vezető, `super`-rel kezdődő útvonalat.
 
-<Listing number="7-8" file-name="src/lib.rs" caption="Calling a function using a relative path starting with `super`">
+<Listing number="7-8" file-name="src/lib.rs" caption="Függvény hívása `super`-rel kezdődő relatív útvonalon">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-08/src/lib.rs}}
@@ -221,29 +233,31 @@ function `deliver_order` defined in the parent module by specifying the path to
 
 </Listing>
 
-The `fix_incorrect_order` function is in the `back_of_house` module, so we can
-use `super` to go to the parent module of `back_of_house`, which in this case
-is `crate`, the root. From there, we look for `deliver_order` and find it.
-Success! We think the `back_of_house` module and the `deliver_order` function
-are likely to stay in the same relationship to each other and get moved
-together should we decide to reorganize the crate’s module tree. Therefore, we
-used `super` so that we’ll have fewer places to update code in the future if
-this code gets moved to a different module.
+A `fix_incorrect_order` függvény a `back_of_house` modulban van, így a `super`
+segítségével a `back_of_house` szülőmoduljába léphetünk, ami ebben az esetben a
+gyökér, azaz a `crate`. Innen keressük a `deliver_order`-t, és meg is találjuk.
+Siker! Úgy gondoljuk, hogy a `back_of_house` modul és a `deliver_order` függvény
+valószínűleg ugyanebben a viszonyban marad egymással, és együtt kerülnek majd
+máshová, ha úgy döntenénk, hogy átszervezzük a crate modulfáját. Ezért
+használtuk a `super`-t: így kevesebb helyen kell majd frissítenünk a kódot a
+jövőben, ha ez a kód egy másik modulba kerül.
 
-### Making Structs and Enums Public
+### Structok és enumok nyilvánossá tétele
 
-We can also use `pub` to designate structs and enums as public, but there are a
-few extra details to the usage of `pub` with structs and enums. If we use `pub`
-before a struct definition, we make the struct public, but the struct’s fields
-will still be private. We can make each field public or not on a case-by-case
-basis. In Listing 7-9, we’ve defined a public `back_of_house::Breakfast` struct
-with a public `toast` field but a private `seasonal_fruit` field. This models
-the case in a restaurant where the customer can pick the type of bread that
-comes with a meal, but the chef decides which fruit accompanies the meal based
-on what’s in season and in stock. The available fruit changes quickly, so
-customers can’t choose the fruit or even see which fruit they’ll get.
+A `pub` kulcsszóval structokat és enumokat is nyilvánossá nyilváníthatunk, de a
+`pub` structokkal és enumokkal való használatának van néhány további részlete.
+Ha a `pub`-ot egy structdefiníció elé írjuk, a struct nyilvános lesz, a struct
+mezői viszont továbbra is priváték maradnak. Minden egyes mezőről külön-külön
+eldönthetjük, hogy nyilvános legyen-e. A 7-9. listában egy nyilvános
+`back_of_house::Breakfast` structot definiáltunk, amelynek a `toast` mezője
+nyilvános, a `seasonal_fruit` mezője viszont privát. Ez azt az esetet
+modellezi, amikor egy étteremben a vendég kiválaszthatja, milyen kenyér jár az
+ételhez, azt viszont a szakács dönti el, milyen gyümölcs kerül mellé, aszerint,
+hogy mi van szezonban és készleten. Az elérhető gyümölcs gyorsan változik, így a
+vendégek nem választhatják ki a gyümölcsöt, sőt azt sem láthatják, melyiket
+kapják majd.
 
-<Listing number="7-9" file-name="src/lib.rs" caption="A struct with some public fields and some private fields">
+<Listing number="7-9" file-name="src/lib.rs" caption="Struct néhány nyilvános és néhány privát mezővel">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-09/src/lib.rs}}
@@ -251,23 +265,25 @@ customers can’t choose the fruit or even see which fruit they’ll get.
 
 </Listing>
 
-Because the `toast` field in the `back_of_house::Breakfast` struct is public,
-in `eat_at_restaurant` we can write and read to the `toast` field using dot
-notation. Notice that we can’t use the `seasonal_fruit` field in
-`eat_at_restaurant`, because `seasonal_fruit` is private. Try uncommenting the
-line modifying the `seasonal_fruit` field value to see what error you get!
+Mivel a `back_of_house::Breakfast` struct `toast` mezője nyilvános, az
+`eat_at_restaurant`-ban pontjelöléssel írhatunk a `toast` mezőbe, és
+olvashatunk belőle. Vedd észre, hogy a `seasonal_fruit` mezőt nem használhatjuk
+az `eat_at_restaurant`-ban, mert a `seasonal_fruit` privát. Próbáld meg
+kikommentezni azt a sort, amely a `seasonal_fruit` mező értékét módosítja, és
+nézd meg, milyen hibát kapsz!
 
-Also, note that because `back_of_house::Breakfast` has a private field, the
-struct needs to provide a public associated function that constructs an
-instance of `Breakfast` (we’ve named it `summer` here). If `Breakfast` didn’t
-have such a function, we couldn’t create an instance of `Breakfast` in
-`eat_at_restaurant`, because we couldn’t set the value of the private
-`seasonal_fruit` field in `eat_at_restaurant`.
+Azt is vedd figyelembe, hogy mivel a `back_of_house::Breakfast`-nek van egy
+privát mezője, a structnak nyilvános asszociált függvényt kell biztosítania,
+amely `Breakfast`-példányt hoz létre (itt `summer`-nek neveztük el). Ha a
+`Breakfast`-nek nem lenne ilyen függvénye, nem tudnánk `Breakfast`-példányt
+létrehozni az `eat_at_restaurant`-ban, mert nem tudnánk beállítani a privát
+`seasonal_fruit` mező értékét az `eat_at_restaurant`-ban.
 
-In contrast, if we make an enum public, all of its variants are then public. We
-only need the `pub` before the `enum` keyword, as shown in Listing 7-10.
+Ezzel szemben ha egy enumot teszünk nyilvánossá, akkor annak az összes variánsa
+nyilvános lesz. Csak a `pub`-ot kell az `enum` kulcsszó elé írnunk, ahogy azt a
+7-10. lista mutatja.
 
-<Listing number="7-10" file-name="src/lib.rs" caption="Designating an enum as public makes all its variants public.">
+<Listing number="7-10" file-name="src/lib.rs" caption="Ha egy enumot nyilvánossá nyilvánítunk, az összes variánsa nyilvános lesz.">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-10/src/lib.rs}}
@@ -275,18 +291,20 @@ only need the `pub` before the `enum` keyword, as shown in Listing 7-10.
 
 </Listing>
 
-Because we made the `Appetizer` enum public, we can use the `Soup` and `Salad`
-variants in `eat_at_restaurant`.
+Mivel az `Appetizer` enumot nyilvánossá tettük, a `Soup` és a `Salad`
+variánsokat használhatjuk az `eat_at_restaurant`-ban.
 
-Enums aren’t very useful unless their variants are public; it would be annoying
-to have to annotate all enum variants with `pub` in every case, so the default
-for enum variants is to be public. Structs are often useful without their
-fields being public, so struct fields follow the general rule of everything
-being private by default unless annotated with `pub`.
+Az enumok nem túl hasznosak, ha a variánsaik nem nyilvánosak; bosszantó lenne,
+ha minden enumvariánst `pub`-bal kellene megjelölni minden esetben, ezért az
+enumvariánsok alapértelmezés szerint nyilvánosak. A structok gyakran akkor is
+hasznosak, ha a mezőik nem nyilvánosak, ezért a struct mezői az általános
+szabályt követik: alapértelmezés szerint minden privát, hacsak nincs `pub`-bal
+megjelölve.
 
-There’s one more situation involving `pub` that we haven’t covered, and that is
-our last module system feature: the `use` keyword. We’ll cover `use` by itself
-first, and then we’ll show how to combine `pub` and `use`.
+Van még egy `pub`-bal kapcsolatos helyzet, amelyet nem tárgyaltunk, és ez az
+utolsó modulrendszerbeli képesség: a `use` kulcsszó. Először magával a
+`use`-zal foglalkozunk, majd megmutatjuk, hogyan lehet a `pub`-ot és a `use`-t
+kombinálni.
 
 [pub]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#exposing-paths-with-the-pub-keyword
 [api-guidelines]: https://rust-lang.github.io/api-guidelines/

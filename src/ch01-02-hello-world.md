@@ -1,31 +1,33 @@
 ## Hello, World!
 
-Now that you’ve installed Rust, it’s time to write your first Rust program.
-It’s traditional when learning a new language to write a little program that
-prints the text `Hello, world!` to the screen, so we’ll do the same here!
+Most, hogy telepítetted a Rustot, itt az ideje megírni az első Rust-programodat.
+Új nyelv tanulásakor hagyomány egy olyan kis programot írni, amely a `Hello,
+world!` szöveget írja ki a képernyőre, úgyhogy mi is ezt tesszük!
 
-> Note: This book assumes basic familiarity with the command line. Rust makes
-> no specific demands about your editing or tooling or where your code lives, so
-> if you prefer to use an IDE instead of the command line, feel free to use your
-> favorite IDE. Many IDEs now have some degree of Rust support; check the IDE’s
-> documentation for details. The Rust team has been focusing on enabling great
-> IDE support via `rust-analyzer`. See [Appendix D][devtools]<!-- ignore -->
-> for more details.
+> Megjegyzés: Ez a könyv feltételezi a parancssor alapszintű ismeretét. A Rust
+> nem támaszt konkrét elvárásokat a szerkesztőddel, az eszközeiddel vagy a kódod
+> helyével szemben, így ha a parancssor helyett inkább IDE-t használnál,
+> nyugodtan használd a kedvenc IDE-det. Sok IDE ma már valamilyen szinten
+> támogatja a Rustot; a részletekért nézd meg az IDE dokumentációját. A Rust
+> csapata arra összpontosít, hogy a `rust-analyzer` révén kiváló IDE-támogatás
+> legyen elérhető. További részletekért lásd a [D függeléket][devtools]<!--
+> ignore -->.
 
 <!-- Old headings. Do not remove or links may break. -->
 <a id="creating-a-project-directory"></a>
 
-### Project Directory Setup
+### A projektkönyvtár beállítása
 
-You’ll start by making a directory to store your Rust code. It doesn’t matter
-to Rust where your code lives, but for the exercises and projects in this book,
-we suggest making a _projects_ directory in your home directory and keeping all
-your projects there.
+Kezdd azzal, hogy létrehozol egy könyvtárat a Rust-kódod tárolására. A Rust
+számára mindegy, hol van a kódod, de a könyv gyakorlataihoz és projektjeihez
+azt javasoljuk, hogy hozz létre egy _projects_ könyvtárat a saját home
+könyvtáradban, és ott tartsd az összes projektedet.
 
-Open a terminal and enter the following commands to make a _projects_ directory
-and a directory for the “Hello, world!” project within the _projects_ directory.
+Nyiss meg egy terminált, és add ki a következő parancsokat, hogy létrehozz egy
+_projects_ könyvtárat, azon belül pedig egy könyvtárat a „Hello, world!”
+projektnek.
 
-For Linux, macOS, and PowerShell on Windows, enter this:
+Linuxon, macOS-en és a Windows PowerShellben ezt írd be:
 
 ```console
 $ mkdir ~/projects
@@ -34,7 +36,7 @@ $ mkdir hello_world
 $ cd hello_world
 ```
 
-For Windows CMD, enter this:
+Windows CMD-ben ezt írd be:
 
 ```cmd
 > mkdir "%USERPROFILE%\projects"
@@ -46,16 +48,17 @@ For Windows CMD, enter this:
 <!-- Old headings. Do not remove or links may break. -->
 <a id="writing-and-running-a-rust-program"></a>
 
-### Rust Program Basics {#rust-program-basics}
+### A Rust-programok alapjai {#rust-program-basics}
 
-Next, make a new source file and call it _main.rs_. Rust files always end with
-the _.rs_ extension. If you’re using more than one word in your filename, the
-convention is to use an underscore to separate them. For example, use
-_hello_world.rs_ rather than _helloworld.rs_.
+Ezután hozz létre egy új forrásfájlt _main.rs_ néven. A Rust-fájlok mindig
+_.rs_ kiterjesztésűek. Ha több szóból áll a fájlnév, a konvenció szerint
+alulvonással válaszd el őket. Például a _helloworld.rs_ helyett használd a
+_hello_world.rs_ nevet.
 
-Now open the _main.rs_ file you just created and enter the code in Listing 1-1.
+Most nyisd meg az imént létrehozott _main.rs_ fájlt, és írd be az 1-1.
+listában szereplő kódot.
 
-<Listing number="1-1" file-name="main.rs" caption="A program that prints `Hello, world!`">
+<Listing number="1-1" file-name="main.rs" caption="Program, amely kiírja, hogy `Hello, world!`">
 
 ```rust
 fn main() {
@@ -65,9 +68,9 @@ fn main() {
 
 </Listing>
 
-Save the file and go back to your terminal window in the
-_~/projects/hello_world_ directory. On Linux or macOS, enter the following
-commands to compile and run the file:
+Mentsd el a fájlt, és térj vissza a terminálablakhoz a
+_~/projects/hello_world_ könyvtárban. Linuxon vagy macOS-en a következő
+parancsokkal fordíthatod le és futtathatod a fájlt:
 
 ```console
 $ rustc main.rs
@@ -75,7 +78,7 @@ $ ./main
 Hello, world!
 ```
 
-On Windows, enter the command `.\main` instead of `./main`:
+Windowson a `./main` helyett a `.\main` parancsot add ki:
 
 ```powershell
 > rustc main.rs
@@ -83,22 +86,22 @@ On Windows, enter the command `.\main` instead of `./main`:
 Hello, world!
 ```
 
-Regardless of your operating system, the string `Hello, world!` should print to
-the terminal. If you don’t see this output, refer back to the
-[“Troubleshooting”][troubleshooting]<!-- ignore --> part of the Installation
-section for ways to get help.
+Az operációs rendszertől függetlenül a `Hello, world!` sztringnek kell
+megjelennie a terminálban. Ha nem látod ezt a kimenetet, lapozz vissza a
+telepítési szakasz [„Hibaelhárítás”][troubleshooting]<!-- ignore --> részéhez,
+ahol megtudhatod, hogyan kérhetsz segítséget.
 
-If `Hello, world!` did print, congratulations! You’ve officially written a Rust
-program. That makes you a Rust programmer—welcome!
+Ha a `Hello, world!` mégis megjelent, gratulálunk! Hivatalosan is írtál egy
+Rust-programot. Ezzel Rust-programozó lettél – üdvözlünk!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="anatomy-of-a-rust-program"></a>
 
-### The Anatomy of a Rust Program
+### Egy Rust-program anatómiája
 
-Let’s review this “Hello, world!” program in detail. Here’s the first piece of
-the puzzle:
+Nézzük át részletesen ezt a „Hello, world!” programot. Íme a kirakós első
+darabja:
 
 ```rust
 fn main() {
@@ -106,75 +109,76 @@ fn main() {
 }
 ```
 
-These lines define a function named `main`. The `main` function is special: It
-is always the first code that runs in every executable Rust program. Here, the
-first line declares a function named `main` that has no parameters and returns
-nothing. If there were parameters, they would go inside the parentheses (`()`).
+Ezek a sorok egy `main` nevű függvényt definiálnak. A `main` függvény
+különleges: minden futtatható Rust-programban ez az első kód, amely lefut. Az
+első sor itt egy `main` nevű függvényt deklarál, amelynek nincs paramétere, és
+nem ad vissza semmit. Ha lennének paraméterei, azok a zárójelek (`()`) között
+szerepelnének.
 
-The function body is wrapped in `{}`. Rust requires curly brackets around all
-function bodies. It’s good style to place the opening curly bracket on the same
-line as the function declaration, adding one space in between.
+A függvény törzsét `{}` fogja közre. A Rust minden függvénytörzs köré kapcsos
+zárójeleket követel meg. Jó stílus a nyitó kapcsos zárójelet a
+függvénydeklarációval azonos sorba tenni, egy szóközzel elválasztva.
 
-> Note: If you want to stick to a standard style across Rust projects, you can
-> use an automatic formatter tool called `rustfmt` to format your code in a
-> particular style (more on `rustfmt` in
-> [Appendix D][devtools]<!-- ignore -->). The Rust team has included this tool
-> with the standard Rust distribution, as `rustc` is, so it should already be
-> installed on your computer!
+> Megjegyzés: Ha a Rust-projektek között egységes, szabványos stílushoz
+> szeretnéd tartani magad, használhatod a `rustfmt` nevű automatikus
+> formázóeszközt, amely egy adott stílusra formázza a kódodat (a `rustfmt`-ről
+> bővebben a [D függelékben][devtools]<!-- ignore --> olvashatsz). A Rust
+> csapata ezt az eszközt a szokásos Rust-disztribúció részévé tette, akárcsak a
+> `rustc`-t, tehát valószínűleg már telepítve van a gépeden!
 
-The body of the `main` function holds the following code:
+A `main` függvény törzsében a következő kód szerepel:
 
 ```rust
 println!("Hello, world!");
 ```
 
-This line does all the work in this little program: It prints text to the
-screen. There are three important details to notice here.
+Ez a sor végzi el az összes munkát ebben a kis programban: szöveget ír ki a
+képernyőre. Három fontos részletet érdemes itt észrevenni.
 
-First, `println!` calls a Rust macro. If it had called a function instead, it
-would be entered as `println` (without the `!`). Rust macros are a way to write
-code that generates code to extend Rust syntax, and we’ll discuss them in more
-detail in [Chapter 20][ch20-macros]<!-- ignore -->. For now, you just need to
-know that using a `!` means that you’re calling a macro instead of a normal
-function and that macros don’t always follow the same rules as functions.
+Először is, a `println!` egy Rust-makrót hív meg. Ha helyette függvényt hívna,
+akkor `println` alakban (a `!` nélkül) írnánk. A Rust makrói arra szolgálnak,
+hogy olyan kódot írjunk, amely kódot generál, kiterjesztve ezzel a Rust
+szintaxisát; részletesebben a [20. fejezetben][ch20-macros]<!-- ignore -->
+tárgyaljuk őket. Egyelőre csak annyit kell tudnod, hogy a `!` használata azt
+jelenti: makrót hívsz meg egy közönséges függvény helyett, és hogy a makrók nem
+mindig ugyanazokat a szabályokat követik, mint a függvények.
 
-Second, you see the `"Hello, world!"` string. We pass this string as an argument
-to `println!`, and the string is printed to the screen.
+Másodszor, itt van a `"Hello, world!"` sztring. Ezt a sztringet argumentumként
+adjuk át a `println!`-nak, és a sztring megjelenik a képernyőn.
 
-Third, we end the line with a semicolon (`;`), which indicates that this
-expression is over, and the next one is ready to begin. Most lines of Rust code
-end with a semicolon.
+Harmadszor, pontosvesszővel (`;`) zárjuk a sort, ami azt jelzi, hogy ez a
+kifejezés véget ért, és a következő kezdődhet. A Rust-kód legtöbb sora
+pontosvesszővel végződik.
 
 <!-- Old headings. Do not remove or links may break. -->
 <a id="compiling-and-running-are-separate-steps"></a>
 
-### Compilation and Execution
+### Fordítás és futtatás
 
-You’ve just run a newly created program, so let’s examine each step in the
-process.
+Épp most futtattál egy frissen létrehozott programot, nézzük hát meg a folyamat
+minden lépését.
 
-Before running a Rust program, you must compile it using the Rust compiler by
-entering the `rustc` command and passing it the name of your source file, like
-this:
+A Rust-programot futtatás előtt le kell fordítanod a Rust fordítójával: add ki
+a `rustc` parancsot, és add át neki a forrásfájlod nevét, így:
 
 ```console
 $ rustc main.rs
 ```
 
-If you have a C or C++ background, you’ll notice that this is similar to `gcc`
-or `clang`. After compiling successfully, Rust outputs a binary executable.
+Ha van C vagy C++ hátered, észreveheted, hogy ez hasonlít a `gcc`-re vagy a
+`clang`-ra. A sikeres fordítás után a Rust egy bináris futtatható állományt
+állít elő.
 
-On Linux, macOS, and PowerShell on Windows, you can see the executable by
-entering the `ls` command in your shell:
+Linuxon, macOS-en és a Windows PowerShellben az `ls` parancs kiadásával láthatod
+a futtatható állományt a shellben:
 
 ```console
 $ ls
 main  main.rs
 ```
 
-On Linux and macOS, you’ll see two files. With PowerShell on Windows, you’ll
-see the same three files that you would see using CMD. With CMD on Windows, you
-would enter the following:
+Linuxon és macOS-en két fájlt látsz. A Windows PowerShellben ugyanazt a három
+fájlt látod, mint a CMD-ben. A Windows CMD-ben a következőt írnád be:
 
 ```cmd
 > dir /B %= the /B option says to only show the file names =%
@@ -183,31 +187,32 @@ main.pdb
 main.rs
 ```
 
-This shows the source code file with the _.rs_ extension, the executable file
-(_main.exe_ on Windows, but _main_ on all other platforms), and, when using
-Windows, a file containing debugging information with the _.pdb_ extension.
-From here, you run the _main_ or _main.exe_ file, like this:
+Ez megmutatja a _.rs_ kiterjesztésű forráskódfájlt, a futtatható állományt
+(Windowson _main.exe_, minden más platformon _main_), Windows esetén pedig egy
+_.pdb_ kiterjesztésű fájlt, amely hibakeresési információkat tartalmaz. Innen a
+_main_ vagy a _main.exe_ fájlt futtatod, így:
 
 ```console
 $ ./main # or .\main on Windows
 ```
 
-If your _main.rs_ is your “Hello, world!” program, this line prints `Hello,
-world!` to your terminal.
+Ha a _main.rs_ fájlod a „Hello, world!” programod, ez a sor a `Hello, world!`
+szöveget írja ki a termináladra.
 
-If you’re more familiar with a dynamic language, such as Ruby, Python, or
-JavaScript, you might not be used to compiling and running a program as
-separate steps. Rust is an _ahead-of-time compiled_ language, meaning you can
-compile a program and give the executable to someone else, and they can run it
-even without having Rust installed. If you give someone a _.rb_, _.py_, or
-_.js_ file, they need to have a Ruby, Python, or JavaScript implementation
-installed (respectively). But in those languages, you only need one command to
-compile and run your program. Everything is a trade-off in language design.
+Ha valamelyik dinamikus nyelvet, például a Rubyt, a Pythont vagy a JavaScriptet
+ismered jobban, talán szokatlan, hogy a fordítás és a futtatás külön lépés. A
+Rust _előre fordított (ahead-of-time compiled)_ nyelv, ami azt jelenti, hogy
+lefordíthatsz egy programot, odaadhatod a futtatható állományt valaki másnak,
+és ő anélkül is futtathatja, hogy telepítve lenne nála a Rust. Ha viszont egy
+_.rb_, _.py_ vagy _.js_ fájlt adsz oda valakinek, akkor neki (értelemszerűen)
+telepített Ruby-, Python- vagy JavaScript-implementációra van szüksége. Azokban
+a nyelvekben viszont egyetlen parancs is elég a program lefordításához és
+futtatásához. A nyelvtervezésben minden kompromisszum kérdése.
 
-Just compiling with `rustc` is fine for simple programs, but as your project
-grows, you’ll want to manage all the options and make it easy to share your
-code. Next, we’ll introduce you to the Cargo tool, which will help you write
-real-world Rust programs.
+Egyszerű programoknál a puszta `rustc`-vel való fordítás megfelel, de ahogy a
+projekted növekszik, kezelni akarod majd az összes beállítást, és könnyen
+megoszthatóvá szeretnéd tenni a kódodat. Ezután bemutatjuk a Cargo eszközt,
+amely a valós Rust-programok írásában lesz a segítségedre.
 
 [troubleshooting]: ch01-01-installation.html#troubleshooting
 [devtools]: appendix-04-useful-development-tools.html

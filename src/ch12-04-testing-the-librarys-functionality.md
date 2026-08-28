@@ -1,41 +1,45 @@
 <!-- Old headings. Do not remove or links may break. -->
 <a id="developing-the-librarys-functionality-with-test-driven-development"></a>
 
-## Adding Functionality with Test-Driven Development
+## Funkcionalitás hozzáadása tesztvezérelt fejlesztéssel
 
-Now that we have the search logic in _src/lib.rs_ separate from the `main`
-function, it’s much easier to write tests for the core functionality of our
-code. We can call functions directly with various arguments and check return
-values without having to call our binary from the command line.
+Most, hogy a keresési logika a _src/lib.rs_ fájlban külön van a `main`
+függvénytől, sokkal könnyebb teszteket írni a kódunk lényegi
+funkcionalitására. A függvényeket közvetlenül hívhatjuk különféle
+argumentumokkal, és ellenőrizhetjük a visszatérési értékeket anélkül, hogy a
+binárisunkat a parancssorból kellene meghívnunk.
 
-In this section, we’ll add the searching logic to the `minigrep` program using
-the test-driven development (TDD) process with the following steps:
+Ebben a szakaszban a `minigrep` programhoz a tesztvezérelt fejlesztés (TDD,
+test-driven development) folyamatával adjuk hozzá a keresési logikát, a
+következő lépésekkel:
 
-1. Write a test that fails and run it to make sure it fails for the reason you
-   expect.
-2. Write or modify just enough code to make the new test pass.
-3. Refactor the code you just added or changed and make sure the tests continue
-   to pass.
-4. Repeat from step 1!
+1. Írj egy tesztet, amely elbukik, és futtasd le, hogy megbizonyosodj róla:
+   valóban azért bukik el, amiért várod.
+2. Írj vagy módosíts épp csak annyi kódot, hogy az új teszt átmenjen.
+3. Refaktoráld az imént hozzáadott vagy módosított kódot, és győződj meg róla,
+   hogy a tesztek továbbra is átmennek.
+4. Ismételd az 1. lépéstől!
 
-Though it’s just one of many ways to write software, TDD can help drive code
-design. Writing the test before you write the code that makes the test pass
-helps maintain high test coverage throughout the process.
+Bár a szoftverírásnak csak az egyik módja, a TDD segíthet a kód tervezésének
+irányításában. Ha a tesztet azelőtt írod meg, hogy megírnád a kódot, amitől a
+teszt átmegy, az segít magas teszt-lefedettséget fenntartani az egész folyamat
+során.
 
-We’ll test-drive the implementation of the functionality that will actually do
-the searching for the query string in the file contents and produce a list of
-lines that match the query. We’ll add this functionality in a function called
-`search`.
+Tesztvezérelten fogjuk implementálni azt a funkcionalitást, amely ténylegesen
+elvégzi a keresett szöveg keresését a fájl tartalmában, és előállítja a
+lekérdezésre illeszkedő sorok listáját. Ezt a funkcionalitást egy `search` nevű
+függvényben adjuk hozzá.
 
-### Writing a Failing Test
+### Elbukó teszt írása
 
-In _src/lib.rs_, we’ll add a `tests` module with a test function, as we did in
-[Chapter 11][ch11-anatomy]<!-- ignore -->. The test function specifies the
-behavior we want the `search` function to have: It will take a query and the
-text to search, and it will return only the lines from the text that contain
-the query. Listing 12-15 shows this test.
+A _src/lib.rs_ fájlban felveszünk egy `tests` modult egy tesztfüggvénnyel,
+ahogy azt a [11. fejezetben][ch11-anatomy]<!-- ignore --> is tettük. A
+tesztfüggvény megadja azt a viselkedést, amit a `search` függvénytől várunk:
+kap egy lekérdezést és a szöveget, amelyben keresni kell, és csak azokat a
+sorokat adja vissza a szövegből, amelyek tartalmazzák a lekérdezést. A 12-15.
+listában látható ez a teszt.
 
-<Listing number="12-15" file-name="src/lib.rs" caption="Creating a failing test for the `search` function for the functionality we wish we had">
+<Listing number="12-15" file-name="src/lib.rs" caption="Elbukó teszt írása a `search` függvényre, arra a funkcionalitásra, amit szeretnénk, ha meglenne">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-15/src/lib.rs:here}}
@@ -43,21 +47,22 @@ the query. Listing 12-15 shows this test.
 
 </Listing>
 
-This test searches for the string `"duct"`. The text we’re searching is three
-lines, only one of which contains `"duct"` (note that the backslash after the
-opening double quote tells Rust not to put a newline character at the beginning
-of the contents of this string literal). We assert that the value returned from
-the `search` function contains only the line we expect.
+Ez a teszt a `"duct"` szövegre keres. A szöveg, amelyben keresünk, három sorból
+áll, amelyek közül csak egy tartalmazza a `"duct"` részt (figyeld meg, hogy a
+nyitó idézőjel után álló backslash azt mondja a Rustnak, hogy ne tegyen
+soremelés karaktert ennek a szöveges literálnak a tartalma elé). Azt állítjuk,
+hogy a `search` függvény által visszaadott érték csak a várt sort tartalmazza.
 
-If we run this test, it will currently fail because the `unimplemented!` macro
-panics with the message “not implemented”. In accordance with TDD principles,
-we’ll take a small step of adding just enough code to get the test to not panic
-when calling the function by defining the `search` function to always return an
-empty vector, as shown in Listing 12-16. Then, the test should compile and fail
-because an empty vector doesn’t match a vector containing the line `"safe,
-fast, productive."`.
+Ha lefuttatjuk ezt a tesztet, jelenleg elbukik, mert az `unimplemented!` makró
+a „not implemented” üzenettel vált ki panicot. A TDD elveinek megfelelően
+teszünk egy kis lépést: épp csak annyi kódot adunk hozzá, hogy a függvény
+hívásakor a teszt ne váltson ki panicot, vagyis a `search` függvényt úgy
+definiáljuk, hogy mindig üres vektort adjon vissza, ahogy a 12-16. listában
+látható. Ekkor a tesztnek le kell fordulnia és el kell buknia, mert az üres
+vektor nem egyezik meg azzal a vektorral, amely a `"safe, fast, productive."`
+sort tartalmazza.
 
-<Listing number="12-16" file-name="src/lib.rs" caption="Defining just enough of the `search` function so that calling it won’t panic">
+<Listing number="12-16" file-name="src/lib.rs" caption="A `search` függvény épp elegendő részének definiálása ahhoz, hogy a hívása ne váltson ki panicot">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-16/src/lib.rs:here}}
@@ -65,62 +70,66 @@ fast, productive."`.
 
 </Listing>
 
-Now let’s discuss why we need to define an explicit lifetime `'a` in the
-signature of `search` and use that lifetime with the `contents` argument and
-the return value. Recall in [Chapter 10][ch10-lifetimes]<!-- ignore --> that
-the lifetime parameters specify which argument lifetime is connected to the
-lifetime of the return value. In this case, we indicate that the returned
-vector should contain string slices that reference slices of the argument
-`contents` (rather than the argument `query`).
+Most beszéljük meg, miért kell explicit `'a` lifetime-ot megadnunk a `search`
+szignatúrájában, és miért kell ezt a lifetime-ot a `contents` argumentumnál és
+a visszatérési értéknél használnunk. Emlékezz vissza a [10.
+fejezetre][ch10-lifetimes]<!-- ignore -->: a lifetime-paraméterek adják meg,
+melyik argumentum lifetime-ja kapcsolódik a visszatérési érték lifetime-jához.
+Ebben az esetben azt jelezzük, hogy a visszaadott vektor olyan string
+slice-okat tartalmaz, amelyek a `contents` argumentum részeire hivatkoznak (nem
+pedig a `query` argumentumra).
 
-In other words, we tell Rust that the data returned by the `search` function
-will live as long as the data passed into the `search` function in the
-`contents` argument. This is important! The data referenced _by_ a slice needs
-to be valid for the reference to be valid; if the compiler assumes we’re making
-string slices of `query` rather than `contents`, it will do its safety checking
-incorrectly.
+Más szóval azt mondjuk a Rustnak, hogy a `search` függvény által visszaadott
+adat addig fog élni, ameddig a `search` függvénynek a `contents` argumentumban
+átadott adat. Ez fontos! Annak az adatnak, amelyre egy slice _hivatkozik_,
+érvényesnek kell lennie ahhoz, hogy a referencia is érvényes legyen; ha a
+fordító azt feltételezi, hogy a `query`-ből, nem pedig a `contents`-ből
+készítünk string slice-okat, akkor helytelenül végzi el a biztonsági
+ellenőrzéseit.
 
-If we forget the lifetime annotations and try to compile this function, we’ll
-get this error:
+Ha elfelejtjük a lifetime-annotációkat, és megpróbáljuk lefordítani ezt a
+függvényt, ezt a hibát kapjuk:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-02-missing-lifetimes/output.txt}}
 ```
 
-Rust can’t know which of the two parameters we need for the output, so we need
-to tell it explicitly. Note that the help text suggests specifying the same
-lifetime parameter for all the parameters and the output type, which is
-incorrect! Because `contents` is the parameter that contains all of our text
-and we want to return the parts of that text that match, we know `contents` is
-the only parameter that should be connected to the return value using the
-lifetime syntax.
+A Rust nem tudhatja, hogy a két paraméter közül melyikre van szükségünk a
+kimenethez, ezért ezt explicit módon meg kell mondanunk neki. Figyeld meg, hogy
+a súgószöveg azt javasolja, hogy minden paraméternek és a kimeneti típusnak
+ugyanazt a lifetime-paramétert adjuk meg, ami helytelen! Mivel a `contents` az
+a paraméter, amely a teljes szövegünket tartalmazza, és ennek a szövegnek az
+illeszkedő részeit akarjuk visszaadni, tudjuk, hogy a `contents` az egyetlen
+paraméter, amelyet a lifetime-szintaxissal a visszatérési értékhez kell
+kapcsolnunk.
 
-Other programming languages don’t require you to connect arguments to return
-values in the signature, but this practice will get easier over time. You might
-want to compare this example with the examples in the [“Validating References
-with Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> section
-in Chapter 10.
+Más programozási nyelvek nem követelik meg, hogy a szignatúrában összekapcsold
+az argumentumokat a visszatérési értékekkel, de ez a gyakorlat idővel egyre
+könnyebb lesz. Érdemes összevetned ezt a példát a 10. fejezet [„Referenciák
+érvényesítése lifetime-okkal”][validating-references-with-lifetimes]<!-- ignore
+--> című szakaszának példáival.
 
-### Writing Code to Pass the Test
+### Kód írása a teszt teljesítéséhez
 
-Currently, our test is failing because we always return an empty vector. To fix
-that and implement `search`, our program needs to follow these steps:
+Jelenleg a tesztünk elbukik, mert mindig üres vektort adunk vissza. Ennek
+javításához és a `search` implementálásához a programunknak a következő
+lépéseket kell követnie:
 
-1. Iterate through each line of the contents.
-2. Check whether the line contains our query string.
-3. If it does, add it to the list of values we’re returning.
-4. If it doesn’t, do nothing.
-5. Return the list of results that match.
+1. Iteráljon végig a tartalom minden során.
+2. Ellenőrizze, hogy a sor tartalmazza-e a keresett szövegünket.
+3. Ha igen, adja hozzá a visszaadandó értékek listájához.
+4. Ha nem, ne csináljon semmit.
+5. Adja vissza az illeszkedő eredmények listáját.
 
-Let’s work through each step, starting with iterating through lines.
+Nézzük végig lépésről lépésre, kezdve a sorokon való iterálással.
 
-#### Iterating Through Lines with the `lines` Method
+#### Iterálás a sorokon a `lines` metódussal
 
-Rust has a helpful method to handle line-by-line iteration of strings,
-conveniently named `lines`, that works as shown in Listing 12-17. Note that
-this won’t compile yet.
+A Rustban van egy hasznos metódus a szövegek soronkénti bejárására, amelynek
+találó neve `lines`, és úgy működik, ahogy a 12-17. listában látható. Figyeld
+meg, hogy ez még nem fordul le.
 
-<Listing number="12-17" file-name="src/lib.rs" caption="Iterating through each line in `contents`">
+<Listing number="12-17" file-name="src/lib.rs" caption="Iterálás a `contents` minden során">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-17/src/lib.rs:here}}
@@ -128,19 +137,21 @@ this won’t compile yet.
 
 </Listing>
 
-The `lines` method returns an iterator. We’ll talk about iterators in depth in
-[Chapter 13][ch13-iterators]<!-- ignore -->. But recall that you saw this way
-of using an iterator in [Listing 3-5][ch3-iter]<!-- ignore -->, where we used a
-`for` loop with an iterator to run some code on each item in a collection.
+A `lines` metódus egy iterátort ad vissza. Az iterátorokról részletesen a [13.
+fejezetben][ch13-iterators]<!-- ignore --> lesz szó. De emlékezz rá, hogy az
+iterátorok ilyen használatát már láttad a [3-5. listában][ch3-iter]<!-- ignore
+-->, ahol egy `for` ciklust használtunk egy iterátorral, hogy egy kollekció
+minden elemén lefuttassunk valamilyen kódot.
 
-#### Searching Each Line for the Query
+#### Minden sor átvizsgálása a lekérdezésre
 
-Next, we’ll check whether the current line contains our query string.
-Fortunately, strings have a helpful method named `contains` that does this for
-us! Add a call to the `contains` method in the `search` function, as shown in
-Listing 12-18. Note that this still won’t compile yet.
+Ezután megnézzük, hogy az aktuális sor tartalmazza-e a keresett szövegünket.
+Szerencsére a szövegeknek van egy hasznos, `contains` nevű metódusa, amely épp
+ezt teszi meg helyettünk! Add hozzá a `contains` metódus hívását a `search`
+függvényhez, ahogy a 12-18. listában látható. Figyeld meg, hogy ez még mindig
+nem fordul le.
 
-<Listing number="12-18" file-name="src/lib.rs" caption="Adding functionality to see whether the line contains the string in `query`">
+<Listing number="12-18" file-name="src/lib.rs" caption="Funkcionalitás hozzáadása annak megállapítására, hogy a sor tartalmazza-e a `query` szövegét">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-18/src/lib.rs:here}}
@@ -148,18 +159,19 @@ Listing 12-18. Note that this still won’t compile yet.
 
 </Listing>
 
-At the moment, we’re building up functionality. To get the code to compile, we
-need to return a value from the body as we indicated we would in the function
-signature.
+Pillanatnyilag épp építjük fel a funkcionalitást. Ahhoz, hogy a kód
+lefordulhasson, vissza kell adnunk egy értéket a törzsből, ahogy azt a függvény
+szignatúrájában jeleztük.
 
-#### Storing Matching Lines
+#### Az illeszkedő sorok tárolása
 
-To finish this function, we need a way to store the matching lines that we want
-to return. For that, we can make a mutable vector before the `for` loop and
-call the `push` method to store a `line` in the vector. After the `for` loop,
-we return the vector, as shown in Listing 12-19.
+A függvény befejezéséhez szükségünk van valamilyen módra, amellyel tárolni
+tudjuk a visszaadni kívánt illeszkedő sorokat. Ehhez létrehozhatunk egy
+módosítható vektort a `for` ciklus előtt, és a `push` metódussal eltárolhatjuk
+a `line` értéket a vektorban. A `for` ciklus után visszaadjuk a vektort, ahogy
+a 12-19. listában látható.
 
-<Listing number="12-19" file-name="src/lib.rs" caption="Storing the lines that match so that we can return them">
+<Listing number="12-19" file-name="src/lib.rs" caption="Az illeszkedő sorok tárolása, hogy vissza tudjuk adni őket">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-19/src/lib.rs:here}}
@@ -167,49 +179,54 @@ we return the vector, as shown in Listing 12-19.
 
 </Listing>
 
-Now the `search` function should return only the lines that contain `query`,
-and our test should pass. Let’s run the test:
+Most a `search` függvénynek már csak azokat a sorokat kell visszaadnia, amelyek
+tartalmazzák a `query`-t, és a tesztünknek át kell mennie. Futtassuk le a
+tesztet:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-19/output.txt}}
 ```
 
-Our test passed, so we know it works!
+A tesztünk átment, tehát tudjuk, hogy működik!
 
-At this point, we could consider opportunities for refactoring the
-implementation of the search function while keeping the tests passing to
-maintain the same functionality. The code in the search function isn’t too bad,
-but it doesn’t take advantage of some useful features of iterators. We’ll
-return to this example in [Chapter 13][ch13-iterators]<!-- ignore -->, where
-we’ll explore iterators in detail, and look at how to improve it.
+Ezen a ponton megfontolhatnánk a keresőfüggvény implementációjának
+refaktorálási lehetőségeit, ügyelve arra, hogy a tesztek továbbra is átmenjenek,
+és így ugyanaz maradjon a funkcionalitás. A keresőfüggvény kódja nem is olyan
+rossz, de nem használja ki az iterátorok néhány hasznos képességét. Ehhez a
+példához a [13. fejezetben][ch13-iterators]<!-- ignore --> térünk vissza, ahol
+részletesen megvizsgáljuk az iterátorokat, és megnézzük, hogyan lehetne
+javítani rajta.
 
-Now the entire program should work! Let’s try it out, first with a word that
-should return exactly one line from the Emily Dickinson poem: _frog_.
+Most már az egész programnak működnie kell! Próbáljuk ki, először egy olyan
+szóval, amely pontosan egy sort ad vissza az Emily Dickinson-versből: _frog_.
 
 ```console
 {{#include ../listings/ch12-an-io-project/no-listing-02-using-search-in-run/output.txt}}
 ```
 
-Cool! Now let’s try a word that will match multiple lines, like _body_:
+Klassz! Most próbáljunk ki egy olyan szót, amely több sorra is illeszkedik,
+például a _body_ szót:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-03-multiple-matches/output.txt}}
 ```
 
-And finally, let’s make sure that we don’t get any lines when we search for a
-word that isn’t anywhere in the poem, such as _monomorphization_:
+Végül pedig győződjünk meg róla, hogy nem kapunk egyetlen sort sem, amikor egy
+olyan szóra keresünk, amely sehol nem szerepel a versben, például a
+_monomorphization_ szóra:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-04-no-matches/output.txt}}
 ```
 
-Excellent! We’ve built our own mini version of a classic tool and learned a lot
-about how to structure applications. We’ve also learned a bit about file input
-and output, lifetimes, testing, and command line parsing.
+Kiváló! Megépítettük egy klasszikus eszköz saját mini változatát, és sokat
+tanultunk arról, hogyan érdemes alkalmazásokat felépíteni. Tanultunk egy keveset
+a fájlok be- és kimenetéről, a lifetime-okról, a tesztelésről és a parancssori
+argumentumok feldolgozásáról is.
 
-To round out this project, we’ll briefly demonstrate how to work with
-environment variables and how to print to standard error, both of which are
-useful when you’re writing command line programs.
+A projekt lekerekítéseként röviden bemutatjuk, hogyan lehet környezeti
+változókkal dolgozni, és hogyan lehet a standard hibakimenetre írni; mindkettő
+hasznos, amikor parancssori programokat írsz.
 
 [validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [ch11-anatomy]: ch11-01-writing-tests.html#the-anatomy-of-a-test-function

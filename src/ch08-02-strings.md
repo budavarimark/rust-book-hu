@@ -1,51 +1,51 @@
-## Storing UTF-8 Encoded Text with Strings {#storing-utf-8-encoded-text-with-strings}
+## UTF-8 kódolású szöveg tárolása sztringekkel {#storing-utf-8-encoded-text-with-strings}
 
-We talked about strings in Chapter 4, but we’ll look at them in more depth now.
-New Rustaceans commonly get stuck on strings for a combination of three
-reasons: Rust’s propensity for exposing possible errors, strings being a more
-complicated data structure than many programmers give them credit for, and
-UTF-8. These factors combine in a way that can seem difficult when you’re
-coming from other programming languages.
+A 4. fejezetben már beszéltünk a sztringekről, most azonban alaposabban is
+megnézzük őket. A kezdő Rust-programozók gyakran akadnak el a sztringeknél,
+három ok együttes hatására: a Rust hajlamos felszínre hozni a lehetséges
+hibákat, a sztringek bonyolultabb adatszerkezetek, mint azt sok programozó
+gondolná, és ott van még az UTF-8 is. Ezek a tényezők úgy adódnak össze, hogy
+más programozási nyelvek felől érkezve nehéznek tűnhetnek.
 
-We discuss strings in the context of collections because strings are
-implemented as a collection of bytes, plus some methods to provide useful
-functionality when those bytes are interpreted as text. In this section, we’ll
-talk about the operations on `String` that every collection type has, such as
-creating, updating, and reading. We’ll also discuss the ways in which `String`
-is different from the other collections, namely, how indexing into a `String` is
-complicated by the differences between how people and computers interpret
-`String` data.
+A sztringeket a kollekciók kontextusában tárgyaljuk, mert a sztringek bájtok
+kollekciójaként vannak megvalósítva, kiegészítve néhány metódussal, amelyek
+hasznos funkcionalitást nyújtanak, amikor ezeket a bájtokat szövegként
+értelmezzük. Ebben a szakaszban a `String` azon műveleteiről beszélünk, amelyek
+minden kollekciótípusnál megvannak, például a létrehozásról, a módosításról és
+az olvasásról. Szóba kerül az is, miben különbözik a `String` a többi
+kollekciótól, nevezetesen hogy a `String` indexelését mennyire bonyolítja az,
+hogy az emberek és a számítógépek eltérően értelmezik a `String` adatait.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="what-is-a-string"></a>
 
-### Defining Strings
+### A sztringek meghatározása
 
-We’ll first define what we mean by the term _string_. Rust has only one string
-type in the core language, which is the string slice `str` that is usually seen
-in its borrowed form, `&str`. In Chapter 4, we talked about string slices,
-which are references to some UTF-8 encoded string data stored elsewhere. String
-literals, for example, are stored in the program’s binary and are therefore
-string slices.
+Először határozzuk meg, mit értünk a _sztring_ kifejezés alatt. A Rustnak a
+nyelv magjában csak egyetlen sztringtípusa van, ez a string slice `str`,
+amelyet általában a kölcsönzött, `&str` alakjában látunk. A 4. fejezetben már
+beszéltünk a string slice-okról, amelyek valahol máshol tárolt, UTF-8 kódolású
+sztringadatokra mutató referenciák. A sztringliterálok például a program
+binárisában tárolódnak, ezért string slice-ok.
 
-The `String` type, which is provided by Rust’s standard library rather than
-coded into the core language, is a growable, mutable, owned, UTF-8 encoded
-string type. When Rustaceans refer to “strings” in Rust, they might be
-referring to either the `String` or the string slice `&str` types, not just one
-of those types. Although this section is largely about `String`, both types are
-used heavily in Rust’s standard library, and both `String` and string slices
-are UTF-8 encoded.
+A `String` típus, amelyet nem a nyelv magja tartalmaz, hanem a Rust standard
+könyvtára biztosít, egy növelhető, módosítható, tulajdonolt, UTF-8 kódolású
+sztringtípus. Amikor a Rust-programozók a Rustban „sztringekről” beszélnek,
+akár a `String`, akár a string slice `&str` típusra gondolhatnak, nem csupán az
+egyikre. Bár ez a szakasz nagyrészt a `String`-ről szól, mindkét típust
+erőteljesen használja a Rust standard könyvtára, és mind a `String`, mind a
+string slice-ok UTF-8 kódolásúak.
 
-### Creating a New String
+### Új `String` létrehozása
 
-Many of the same operations available with `Vec<T>` are available with `String`
-as well because `String` is actually implemented as a wrapper around a vector
-of bytes with some extra guarantees, restrictions, and capabilities. An example
-of a function that works the same way with `Vec<T>` and `String` is the `new`
-function to create an instance, shown in Listing 8-11.
+A `Vec<T>`-nél elérhető műveletek közül sok a `String`-nél is elérhető, mert a
+`String` valójában egy bájtvektor köré épülő burkolóként van megvalósítva,
+néhány további garanciával, megkötéssel és képességgel. Olyan függvényre példa,
+amely ugyanúgy működik a `Vec<T>` és a `String` esetében, a példány
+létrehozására szolgáló `new` függvény, amelyet a 8-11. lista mutat be.
 
-<Listing number="8-11" caption="Creating a new, empty `String`">
+<Listing number="8-11" caption="Új, üres `String` létrehozása">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-11/src/main.rs:here}}
@@ -53,13 +53,13 @@ function to create an instance, shown in Listing 8-11.
 
 </Listing>
 
-This line creates a new, empty string called `s`, into which we can then load
-data. Often, we’ll have some initial data with which we want to start the
-string. For that, we use the `to_string` method, which is available on any type
-that implements the `Display` trait, as string literals do. Listing 8-12 shows
-two examples.
+Ez a sor egy új, üres, `s` nevű sztringet hoz létre, amelybe aztán adatokat
+tölthetünk. Gyakran van valamilyen kezdeti adatunk, amellyel indítani
+szeretnénk a sztringet. Ehhez a `to_string` metódust használjuk, amely minden
+olyan típuson elérhető, amely implementálja a `Display` traitet – ahogy a
+sztringliterálok is teszik. A 8-12. lista két példát mutat.
 
-<Listing number="8-12" caption="Using the `to_string` method to create a `String` from a string literal">
+<Listing number="8-12" caption="A `to_string` metódus használata `String` létrehozására sztringliterálból">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-12/src/main.rs:here}}
@@ -67,13 +67,13 @@ two examples.
 
 </Listing>
 
-This code creates a string containing `initial contents`.
+Ez a kód egy `initial contents` tartalmú sztringet hoz létre.
 
-We can also use the function `String::from` to create a `String` from a string
-literal. The code in Listing 8-13 is equivalent to the code in Listing 8-12
-that uses `to_string`.
+Használhatjuk a `String::from` függvényt is arra, hogy sztringliterálból
+`String`-et hozzunk létre. A 8-13. lista kódja egyenértékű a 8-12. lista
+`to_string`-et használó kódjával.
 
-<Listing number="8-13" caption="Using the `String::from` function to create a `String` from a string literal">
+<Listing number="8-13" caption="A `String::from` függvény használata `String` létrehozására sztringliterálból">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-13/src/main.rs:here}}
@@ -81,16 +81,16 @@ that uses `to_string`.
 
 </Listing>
 
-Because strings are used for so many things, we can use many different generic
-APIs for strings, providing us with a lot of options. Some of them can seem
-redundant, but they all have their place! In this case, `String::from` and
-`to_string` do the same thing, so which one you choose is a matter of style and
-readability.
+Mivel a sztringeket rengeteg mindenre használjuk, sokféle generikus API áll
+rendelkezésünkre hozzájuk, ami sok lehetőséget ad. Némelyikük feleslegesnek
+tűnhet, de mindegyiknek megvan a maga helye! Ebben az esetben a `String::from`
+és a `to_string` ugyanazt csinálja, így hogy melyiket választod, stílus és
+olvashatóság kérdése.
 
-Remember that strings are UTF-8 encoded, so we can include any properly encoded
-data in them, as shown in Listing 8-14.
+Ne feledd, hogy a sztringek UTF-8 kódolásúak, így bármilyen helyesen kódolt
+adatot elhelyezhetünk bennük, ahogy a 8-14. listában látható.
 
-<Listing number="8-14" caption="Storing greetings in different languages in strings">
+<Listing number="8-14" caption="Különböző nyelvű üdvözlések tárolása sztringekben">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-14/src/main.rs:here}}
@@ -98,24 +98,25 @@ data in them, as shown in Listing 8-14.
 
 </Listing>
 
-All of these are valid `String` values.
+Ezek mind érvényes `String` értékek.
 
-### Updating a String
+### Egy `String` módosítása
 
-A `String` can grow in size and its contents can change, just like the contents
-of a `Vec<T>`, if you push more data into it. In addition, you can conveniently
-use the `+` operator or the `format!` macro to concatenate `String` values.
+Egy `String` mérete növekedhet, és a tartalma megváltozhat, akárcsak egy
+`Vec<T>` tartalma, ha további adatokat teszel bele. Ezenkívül kényelmesen
+használhatod a `+` operátort vagy a `format!` makrót `String` értékek
+összefűzésére.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="appending-to-a-string-with-push_str-and-push"></a>
 
-#### Appending with `push_str` or `push`
+#### Hozzáfűzés a `push_str` vagy a `push` segítségével
 
-We can grow a `String` by using the `push_str` method to append a string slice,
-as shown in Listing 8-15.
+Egy `String`-et úgy tudunk növelni, hogy a `push_str` metódussal string slice-ot
+fűzünk hozzá, ahogy a 8-15. listában látható.
 
-<Listing number="8-15" caption="Appending a string slice to a `String` using the `push_str` method">
+<Listing number="8-15" caption="String slice hozzáfűzése egy `String`-hez a `push_str` metódussal">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-15/src/main.rs:here}}
@@ -123,12 +124,12 @@ as shown in Listing 8-15.
 
 </Listing>
 
-After these two lines, `s` will contain `foobar`. The `push_str` method takes a
-string slice because we don’t necessarily want to take ownership of the
-parameter. For example, in the code in Listing 8-16, we want to be able to use
-`s2` after appending its contents to `s1`.
+E két sor után az `s` a `foobar` értéket fogja tartalmazni. A `push_str`
+metódus string slice-ot vár, mert nem feltétlenül akarjuk átvenni a paraméter
+ownershipjét. A 8-16. lista kódjában például azt szeretnénk, hogy az `s2` az
+után is használható legyen, hogy a tartalmát hozzáfűztük az `s1`-hez.
 
-<Listing number="8-16" caption="Using a string slice after appending its contents to a `String`">
+<Listing number="8-16" caption="String slice használata azután, hogy a tartalmát hozzáfűztük egy `String`-hez">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-16/src/main.rs:here}}
@@ -136,14 +137,15 @@ parameter. For example, in the code in Listing 8-16, we want to be able to use
 
 </Listing>
 
-If the `push_str` method took ownership of `s2`, we wouldn’t be able to print
-its value on the last line. However, this code works as we’d expect!
+Ha a `push_str` metódus átvenné az `s2` ownershipjét, nem tudnánk kiírni az
+értékét az utolsó sorban. Így azonban ez a kód pontosan úgy működik, ahogy
+elvárnánk!
 
-The `push` method takes a single character as a parameter and adds it to the
-`String`. Listing 8-17 adds the letter _l_ to a `String` using the `push`
-method.
+A `push` metódus egyetlen karaktert vár paraméterként, és hozzáadja a
+`String`-hez. A 8-17. lista az _l_ betűt adja hozzá egy `String`-hez a `push`
+metódussal.
 
-<Listing number="8-17" caption="Adding one character to a `String` value using `push`">
+<Listing number="8-17" caption="Egyetlen karakter hozzáadása egy `String` értékhez a `push` segítségével">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-17/src/main.rs:here}}
@@ -151,18 +153,18 @@ method.
 
 </Listing>
 
-As a result, `s` will contain `lol`.
+Ennek eredményeként az `s` a `lol` értéket fogja tartalmazni.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="concatenation-with-the--operator-or-the-format-macro"></a>
 
-#### Concatenating with `+` or `format!` {#concatenating-with--or-format}
+#### Összefűzés a `+` vagy a `format!` segítségével {#concatenating-with--or-format}
 
-Often, you’ll want to combine two existing strings. One way to do so is to use
-the `+` operator, as shown in Listing 8-18.
+Gyakran szeretnél két meglévő sztringet egyesíteni. Ennek egyik módja a `+`
+operátor használata, ahogy a 8-18. listában látható.
 
-<Listing number="8-18" caption="Using the `+` operator to combine two `String` values into a new `String` value">
+<Listing number="8-18" caption="A `+` operátor használata két `String` érték egyesítésére egy új `String` értékké">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-18/src/main.rs:here}}
@@ -170,74 +172,75 @@ the `+` operator, as shown in Listing 8-18.
 
 </Listing>
 
-The string `s3` will contain `Hello, world!`. The reason `s1` is no longer
-valid after the addition, and the reason we used a reference to `s2`, has to do
-with the signature of the method that’s called when we use the `+` operator.
-The `+` operator uses the `add` method, whose signature looks something like
-this:
+Az `s3` sztring a `Hello, world!` értéket fogja tartalmazni. Hogy az `s1` miért
+nem érvényes többé az összeadás után, és hogy miért az `s2`-re mutató
+referenciát használtuk, annak a `+` operátor használatakor meghívott metódus
+szignatúrájához van köze. A `+` operátor az `add` metódust használja, amelynek
+a szignatúrája nagyjából így néz ki:
 
 ```rust,ignore
 fn add(self, s: &str) -> String {
 ```
 
-In the standard library, you’ll see `add` defined using generics and associated
-types. Here, we’ve substituted in concrete types, which is what happens when we
-call this method with `String` values. We’ll discuss generics in Chapter 10.
-This signature gives us the clues we need in order to understand the tricky
-bits of the `+` operator.
+A standard könyvtárban az `add`-et generikusokkal és asszociált típusokkal
+definiálva látod majd. Itt konkrét típusokat helyettesítettünk be, ez történik
+ugyanis, amikor ezt a metódust `String` értékekkel hívjuk meg. A generikusokat
+a 10. fejezetben tárgyaljuk. Ez a szignatúra megadja azokat a támpontokat,
+amelyekre szükségünk van a `+` operátor trükkös részleteinek megértéséhez.
 
-First, `s2` has an `&`, meaning that we’re adding a reference of the second
-string to the first string. This is because of the `s` parameter in the `add`
-function: We can only add a string slice to a `String`; we can’t add two
-`String` values together. But wait—the type of `&s2` is `&String`, not `&str`,
-as specified in the second parameter to `add`. So, why does Listing 8-18
-compile?
+Először is, az `s2` előtt `&` áll, ami azt jelenti, hogy a második sztring egy
+referenciáját adjuk hozzá az első sztringhez. Ez az `add` függvény `s`
+paramétere miatt van: csak string slice-ot adhatunk hozzá egy `String`-hez;
+két `String` értéket nem adhatunk össze. De várjunk csak – az `&s2` típusa
+`&String`, nem `&str`, ahogy azt az `add` második paraméterénél megadták. Akkor
+miért fordul le a 8-18. lista?
 
-The reason we’re able to use `&s2` in the call to `add` is that the compiler
-can coerce the `&String` argument into a `&str`. When we call the `add` method,
-Rust uses a deref coercion, which here turns `&s2` into `&s2[..]`. We’ll
-discuss deref coercion in more depth in Chapter 15. Because `add` does not take
-ownership of the `s` parameter, `s2` will still be a valid `String` after this
-operation.
+Azért tudjuk az `&s2`-t használni az `add` hívásában, mert a fordító képes az
+`&String` argumentumot `&str`-ré alakítani. Amikor meghívjuk az `add` metódust,
+a Rust deref coercion-t alkalmaz, ami itt az `&s2`-t `&s2[..]`-vé alakítja. A
+deref coercionről részletesebben a 15. fejezetben lesz szó. Mivel az `add` nem
+veszi át az `s` paraméter ownershipjét, az `s2` a művelet után is érvényes
+`String` marad.
 
-Second, we can see in the signature that `add` takes ownership of `self`
-because `self` does _not_ have an `&`. This means `s1` in Listing 8-18 will be
-moved into the `add` call and will no longer be valid after that. So, although
-`let s3 = s1 + &s2;` looks like it will copy both strings and create a new one,
-this statement actually takes ownership of `s1`, appends a copy of the contents
-of `s2`, and then returns ownership of the result. In other words, it looks
-like it’s making a lot of copies, but it isn’t; the implementation is more
-efficient than copying.
+Másodszor, a szignatúrából látszik, hogy az `add` átveszi a `self`
+ownershipjét, mert a `self` előtt _nem_ áll `&`. Ez azt jelenti, hogy a 8-18.
+listában az `s1` bemozdul az `add` hívásába, és utána már nem lesz érvényes.
+Tehát bár a `let s3 = s1 + &s2;` úgy néz ki, mintha mindkét sztringet lemásolná
+és egy újat hozna létre, ez az utasítás valójában átveszi az `s1` ownershipjét,
+hozzáfűzi az `s2` tartalmának egy másolatát, majd visszaadja az eredmény
+ownershipjét. Más szóval: úgy néz ki, mintha rengeteget másolna, pedig nem; az
+implementáció hatékonyabb a másolásnál.
 
-If we need to concatenate multiple strings, the behavior of the `+` operator
-gets unwieldy:
+Ha több sztringet kell összefűznünk, a `+` operátor viselkedése nehézkessé
+válik:
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/no-listing-01-concat-multiple-strings/src/main.rs:here}}
 ```
 
-At this point, `s` will be `tic-tac-toe`. With all of the `+` and `"`
-characters, it’s difficult to see what’s going on. For combining strings in
-more complicated ways, we can instead use the `format!` macro:
+Ezen a ponton az `s` a `tic-tac-toe` lesz. A sok `+` és `"` karakter miatt
+nehéz látni, mi történik. Sztringek bonyolultabb módon való egyesítéséhez
+inkább a `format!` makrót használhatjuk:
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/no-listing-02-format/src/main.rs:here}}
 ```
 
-This code also sets `s` to `tic-tac-toe`. The `format!` macro works like
-`println!`, but instead of printing the output to the screen, it returns a
-`String` with the contents. The version of the code using `format!` is much
-easier to read, and the code generated by the `format!` macro uses references
-so that this call doesn’t take ownership of any of its parameters.
+Ez a kód is a `tic-tac-toe` értéket állítja be az `s`-nek. A `format!` makró
+úgy működik, mint a `println!`, csakhogy a kimenetet nem a képernyőre írja,
+hanem egy `String`-et ad vissza a tartalommal. A kód `format!`-et használó
+változata sokkal könnyebben olvasható, és a `format!` makró által generált kód
+referenciákat használ, így ez a hívás egyik paraméterének ownershipjét sem
+veszi át.
 
-### Indexing into Strings
+### Sztringek indexelése
 
-In many other programming languages, accessing individual characters in a
-string by referencing them by index is a valid and common operation. However,
-if you try to access parts of a `String` using indexing syntax in Rust, you’ll
-get an error. Consider the invalid code in Listing 8-19.
+Sok más programozási nyelvben érvényes és gyakori művelet, hogy egy sztring
+egyes karaktereit index szerinti hivatkozással érjük el. Ha azonban a Rustban
+indexelő szintaxissal próbálod elérni egy `String` részeit, hibát fogsz kapni.
+Nézd meg a 8-19. lista érvénytelen kódját.
 
-<Listing number="8-19" caption="Attempting to use indexing syntax with a `String`">
+<Listing number="8-19" caption="Kísérlet indexelő szintaxis használatára egy `String`-gel">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-19/src/main.rs:here}}
@@ -245,112 +248,118 @@ get an error. Consider the invalid code in Listing 8-19.
 
 </Listing>
 
-This code will result in the following error:
+Ez a kód a következő hibát eredményezi:
 
 ```console
 {{#include ../listings/ch08-common-collections/listing-08-19/output.txt}}
 ```
 
-The error tells the story: Rust strings don’t support indexing. But why not? To
-answer that question, we need to discuss how Rust stores strings in memory.
+A hibaüzenet elárulja a lényeget: a Rust sztringjei nem támogatják az
+indexelést. De miért nem? A kérdés megválaszolásához meg kell beszélnünk,
+hogyan tárolja a Rust a sztringeket a memóriában.
 
-#### Internal Representation
+#### Belső reprezentáció
 
-A `String` is a wrapper over a `Vec<u8>`. Let’s look at some of our properly
-encoded UTF-8 example strings from Listing 8-14. First, this one:
+A `String` egy `Vec<u8>` köré épülő burkoló. Nézzük meg a 8-14. lista néhány
+helyesen kódolt UTF-8 példasztringjét. Először ezt:
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-14/src/main.rs:spanish}}
 ```
 
-In this case, `len` will be `4`, which means the vector storing the string
-`"Hola"` is 4 bytes long. Each of these letters takes 1 byte when encoded in
-UTF-8. The following line, however, may surprise you (note that this string
-begins with the capital Cyrillic letter _Ze_, not the number 3):
+Ebben az esetben a `len` értéke `4` lesz, ami azt jelenti, hogy a `"Hola"`
+sztringet tároló vektor 4 bájt hosszú. Ezek a betűk UTF-8-ban kódolva egyenként
+1 bájtot foglalnak. A következő sor viszont meglepetést okozhat (figyeld meg,
+hogy ez a sztring a nagy cirill _Ze_ betűvel kezdődik, nem a 3-as számmal):
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-14/src/main.rs:russian}}
 ```
 
-If you were asked how long the string is, you might say 12. In fact, Rust’s
-answer is 24: That’s the number of bytes it takes to encode “Здравствуйте” in
-UTF-8, because each Unicode scalar value in that string takes 2 bytes of
-storage. Therefore, an index into the string’s bytes will not always correlate
-to a valid Unicode scalar value. To demonstrate, consider this invalid Rust
-code:
+Ha megkérdeznék tőled, milyen hosszú ez a sztring, talán azt mondanád, hogy 12.
+Valójában a Rust válasza 24: ennyi bájtra van szükség a „Здравствуйте” UTF-8
+kódolásához, mert az ebben a sztringben lévő Unicode-skalárértékek egyenként 2
+bájtnyi helyet foglalnak. Ezért a sztring bájtjaiba mutató index nem mindig
+felel meg egy érvényes Unicode-skalárértéknek. Szemléltetésképp nézd meg ezt az
+érvénytelen Rust-kódot:
 
 ```rust,ignore,does_not_compile
 let hello = "Здравствуйте";
 let answer = &hello[0];
 ```
 
-You already know that `answer` will not be `З`, the first letter. When encoded
-in UTF-8, the first byte of `З` is `208` and the second is `151`, so it would
-seem that `answer` should in fact be `208`, but `208` is not a valid character
-on its own. Returning `208` is likely not what a user would want if they asked
-for the first letter of this string; however, that’s the only data that Rust
-has at byte index 0. Users generally don’t want the byte value returned, even
-if the string contains only Latin letters: If `&"hi"[0]` were valid code that
-returned the byte value, it would return `104`, not `h`.
+Már tudod, hogy az `answer` nem a `З` lesz, az első betű. UTF-8-ban kódolva a
+`З` első bájtja `208`, a második pedig `151`, így úgy tűnhet, hogy az `answer`
+valójában `208` kellene, hogy legyen – de a `208` önmagában nem érvényes
+karakter. A `208` visszaadása valószínűleg nem az, amit a felhasználó szeretne,
+ha ennek a sztringnek az első betűjét kéri; ugyanakkor a Rustnak csak ez az
+adata van a 0. bájtindexen. A felhasználók általában nem a bájtértéket akarják
+visszakapni, még akkor sem, ha a sztring csak latin betűket tartalmaz: ha az
+`&"hi"[0]` érvényes kód lenne, és a bájtértéket adná vissza, `104`-et adna
+vissza, nem `h`-t.
 
-The answer, then, is that to avoid returning an unexpected value and causing
-bugs that might not be discovered immediately, Rust doesn’t compile this code
-at all and prevents misunderstandings early in the development process.
+A válasz tehát az, hogy a váratlan érték visszaadásának és az esetleg nem
+azonnal felfedezett hibáknak az elkerülése érdekében a Rust ezt a kódot le sem
+fordítja, így a fejlesztési folyamat korai szakaszában megelőzi a
+félreértéseket.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="bytes-and-scalar-values-and-grapheme-clusters-oh-my"></a>
 
-#### Bytes, Scalar Values, and Grapheme Clusters
+#### Bájtok, skalárértékek és grafémaklaszterek
 
-Another point about UTF-8 is that there are actually three relevant ways to
-look at strings from Rust’s perspective: as bytes, scalar values, and grapheme
-clusters (the closest thing to what we would call _letters_).
+Az UTF-8-cal kapcsolatban egy másik szempont, hogy a Rust nézőpontjából
+valójában háromféle releváns módon lehet a sztringekre tekinteni: bájtokként,
+skalárértékekként és grafémaklaszterekként (ez utóbbi áll a legközelebb ahhoz,
+amit _betűnek_ neveznénk).
 
-If we look at the Hindi word “नमस्ते” written in the Devanagari script, it is
-stored as a vector of `u8` values that looks like this:
+Ha megnézzük a dévanágari írással írt „नमस्ते” hindi szót, az `u8` értékek olyan
+vektoraként tárolódik, amely így néz ki:
 
 ```text
 [224, 164, 168, 224, 164, 174, 224, 164, 184, 224, 165, 141, 224, 164, 164,
 224, 165, 135]
 ```
 
-That’s 18 bytes and is how computers ultimately store this data. If we look at
-them as Unicode scalar values, which are what Rust’s `char` type is, those
-bytes look like this:
+Ez 18 bájt, és végső soron így tárolják a számítógépek ezt az adatot. Ha
+Unicode-skalárértékekként nézzük őket – és a Rust `char` típusa éppen ez –,
+azok a bájtok így festenek:
 
 ```text
 ['न', 'म', 'स', '्', 'त', 'े']
 ```
 
-There are six `char` values here, but the fourth and sixth are not letters:
-They’re diacritics that don’t make sense on their own. Finally, if we look at
-them as grapheme clusters, we’d get what a person would call the four letters
-that make up the Hindi word:
+Itt hat `char` érték van, de a negyedik és a hatodik nem betű: ezek olyan
+diakritikus jelek, amelyeknek önmagukban nincs értelmük. Végül, ha
+grafémaklaszterekként nézzük őket, azt kapjuk, amit egy ember a hindi szót
+alkotó négy betűnek nevezne:
 
 ```text
 ["न", "म", "स्", "ते"]
 ```
 
-Rust provides different ways of interpreting the raw string data that computers
-store so that each program can choose the interpretation it needs, no matter
-what human language the data is in.
+A Rust különböző módokat kínál a számítógépek által tárolt nyers sztringadatok
+értelmezésére, hogy minden program azt az értelmezést választhassa, amelyre
+szüksége van, függetlenül attól, milyen emberi nyelven van az adat.
 
-A final reason Rust doesn’t allow us to index into a `String` to get a
-character is that indexing operations are expected to always take constant time
-(O(1)). But it isn’t possible to guarantee that performance with a `String`,
-because Rust would have to walk through the contents from the beginning to the
-index to determine how many valid characters there were.
+Az utolsó ok, amiért a Rust nem engedi, hogy egy `String`-et indexeljünk egy
+karakter megszerzéséhez, az, hogy az indexelő műveletektől elvárjuk, hogy
+mindig konstans idő alatt fussanak le (O(1)). Ezt a teljesítményt azonban egy
+`String` esetében nem lehet garantálni, mert a Rustnak végig kellene járnia a
+tartalmat az elejétől az indexig, hogy megállapítsa, hány érvényes karakter
+volt benne.
 
-### Slicing Strings
+### Sztringek szeletelése
 
-Indexing into a string is often a bad idea because it’s not clear what the
-return type of the string-indexing operation should be: a byte value, a
-character, a grapheme cluster, or a string slice. If you really need to use
-indices to create string slices, therefore, Rust asks you to be more specific.
+Egy sztring indexelése gyakran rossz ötlet, mert nem egyértelmű, minek kellene
+lennie a sztringindexelő művelet visszatérési típusának: bájtértéknek,
+karakternek, grafémaklaszternek vagy string slice-nak. Ezért, ha tényleg
+indexeket kell használnod string slice-ok létrehozásához, a Rust arra kér, hogy
+légy pontosabb.
 
-Rather than indexing using `[]` with a single number, you can use `[]` with a
-range to create a string slice containing particular bytes:
+Ahelyett, hogy a `[]`-t egyetlen számmal használnád, használhatod a `[]`-t egy
+tartománnyal, hogy adott bájtokat tartalmazó string slice-ot hozz létre:
 
 ```rust
 let hello = "Здравствуйте";
@@ -358,31 +367,32 @@ let hello = "Здравствуйте";
 let s = &hello[0..4];
 ```
 
-Here, `s` will be a `&str` that contains the first 4 bytes of the string.
-Earlier, we mentioned that each of these characters was 2 bytes, which means
-`s` will be `Зд`.
+Itt az `s` egy `&str` lesz, amely a sztring első 4 bájtját tartalmazza. Korábban
+említettük, hogy ezek a karakterek egyenként 2 bájtosak, ami azt jelenti, hogy
+az `s` a `Зд` lesz.
 
-If we were to try to slice only part of a character’s bytes with something like
-`&hello[0..1]`, Rust would panic at runtime in the same way as if an invalid
-index were accessed in a vector:
+Ha csak egy karakter bájtjainak egy részét próbálnánk kiszeletelni, mondjuk az
+`&hello[0..1]`-gyel, a Rust futásidőben panicot váltana ki, ugyanúgy, mintha
+egy vektorban érvénytelen indexet érnénk el:
 
 ```console
 {{#include ../listings/ch08-common-collections/output-only-01-not-char-boundary/output.txt}}
 ```
 
-You should use caution when creating string slices with ranges, because doing
-so can crash your program.
+Óvatosan kell eljárnod, amikor tartományokkal hozol létre string slice-okat,
+mert ezzel összeomlaszthatod a programodat.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="methods-for-iterating-over-strings"></a>
 
-### Iterating Over Strings
+### Iterálás sztringeken
 
-The best way to operate on pieces of strings is to be explicit about whether
-you want characters or bytes. For individual Unicode scalar values, use the
-`chars` method. Calling `chars` on “Зд” separates out and returns two values of
-type `char`, and you can iterate over the result to access each element:
+A legjobb módja annak, hogy sztringek részein dolgozzunk, ha egyértelműen
+megmondjuk, karaktereket vagy bájtokat akarunk-e. Az egyes
+Unicode-skalárértékekhez használd a `chars` metódust. A `chars` meghívása a
+„Зд”-n két `char` típusú értéket különít el és ad vissza, az eredményen pedig
+végigiterálhatsz, hogy minden elemet elérj:
 
 ```rust
 for c in "Зд".chars() {
@@ -390,15 +400,15 @@ for c in "Зд".chars() {
 }
 ```
 
-This code will print the following:
+Ez a kód a következőt írja ki:
 
 ```text
 З
 д
 ```
 
-Alternatively, the `bytes` method returns each raw byte, which might be
-appropriate for your domain:
+Alternatívaként a `bytes` metódus minden nyers bájtot visszaad, ami a te
+területeden megfelelő lehet:
 
 ```rust
 for b in "Зд".bytes() {
@@ -406,7 +416,7 @@ for b in "Зд".bytes() {
 }
 ```
 
-This code will print the 4 bytes that make up this string:
+Ez a kód azt a 4 bájtot írja ki, amelyekből ez a sztring áll:
 
 ```text
 208
@@ -415,33 +425,33 @@ This code will print the 4 bytes that make up this string:
 180
 ```
 
-But be sure to remember that valid Unicode scalar values may be made up of more
-than 1 byte.
+De ne feledd: az érvényes Unicode-skalárértékek 1 bájtnál többől is állhatnak.
 
-Getting grapheme clusters from strings, as with the Devanagari script, is
-complex, so this functionality is not provided by the standard library. Crates
-are available on [crates.io](https://crates.io/)<!-- ignore --> if this is the
-functionality you need.
+Grafémaklasztereket kinyerni a sztringekből – ahogy a dévanágari írásnál is –
+összetett feladat, ezért ezt a funkcionalitást a standard könyvtár nem
+biztosítja. Ha erre a funkcionalitásra van szükséged, a
+[crates.io](https://crates.io/)<!-- ignore --> oldalon elérhetők crate-ek.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="strings-are-not-so-simple"></a>
 
-### Handling the Complexities of Strings
+### A sztringek bonyolultságának kezelése
 
-To summarize, strings are complicated. Different programming languages make
-different choices about how to present this complexity to the programmer. Rust
-has chosen to make the correct handling of `String` data the default behavior
-for all Rust programs, which means programmers have to put more thought into
-handling UTF-8 data up front. This trade-off exposes more of the complexity of
-strings than is apparent in other programming languages, but it prevents you
-from having to handle errors involving non-ASCII characters later in your
-development life cycle.
+Összefoglalva: a sztringek bonyolultak. A különböző programozási nyelvek
+másképp döntenek arról, hogyan mutatják be ezt a bonyolultságot a
+programozónak. A Rust úgy döntött, hogy a `String` adatok helyes kezelését
+teszi az alapértelmezett viselkedéssé minden Rust-program számára, ami azt
+jelenti, hogy a programozóknak már az elején több gondolatot kell fordítaniuk
+az UTF-8 adatok kezelésére. Ez a kompromisszum a sztringek bonyolultságából
+többet tár fel, mint ami más programozási nyelvekben látszik, cserébe viszont
+megkíméli attól, hogy a fejlesztési életciklus későbbi szakaszában kelljen a
+nem ASCII karakterekkel kapcsolatos hibákkal foglalkoznod.
 
-The good news is that the standard library offers a lot of functionality built
-off the `String` and `&str` types to help handle these complex situations
-correctly. Be sure to check out the documentation for useful methods like
-`contains` for searching in a string and `replace` for substituting parts of a
-string with another string.
+A jó hír az, hogy a standard könyvtár rengeteg olyan funkcionalitást kínál a
+`String` és a `&str` típusokra építve, amelyek segítenek ezeket az összetett
+helyzeteket helyesen kezelni. Mindenképp nézd meg a dokumentációt az olyan
+hasznos metódusokért, mint a `contains` a sztringben való kereséshez vagy a
+`replace` a sztring egyes részeinek másik sztringre cseréléséhez.
 
-Let’s switch to something a bit less complex: hash maps!
+Váltsunk valami kicsit kevésbé bonyolultra: a hash mapekre!

@@ -1,30 +1,32 @@
-## Storing Keys with Associated Values in Hash Maps
+## Kulcsok és hozzájuk tartozó értékek tárolása hash mapekben
 
-The last of our common collections is the hash map. The type `HashMap<K, V>`
-stores a mapping of keys of type `K` to values of type `V` using a _hashing
-function_, which determines how it places these keys and values into memory.
-Many programming languages support this kind of data structure, but they often
-use a different name, such as _hash_, _map_, _object_, _hash table_,
-_dictionary_, or _associative array_, just to name a few.
+Gyakori kollekcióink közül az utolsó a hash map. A `HashMap<K, V>` típus `K`
+típusú kulcsok `V` típusú értékekre való leképezését tárolja egy _hash függvény_
+segítségével, amely meghatározza, hogyan helyezi el ezeket a kulcsokat és
+értékeket a memóriában. Sok programozási nyelv támogatja ezt a fajta
+adatszerkezetet, de gyakran más néven, például _hash_, _map_, _object_, _hash
+table_, _dictionary_ vagy _asszociatív tömb_ néven, hogy csak néhányat
+említsünk.
 
-Hash maps are useful when you want to look up data not by using an index, as
-you can with vectors, but by using a key that can be of any type. For example,
-in a game, you could keep track of each team’s score in a hash map in which
-each key is a team’s name and the values are each team’s score. Given a team
-name, you can retrieve its score.
+A hash mapek akkor hasznosak, ha nem index alapján akarsz adatot kikeresni –
+ahogy azt a vektoroknál teheted –, hanem egy tetszőleges típusú kulcs alapján.
+Egy játékban például egy hash mapben tarthatnád nyilván az egyes csapatok
+pontszámát, ahol minden kulcs egy csapat neve, az értékek pedig az egyes
+csapatok pontszámai. Egy csapatnév alapján lekérdezheted a pontszámát.
 
-We’ll go over the basic API of hash maps in this section, but many more goodies
-are hiding in the functions defined on `HashMap<K, V>` by the standard library.
-As always, check the standard library documentation for more information.
+Ebben a szakaszban a hash mapek alapvető API-ját vesszük végig, de sokkal több
+finomság rejtőzik a standard könyvtár által a `HashMap<K, V>`-n definiált
+függvényekben. Mint mindig, további információért nézd meg a standard könyvtár
+dokumentációját.
 
-### Creating a New Hash Map
+### Új hash map létrehozása
 
-One way to create an empty hash map is to use `new` and to add elements with
-`insert`. In Listing 8-20, we’re keeping track of the scores of two teams whose
-names are _Blue_ and _Yellow_. The Blue team starts with 10 points, and the
-Yellow team starts with 50.
+Üres hash mapet létrehozni például a `new` használatával lehet, elemeket pedig
+az `insert`tel adhatunk hozzá. A 8-20. listában két csapat pontszámát tartjuk
+nyilván, a csapatok neve _Blue_ és _Yellow_. A Blue csapat 10 ponttal indul, a
+Yellow csapat pedig 50-nel.
 
-<Listing number="8-20" caption="Creating a new hash map and inserting some keys and values">
+<Listing number="8-20" caption="Új hash map létrehozása és néhány kulcs-érték pár beszúrása">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-20/src/main.rs:here}}
@@ -32,23 +34,23 @@ Yellow team starts with 50.
 
 </Listing>
 
-Note that we need to first `use` the `HashMap` from the collections portion of
-the standard library. Of our three common collections, this one is the least
-often used, so it’s not included in the features brought into scope
-automatically in the prelude. Hash maps also have less support from the
-standard library; there’s no built-in macro to construct them, for example.
+Figyeld meg, hogy először `use`-olnunk kell a `HashMap`-et a standard könyvtár
+kollekciókat tartalmazó részéből. Három gyakori kollekciónk közül ezt használják
+a legritkábban, ezért nincs benne azokban a nyelvi elemekben, amelyeket a prelude
+automatikusan behoz a hatókörbe. A hash mapek kevesebb támogatást is kapnak a
+standard könyvtártól; például nincs beépített makró a létrehozásukra.
 
-Just like vectors, hash maps store their data on the heap. This `HashMap` has
-keys of type `String` and values of type `i32`. Like vectors, hash maps are
-homogeneous: All of the keys must have the same type, and all of the values
-must have the same type.
+A vektorokhoz hasonlóan a hash mapek is a heapen tárolják az adataikat. Ennek a
+`HashMap`-nek `String` típusú kulcsai és `i32` típusú értékei vannak. A
+vektorokhoz hasonlóan a hash mapek is homogének: minden kulcsnak azonos típusúnak
+kell lennie, és minden értéknek is azonos típusúnak kell lennie.
 
-### Accessing Values in a Hash Map {#accessing-values-in-a-hash-map}
+### Értékek elérése egy hash mapben {#accessing-values-in-a-hash-map}
 
-We can get a value out of the hash map by providing its key to the `get`
-method, as shown in Listing 8-21.
+Egy értéket úgy kaphatunk meg a hash mapből, hogy a kulcsát átadjuk a `get`
+metódusnak, ahogy a 8-21. listában látható.
 
-<Listing number="8-21" caption="Accessing the score for the Blue team stored in the hash map">
+<Listing number="8-21" caption="A hash mapben tárolt Blue csapat pontszámának elérése">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-21/src/main.rs:here}}
@@ -56,21 +58,21 @@ method, as shown in Listing 8-21.
 
 </Listing>
 
-Here, `score` will have the value that’s associated with the Blue team, and the
-result will be `10`. The `get` method returns an `Option<&V>`; if there’s no
-value for that key in the hash map, `get` will return `None`. This program
-handles the `Option` by calling `copied` to get an `Option<i32>` rather than an
-`Option<&i32>`, then `unwrap_or` to set `score` to zero if `scores` doesn’t
-have an entry for the key.
+Itt a `score` a Blue csapathoz társított értéket fogja tartalmazni, az eredmény
+pedig `10` lesz. A `get` metódus egy `Option<&V>`-t ad vissza; ha az adott
+kulcshoz nincs érték a hash mapben, a `get` `None`-t ad vissza. Ez a program úgy
+kezeli az `Option`-t, hogy meghívja a `copied` metódust, hogy `Option<&i32>`
+helyett `Option<i32>`-t kapjon, majd az `unwrap_or`-t, hogy a `score` nulla
+legyen, ha a `scores`-ban nincs bejegyzés a kulcshoz.
 
-We can iterate over each key-value pair in a hash map in a similar manner as we
-do with vectors, using a `for` loop:
+Egy hash map minden kulcs-érték párján hasonló módon iterálhatunk végig, mint a
+vektoroknál, egy `for` ciklussal:
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/no-listing-03-iterate-over-hashmap/src/main.rs:here}}
 ```
 
-This code will print each pair in an arbitrary order:
+Ez a kód tetszőleges sorrendben írja ki a párokat:
 
 ```text
 Yellow: 50
@@ -81,13 +83,14 @@ Blue: 10
 
 <a id="hash-maps-and-ownership"></a>
 
-### Managing Ownership in Hash Maps
+### Az ownership kezelése hash mapekben
 
-For types that implement the `Copy` trait, like `i32`, the values are copied
-into the hash map. For owned values like `String`, the values will be moved and
-the hash map will be the owner of those values, as demonstrated in Listing 8-22.
+Azoknál a típusoknál, amelyek implementálják a `Copy` traitet – például az
+`i32`-nél –, az értékek bemásolódnak a hash mapbe. A tulajdonolt értékek, mint a
+`String`, bemozdulnak, és a hash map lesz ezeknek az értékeknek az ownere, ahogy
+azt a 8-22. lista bemutatja.
 
-<Listing number="8-22" caption="Showing that keys and values are owned by the hash map once they’re inserted">
+<Listing number="8-22" caption="Annak bemutatása, hogy a kulcsok és az értékek beszúrás után a hash map tulajdonába kerülnek">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-22/src/main.rs:here}}
@@ -95,38 +98,38 @@ the hash map will be the owner of those values, as demonstrated in Listing 8-22.
 
 </Listing>
 
-We aren’t able to use the variables `field_name` and `field_value` after
-they’ve been moved into the hash map with the call to `insert`.
+A `field_name` és a `field_value` változókat nem tudjuk használni azután, hogy
+az `insert` hívásával bemozdultak a hash mapbe.
 
-If we insert references to values into the hash map, the values won’t be moved
-into the hash map. The values that the references point to must be valid for at
-least as long as the hash map is valid. We’ll talk more about these issues in
-[“Validating References with
-Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> in Chapter 10.
+Ha értékekre mutató referenciákat szúrunk be a hash mapbe, az értékek nem
+mozdulnak be a hash mapbe. Azoknak az értékeknek, amelyekre a referenciák
+mutatnak, legalább addig érvényesnek kell maradniuk, amíg a hash map érvényes.
+Ezekről a kérdésekről bővebben a 10. fejezet [„Referenciák érvényesítése
+lifetime-okkal”][validating-references-with-lifetimes]<!-- ignore --> című
+szakaszában beszélünk.
 
-### Updating a Hash Map
+### Egy hash map módosítása
 
-Although the number of key and value pairs is growable, each unique key can
-only have one value associated with it at a time (but not vice versa: For
-example, both the Blue team and the Yellow team could have the value `10`
-stored in the `scores` hash map).
+Bár a kulcs-érték párok száma növelhető, minden egyedi kulcshoz egyszerre csak
+egy érték tartozhat (fordítva viszont nem: például a Blue csapathoz és a Yellow
+csapathoz is tartozhat a `10` érték a `scores` hash mapben).
 
-When you want to change the data in a hash map, you have to decide how to
-handle the case when a key already has a value assigned. You could replace the
-old value with the new value, completely disregarding the old value. You could
-keep the old value and ignore the new value, only adding the new value if the
-key _doesn’t_ already have a value. Or you could combine the old value and the
-new value. Let’s look at how to do each of these!
+Amikor meg akarod változtatni egy hash map adatait, el kell döntened, hogyan
+kezeled azt az esetet, amikor egy kulcshoz már tartozik érték. Lecserélheted a
+régi értéket az újra, teljesen figyelmen kívül hagyva a régit. Megtarthatod a
+régi értéket, és figyelmen kívül hagyhatod az újat, csak akkor adva hozzá az új
+értéket, ha a kulcshoz _még nem_ tartozik érték. Vagy kombinálhatod a régi és az
+új értéket. Nézzük meg, hogyan csináljuk mindezt!
 
-#### Overwriting a Value
+#### Egy érték felülírása
 
-If we insert a key and a value into a hash map and then insert that same key
-with a different value, the value associated with that key will be replaced.
-Even though the code in Listing 8-23 calls `insert` twice, the hash map will
-only contain one key-value pair because we’re inserting the value for the Blue
-team’s key both times.
+Ha beszúrunk egy kulcsot és egy értéket egy hash mapbe, majd ugyanazt a kulcsot
+egy másik értékkel szúrjuk be, az adott kulcshoz tartozó érték lecserélődik.
+Bár a 8-23. lista kódja kétszer hívja meg az `insert`et, a hash map csak egy
+kulcs-érték párt fog tartalmazni, mert mindkétszer a Blue csapat kulcsához
+tartozó értéket szúrjuk be.
 
-<Listing number="8-23" caption="Replacing a value stored with a particular key">
+<Listing number="8-23" caption="Adott kulccsal tárolt érték lecserélése">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-23/src/main.rs:here}}
@@ -134,28 +137,28 @@ team’s key both times.
 
 </Listing>
 
-This code will print `{"Blue": 25}`. The original value of `10` has been
-overwritten.
+Ez a kód a `{"Blue": 25}` értéket írja ki. Az eredeti `10` érték felülíródott.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="only-inserting-a-value-if-the-key-has-no-value"></a>
 
-#### Adding a Key and Value Only If a Key Isn’t Present
+#### Kulcs és érték hozzáadása csak akkor, ha a kulcs még nincs jelen
 
-It’s common to check whether a particular key already exists in the hash map
-with a value and then to take the following actions: If the key does exist in
-the hash map, the existing value should remain the way it is; if the key
-doesn’t exist, insert it and a value for it.
+Gyakori, hogy megnézzük, létezik-e már egy adott kulcs értékkel a hash mapben,
+majd a következőképpen járunk el: ha a kulcs létezik a hash mapben, a meglévő
+érték maradjon úgy, ahogy van; ha a kulcs nem létezik, szúrjuk be a kulcsot és
+egy hozzá tartozó értéket.
 
-Hash maps have a special API for this called `entry` that takes the key you
-want to check as a parameter. The return value of the `entry` method is an enum
-called `Entry` that represents a value that might or might not exist. Let’s say
-we want to check whether the key for the Yellow team has a value associated
-with it. If it doesn’t, we want to insert the value `50`, and the same for the
-Blue team. Using the `entry` API, the code looks like Listing 8-24.
+A hash mapeknek van erre egy speciális API-juk, az `entry`, amely paraméterként
+azt a kulcsot várja, amelyet ellenőrizni szeretnél. Az `entry` metódus
+visszatérési értéke egy `Entry` nevű enum, amely egy olyan értéket reprezentál,
+amely létezhet, de az is lehet, hogy nem. Tegyük fel, hogy meg akarjuk nézni,
+tartozik-e érték a Yellow csapat kulcsához. Ha nem, be akarjuk szúrni az `50`
+értéket, és ugyanezt szeretnénk a Blue csapatnál is. Az `entry` API-t használva
+a kód a 8-24. listában láthatóan alakul.
 
-<Listing number="8-24" caption="Using the `entry` method to only insert if the key does not already have a value">
+<Listing number="8-24" caption="Az `entry` metódus használata, hogy csak akkor szúrjunk be, ha a kulcshoz még nem tartozik érték">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-24/src/main.rs:here}}
@@ -163,28 +166,27 @@ Blue team. Using the `entry` API, the code looks like Listing 8-24.
 
 </Listing>
 
-The `or_insert` method on `Entry` is defined to return a mutable reference to
-the value for the corresponding `Entry` key if that key exists, and if not, it
-inserts the parameter as the new value for this key and returns a mutable
-reference to the new value. This technique is much cleaner than writing the
-logic ourselves and, in addition, plays more nicely with the borrow checker.
+Az `Entry` `or_insert` metódusa úgy van definiálva, hogy módosítható referenciát
+adjon vissza a megfelelő `Entry`-kulcshoz tartozó értékre, ha az a kulcs létezik,
+ha pedig nem, akkor a paramétert szúrja be az adott kulcs új értékeként, és
+módosítható referenciát ad vissza az új értékre. Ez a technika sokkal tisztább,
+mintha magunk írnánk meg a logikát, ráadásul jobban kijön a borrow checkerrel is.
 
-Running the code in Listing 8-24 will print `{"Yellow": 50, "Blue": 10}`. The
-first call to `entry` will insert the key for the Yellow team with the value
-`50` because the Yellow team doesn’t have a value already. The second call to
-`entry` will not change the hash map, because the Blue team already has the
-value `10`.
+A 8-24. lista kódjának futtatása a `{"Yellow": 50, "Blue": 10}` értéket írja ki.
+Az `entry` első hívása beszúrja a Yellow csapat kulcsát az `50` értékkel, mert a
+Yellow csapatnak még nincs értéke. Az `entry` második hívása nem változtatja meg
+a hash mapet, mert a Blue csapatnak már van `10` értéke.
 
-#### Updating a Value Based on the Old Value
+#### Egy érték frissítése a régi érték alapján
 
-Another common use case for hash maps is to look up a key’s value and then
-update it based on the old value. For instance, Listing 8-25 shows code that
-counts how many times each word appears in some text. We use a hash map with
-the words as keys and increment the value to keep track of how many times we’ve
-seen that word. If it’s the first time we’ve seen a word, we’ll first insert
-the value `0`.
+A hash mapek másik gyakori felhasználási módja, hogy kikeressük egy kulcs
+értékét, majd a régi érték alapján frissítjük. A 8-25. lista például olyan kódot
+mutat, amely megszámolja, hányszor fordul elő az egyes szó egy szövegben. Egy
+hash mapet használunk, amelyben a szavak a kulcsok, és növeljük az értéket, hogy
+nyilvántartsuk, hányszor láttuk az adott szót. Ha először látunk egy szót, előbb
+beszúrjuk a `0` értéket.
 
-<Listing number="8-25" caption="Counting occurrences of words using a hash map that stores words and counts">
+<Listing number="8-25" caption="Szavak előfordulásainak számolása szavakat és darabszámokat tároló hash map segítségével">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-25/src/main.rs:here}}
@@ -192,60 +194,65 @@ the value `0`.
 
 </Listing>
 
-This code will print `{"world": 2, "hello": 1, "wonderful": 1}`. You might see
-the same key-value pairs printed in a different order: Recall from [“Accessing
-Values in a Hash Map”][access]<!-- ignore --> that iterating over a hash map
-happens in an arbitrary order.
+Ez a kód a `{"world": 2, "hello": 1, "wonderful": 1}` értéket írja ki.
+Előfordulhat, hogy ugyanazok a kulcs-érték párok más sorrendben jelennek meg:
+emlékezz vissza az [„Értékek elérése egy hash mapben”][access]<!-- ignore -->
+szakaszra, amely szerint egy hash mapen tetszőleges sorrendben iterálunk végig.
 
-The `split_whitespace` method returns an iterator over subslices, separated by
-whitespace, of the value in `text`. The `or_insert` method returns a mutable
-reference (`&mut V`) to the value for the specified key. Here, we store that
-mutable reference in the `count` variable, so in order to assign to that value,
-we must first dereference `count` using the asterisk (`*`). The mutable
-reference goes out of scope at the end of the `for` loop, so all of these
-changes are safe and allowed by the borrowing rules.
+A `split_whitespace` metódus egy iterátort ad vissza a `text` értékének
+whitespace-ekkel elválasztott részszeletein. Az `or_insert` metódus módosítható
+referenciát (`&mut V`) ad vissza a megadott kulcshoz tartozó értékre. Itt ezt a
+módosítható referenciát a `count` változóban tároljuk, így ahhoz, hogy értéket
+adjunk neki, előbb dereferálnunk kell a `count`-ot a csillag (`*`) segítségével.
+A módosítható referencia a `for` ciklus végén kikerül a hatóköréből, így ezek a
+változtatások mind biztonságosak, és a borrowing-szabályok megengedik őket.
 
-### Hashing Functions
+### Hash függvények
 
-By default, `HashMap` uses a hashing function called _SipHash_ that can provide
-resistance to denial-of-service (DoS) attacks involving hash
-tables[^siphash]<!-- ignore -->. This is not the fastest hashing algorithm
-available, but the trade-off for better security that comes with the drop in
-performance is worth it. If you profile your code and find that the default
-hash function is too slow for your purposes, you can switch to another function
-by specifying a different hasher. A _hasher_ is a type that implements the
-`BuildHasher` trait. We’ll talk about traits and how to implement them in
-[Chapter 10][traits]<!-- ignore -->. You don’t necessarily have to implement
-your own hasher from scratch; [crates.io](https://crates.io/)<!-- ignore -->
-has libraries shared by other Rust users that provide hashers implementing many
-common hashing algorithms.
+Alapértelmezés szerint a `HashMap` egy _SipHash_ nevű hash függvényt használ,
+amely ellenállást nyújt a hash táblákat érintő szolgáltatásmegtagadási (DoS)
+támadásokkal szemben[^siphash]<!-- ignore -->. Ez nem a leggyorsabb elérhető
+hash algoritmus, de a teljesítménycsökkenésért cserébe kapott jobb biztonság
+megéri. Ha profilozod a kódodat, és azt látod, hogy az alapértelmezett hash
+függvény túl lassú a céljaidhoz, átválthatsz egy másik függvényre egy másik
+hasher megadásával. A _hasher_ olyan típus, amely implementálja a `BuildHasher`
+traitet. A traitekről és arról, hogyan implementáljuk őket, a [10.
+fejezetben][traits]<!-- ignore --> beszélünk. Nem feltétlenül kell a nulláról
+megírnod a saját hasheredet; a [crates.io](https://crates.io/)<!-- ignore -->
+oldalon más Rust-felhasználók által megosztott könyvtárak érhetők el, amelyek sok
+elterjedt hash algoritmust megvalósító hashereket biztosítanak.
 
 [^siphash]: [https://en.wikipedia.org/wiki/SipHash](https://en.wikipedia.org/wiki/SipHash)
 
-## Summary
+## Összefoglalás
 
-Vectors, strings, and hash maps will provide a large amount of functionality
-necessary in programs when you need to store, access, and modify data. Here are
-some exercises you should now be equipped to solve:
+A vektorok, a sztringek és a hash mapek nagyon sok olyan funkcionalitást
+biztosítanak, amelyre a programokban szükség van, amikor adatokat kell tárolni,
+elérni és módosítani. Íme néhány gyakorlat, amelyek megoldásához most már meg
+kell lennie az eszközeidnek:
 
-1. Given a list of integers, use a vector and return the median (when sorted,
-   the value in the middle position) and mode (the value that occurs most
-   often; a hash map will be helpful here) of the list.
-1. Convert strings to Pig Latin. The first consonant of each word is moved to
-   the end of the word and _ay_ is added, so _first_ becomes _irst-fay_. Words
-   that start with a vowel have _hay_ added to the end instead (_apple_ becomes
-   _apple-hay_). Keep in mind the details about UTF-8 encoding!
-1. Using a hash map and vectors, create a text interface to allow a user to add
-   employee names to a department in a company; for example, “Add Sally to
-   Engineering” or “Add Amir to Sales.” Then, let the user retrieve a list of
-   all people in a department or all people in the company by department, sorted
-   alphabetically.
+1. Egy egész számokból álló lista esetén használj vektort, és add vissza a lista
+   mediánját (rendezés után a középső pozícióban lévő érték) és móduszát (a
+   leggyakrabban előforduló érték; ehhez egy hash map lesz hasznos).
+1. Alakítsd át a sztringeket Pig Latinre. Minden szó első mássalhangzója a szó
+   végére kerül, és hozzáadjuk az _ay_ végződést, így a _first_ szóból
+   _irst-fay_ lesz. A magánhangzóval kezdődő szavak helyett a _hay_ végződést
+   kapják a végükre (az _apple_ szóból _apple-hay_ lesz). Ne feledkezz meg az
+   UTF-8 kódolás részleteiről!
+1. Egy hash map és vektorok segítségével készíts szöveges felületet, amely
+   lehetővé teszi a felhasználónak, hogy alkalmazottak nevét adja hozzá egy
+   vállalat valamelyik részlegéhez; például „Add Sally to Engineering” vagy „Add
+   Amir to Sales”. Ezután engedd, hogy a felhasználó lekérje egy részleg összes
+   emberének listáját vagy a vállalat összes emberét részlegek szerint, ábécé
+   sorrendbe rendezve.
 
-The standard library API documentation describes methods that vectors, strings,
-and hash maps have that will be helpful for these exercises!
+A standard könyvtár API-dokumentációja leírja azokat a metódusokat, amelyekkel a
+vektorok, a sztringek és a hash mapek rendelkeznek, és amelyek hasznosak lesznek
+ezekhez a gyakorlatokhoz!
 
-We’re getting into more complex programs in which operations can fail, so it’s
-a perfect time to discuss error handling. We’ll do that next!
+Egyre összetettebb programok felé haladunk, amelyekben a műveletek meghiúsulhatnak,
+így ez tökéletes alkalom arra, hogy a hibakezelésről beszéljünk. Ez lesz a
+következő téma!
 
 [validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [access]: #accessing-values-in-a-hash-map

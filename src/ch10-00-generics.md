@@ -1,48 +1,54 @@
-# Generic Types, Traits, and Lifetimes
+# Generikus típusok, trait-ek és lifetime-ok
 
-Every programming language has tools for effectively handling the duplication
-of concepts. In Rust, one such tool is _generics_: abstract stand-ins for
-concrete types or other properties. We can express the behavior of generics or
-how they relate to other generics without knowing what will be in their place
-when compiling and running the code.
+Minden programozási nyelvben vannak eszközök a fogalmak ismétlődésének hatékony
+kezelésére. A Rustban az egyik ilyen eszköz a _generikusok_: absztrakt
+helyettesítők konkrét típusok vagy más tulajdonságok helyett. Ki tudjuk fejezni
+a generikusok viselkedését, illetve azt, hogyan viszonyulnak más
+generikusokhoz, anélkül hogy tudnánk, mi kerül a helyükre a kód fordításakor és
+futtatásakor.
 
-Functions can take parameters of some generic type, instead of a concrete type
-like `i32` or `String`, in the same way they take parameters with unknown
-values to run the same code on multiple concrete values. In fact, we already
-used generics in Chapter 6 with `Option<T>`, in Chapter 8 with `Vec<T>` and
-`HashMap<K, V>`, and in Chapter 9 with `Result<T, E>`. In this chapter, you’ll
-explore how to define your own types, functions, and methods with generics!
+A függvények valamilyen generikus típusú paramétert is átvehetnek olyan konkrét
+típus helyett, mint az `i32` vagy a `String`, ugyanúgy, ahogy ismeretlen értékű
+paramétereket vesznek át, hogy ugyanazt a kódot több konkrét értéken
+futtathassák. Valójában már használtunk generikusokat: a 6. fejezetben az
+`Option<T>`-vel, a 8. fejezetben a `Vec<T>`-vel és a `HashMap<K, V>`-vel, a 9.
+fejezetben pedig a `Result<T, E>`-vel. Ebben a fejezetben azt fedezed fel,
+hogyan definiálhatsz saját típusokat, függvényeket és metódusokat
+generikusokkal!
 
-First, we’ll review how to extract a function to reduce code duplication. We’ll
-then use the same technique to make a generic function from two functions that
-differ only in the types of their parameters. We’ll also explain how to use
-generic types in struct and enum definitions.
+Először átnézzük, hogyan emelhetünk ki egy függvényt a kódismétlés
+csökkentésére. Ezután ugyanezzel a technikával generikus függvényt készítünk két
+olyan függvényből, amelyek csak a paramétereik típusában különböznek.
+Elmagyarázzuk azt is, hogyan használhatunk generikus típusokat struct- és
+enum-definíciókban.
 
-Then, you’ll learn how to use traits to define behavior in a generic way. You
-can combine traits with generic types to constrain a generic type to accept
-only those types that have a particular behavior, as opposed to just any type.
+Utána megtanulod, hogyan definiálhatsz viselkedést generikus módon a trait-ek
+segítségével. A trait-eket kombinálhatod generikus típusokkal, hogy egy
+generikus típust úgy szoríts meg, hogy csak azokat a típusokat fogadja el,
+amelyek egy adott viselkedéssel rendelkeznek, ne pedig bármelyik típust.
 
-Finally, we’ll discuss _lifetimes_: a variety of generics that give the
-compiler information about how references relate to each other. Lifetimes allow
-us to give the compiler enough information about borrowed values so that it can
-ensure that references will be valid in more situations than it could without
-our help.
+Végül a _lifetime_-okról lesz szó: ezek a generikusok egy fajtája, amely
+információt ad a fordítónak arról, hogyan viszonyulnak egymáshoz a referenciák.
+A lifetime-ok segítségével elég információt adhatunk a fordítónak a
+kölcsönvett értékekről ahhoz, hogy több helyzetben is biztosítani tudja a
+referenciák érvényességét, mint a segítségünk nélkül.
 
-## Removing Duplication by Extracting a Function
+## Ismétlődés megszüntetése függvény kiemelésével
 
-Generics allow us to replace specific types with a placeholder that represents
-multiple types to remove code duplication. Before diving into generics syntax,
-let’s first look at how to remove duplication in a way that doesn’t involve
-generic types by extracting a function that replaces specific values with a
-placeholder that represents multiple values. Then, we’ll apply the same
-technique to extract a generic function! By looking at how to recognize
-duplicated code you can extract into a function, you’ll start to recognize
-duplicated code that can use generics.
+A generikusok révén a konkrét típusokat olyan helykitöltővel válthatjuk ki,
+amely több típust képvisel, így megszüntethetjük a kódismétlést. Mielőtt
+belevágnánk a generikusok szintaxisába, nézzük meg először, hogyan lehet
+generikus típusok nélkül megszüntetni az ismétlődést: kiemelünk egy függvényt,
+amely a konkrét értékeket olyan helykitöltővel váltja ki, amely több értéket
+képvisel. Utána ugyanezt a technikát alkalmazzuk egy generikus függvény
+kiemelésére! Ha látod, hogyan ismerheted fel a függvénybe kiemelhető ismétlődő
+kódot, kezded majd felismerni azt az ismétlődő kódot is, amely generikusokat
+használhat.
 
-We’ll begin with the short program in Listing 10-1 that finds the largest
-number in a list.
+Kezdjük a 10-1. listázás rövid programjával, amely megkeresi a legnagyobb
+számot egy listában.
 
-<Listing number="10-1" file-name="src/main.rs" caption="Finding the largest number in a list of numbers">
+<Listing number="10-1" file-name="src/main.rs" caption="A legnagyobb szám megkeresése egy számlistában">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-01/src/main.rs:here}}
@@ -50,20 +56,21 @@ number in a list.
 
 </Listing>
 
-We store a list of integers in the variable `number_list` and place a reference
-to the first number in the list in a variable named `largest`. We then iterate
-through all the numbers in the list, and if the current number is greater than
-the number stored in `largest`, we replace the reference in that variable.
-However, if the current number is less than or equal to the largest number seen
-so far, the variable doesn’t change, and the code moves on to the next number
-in the list. After considering all the numbers in the list, `largest` should
-refer to the largest number, which in this case is 100.
+Egész számok listáját tároljuk a `number_list` változóban, a lista első számára
+mutató referenciát pedig egy `largest` nevű változóba tesszük. Ezután
+végigmegyünk a lista összes számán, és ha az aktuális szám nagyobb, mint a
+`largest`-ben tárolt szám, kicseréljük a referenciát abban a változóban. Ha
+viszont az aktuális szám kisebb vagy egyenlő az eddig látott legnagyobb
+számnál, a változó nem változik, és a kód továbblép a lista következő számára.
+Miután a lista összes számát megvizsgáltuk, a `largest` a legnagyobb számra
+hivatkozik, ami ebben az esetben a 100.
 
-We’ve now been tasked with finding the largest number in two different lists of
-numbers. To do so, we can choose to duplicate the code in Listing 10-1 and use
-the same logic at two different places in the program, as shown in Listing 10-2.
+Most azt a feladatot kaptuk, hogy két különböző számlistában keressük meg a
+legnagyobb számot. Ehhez választhatjuk azt, hogy megismételjük a 10-1. listázás
+kódját, és a program két különböző pontján ugyanazt a logikát használjuk, ahogy
+a 10-2. listázás mutatja.
 
-<Listing number="10-2" file-name="src/main.rs" caption="Code to find the largest number in *two* lists of numbers">
+<Listing number="10-2" file-name="src/main.rs" caption="Kód a legnagyobb szám megkeresésére *két* számlistában">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-02/src/main.rs}}
@@ -71,21 +78,21 @@ the same logic at two different places in the program, as shown in Listing 10-2.
 
 </Listing>
 
-Although this code works, duplicating code is tedious and error-prone. We also
-have to remember to update the code in multiple places when we want to change
-it.
+Bár ez a kód működik, a kód ismétlése fárasztó és hibalehetőségeket rejt.
+Ráadásul több helyen is emlékeznünk kell a kód frissítésére, ha meg akarjuk
+változtatni.
 
-To eliminate this duplication, we’ll create an abstraction by defining a
-function that operates on any list of integers passed in as a parameter. This
-solution makes our code clearer and lets us express the concept of finding the
-largest number in a list abstractly.
+Az ismétlődés kiküszöbölésére absztrakciót hozunk létre: definiálunk egy
+függvényt, amely bármely, paraméterként átadott egészszám-listán működik. Ettől
+a megoldástól a kódunk világosabb lesz, és absztrakt módon fejezhetjük ki egy
+listában a legnagyobb szám megkeresésének fogalmát.
 
-In Listing 10-3, we extract the code that finds the largest number into a
-function named `largest`. Then, we call the function to find the largest number
-in the two lists from Listing 10-2. We could also use the function on any other
-list of `i32` values we might have in the future.
+A 10-3. listázásban a legnagyobb számot megkereső kódot kiemeljük egy `largest`
+nevű függvénybe. Ezután meghívjuk a függvényt, hogy megtaláljuk a legnagyobb
+számot a 10-2. listázás két listájában. A függvényt bármely más, `i32`
+értékekből álló listán is használhatnánk, ami a jövőben a kezünkbe kerül.
 
-<Listing number="10-3" file-name="src/main.rs" caption="Abstracted code to find the largest number in two lists">
+<Listing number="10-3" file-name="src/main.rs" caption="Absztrahált kód a legnagyobb szám megkeresésére két listában">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-03/src/main.rs:here}}
@@ -93,23 +100,25 @@ list of `i32` values we might have in the future.
 
 </Listing>
 
-The `largest` function has a parameter called `list`, which represents any
-concrete slice of `i32` values we might pass into the function. As a result,
-when we call the function, the code runs on the specific values that we pass
-in.
+A `largest` függvénynek van egy `list` nevű paramétere, amely bármely konkrét
+`i32` értékekből álló slice-ot képvisel, amit átadhatunk a függvénynek. Ennek
+eredményeként, amikor meghívjuk a függvényt, a kód azokon a konkrét értékeken
+fut le, amelyeket átadunk neki.
 
-In summary, here are the steps we took to change the code from Listing 10-2 to
-Listing 10-3:
+Összefoglalva, ezeket a lépéseket tettük meg, hogy a 10-2. listázás kódját a
+10-3. listázás kódjává alakítsuk:
 
-1. Identify duplicate code.
-1. Extract the duplicate code into the body of the function, and specify the
-   inputs and return values of that code in the function signature.
-1. Update the two instances of duplicated code to call the function instead.
+1. Azonosítottuk az ismétlődő kódot.
+1. Kiemeltük az ismétlődő kódot a függvény törzsébe, és a függvény
+   szignatúrájában megadtuk a kód bemeneteit és visszatérési értékeit.
+1. Az ismétlődő kód két előfordulását átírtuk úgy, hogy helyette a függvényt
+   hívja meg.
 
-Next, we’ll use these same steps with generics to reduce code duplication. In
-the same way that the function body can operate on an abstract `list` instead
-of specific values, generics allow code to operate on abstract types.
+Ezután ugyanezeket a lépéseket használjuk generikusokkal a kódismétlés
+csökkentésére. Ahogyan a függvény törzse konkrét értékek helyett egy absztrakt
+`list`-en tud működni, úgy a generikusok révén a kód absztrakt típusokon tud
+működni.
 
-For example, say we had two functions: one that finds the largest item in a
-slice of `i32` values and one that finds the largest item in a slice of `char`
-values. How would we eliminate that duplication? Let’s find out!
+Tegyük fel például, hogy volna két függvényünk: az egyik `i32` értékek
+slice-ában keresi meg a legnagyobb elemet, a másik pedig `char` értékek
+slice-ában. Hogyan szüntetnénk meg ezt az ismétlődést? Derítsük ki!

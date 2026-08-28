@@ -1,67 +1,72 @@
-## Controlling How Tests Are Run {#controlling-how-tests-are-run}
+## A tesztek futtatásának szabályozása {#controlling-how-tests-are-run}
 
-Just as `cargo run` compiles your code and then runs the resultant binary,
-`cargo test` compiles your code in test mode and runs the resultant test
-binary. The default behavior of the binary produced by `cargo test` is to run
-all the tests in parallel and capture output generated during test runs,
-preventing the output from being displayed and making it easier to read the
-output related to the test results. You can, however, specify command line
-options to change this default behavior.
+Ahogy a `cargo run` lefordítja a kódodat, majd lefuttatja a kapott binárist, a
+`cargo test` teszt módban fordítja le a kódodat, és lefuttatja a kapott
+tesztbinárist. A `cargo test` által előállított bináris alapértelmezett
+viselkedése az, hogy az összes tesztet párhuzamosan futtatja, és elkapja a
+tesztek futása során keletkező kimenetet, megakadályozva annak megjelenítését,
+így könnyebben olvashatóvá téve a teszteredményekhez tartozó kimenetet.
+Parancssori opciókkal azonban megváltoztathatod ezt az alapértelmezett
+viselkedést.
 
-Some command line options go to `cargo test`, and some go to the resultant test
-binary. To separate these two types of arguments, you list the arguments that
-go to `cargo test` followed by the separator `--` and then the ones that go to
-the test binary. Running `cargo test --help` displays the options you can use
-with `cargo test`, and running `cargo test -- --help` displays the options you
-can use after the separator. These options are also documented in [the “Tests”
-section of _The `rustc` Book_][tests].
+Egyes parancssori opciók a `cargo test` parancsnak szólnak, mások a kapott
+tesztbinárisnak. A kétféle argumentum elválasztásához először a `cargo test`
+parancsnak szóló argumentumokat sorolod fel, ezt követi a `--` elválasztó, majd
+azok, amelyek a tesztbinárisnak szólnak. A `cargo test --help` futtatása
+megjeleníti a `cargo test` parancshoz használható opciókat, a
+`cargo test -- --help` futtatása pedig az elválasztó után használható opciókat.
+Ezek az opciók dokumentálva vannak [a _The `rustc` Book_ „Tests”
+szakaszában][tests] is.
 
 [tests]: https://doc.rust-lang.org/rustc/tests/index.html
 
-### Running Tests in Parallel or Consecutively
+### Tesztek futtatása párhuzamosan vagy egymás után
 
-When you run multiple tests, by default they run in parallel using threads,
-meaning they finish running more quickly and you get feedback sooner. Because
-the tests are running at the same time, you must make sure your tests don’t
-depend on each other or on any shared state, including a shared environment,
-such as the current working directory or environment variables.
+Amikor több tesztet futtatsz, azok alapértelmezés szerint párhuzamosan,
+szálakat használva futnak, ami azt jelenti, hogy hamarabb végeznek, és
+gyorsabban kapsz visszajelzést. Mivel a tesztek egyszerre futnak, meg kell
+bizonyosodnod arról, hogy a tesztjeid nem függenek egymástól vagy bármilyen
+osztott állapottól, beleértve az osztott környezetet is, például az aktuális
+munkakönyvtárat vagy a környezeti változókat.
 
-For example, say each of your tests runs some code that creates a file on disk
-named _test-output.txt_ and writes some data to that file. Then, each test
-reads the data in that file and asserts that the file contains a particular
-value, which is different in each test. Because the tests run at the same time,
-one test might overwrite the file in the time between when another test is
-writing and reading the file. The second test will then fail, not because the
-code is incorrect but because the tests have interfered with each other while
-running in parallel. One solution is to make sure each test writes to a
-different file; another solution is to run the tests one at a time.
+Tegyük fel például, hogy minden tesztedben fut egy kódrészlet, amely létrehoz
+egy _test-output.txt_ nevű fájlt a lemezen, és adatokat ír bele. Ezután minden
+teszt beolvassa a fájlban lévő adatokat, és azt állítja, hogy a fájl egy adott,
+tesztenként eltérő értéket tartalmaz. Mivel a tesztek egyszerre futnak, az
+egyik teszt felülírhatja a fájlt abban az időablakban, amikor egy másik teszt
+írja, majd olvassa a fájlt. A második teszt ekkor megbukik, nem azért, mert a
+kód hibás, hanem azért, mert a tesztek zavarták egymást a párhuzamos futás
+közben. Az egyik megoldás az, hogy gondoskodunk róla, hogy minden teszt más
+fájlba írjon; egy másik megoldás, hogy a teszteket egyesével futtatjuk.
 
-If you don’t want to run the tests in parallel or if you want more fine-grained
-control over the number of threads used, you can send the `--test-threads` flag
-and the number of threads you want to use to the test binary. Take a look at
-the following example:
+Ha nem akarod párhuzamosan futtatni a teszteket, vagy finomabb kontrollt
+szeretnél a használt szálak száma felett, elküldheted a `--test-threads`
+kapcsolót és a használni kívánt szálak számát a tesztbinárisnak. Nézd meg a
+következő példát:
 
 ```console
 $ cargo test -- --test-threads=1
 ```
 
-We set the number of test threads to `1`, telling the program not to use any
-parallelism. Running the tests using one thread will take longer than running
-them in parallel, but the tests won’t interfere with each other if they share
-state.
+A tesztszálak számát `1`-re állítjuk, ezzel megmondva a programnak, hogy ne
+használjon párhuzamosságot. A tesztek egy szálon való futtatása tovább tart,
+mint a párhuzamos futtatás, de a tesztek nem zavarják egymást, ha osztoznak
+valamilyen állapoton.
 
-### Showing Function Output
+### A függvények kimenetének megjelenítése
 
-By default, if a test passes, Rust’s test library captures anything printed to
-standard output. For example, if we call `println!` in a test and the test
-passes, we won’t see the `println!` output in the terminal; we’ll see only the
-line that indicates the test passed. If a test fails, we’ll see whatever was
-printed to standard output with the rest of the failure message.
+Alapértelmezés szerint, ha egy teszt sikeres, a Rust tesztkönyvtára elkapja
+mindazt, amit a standard kimenetre írtak. Ha például meghívjuk a `println!`
+makrót egy tesztben, és a teszt sikeres, nem fogjuk látni a `println!` kimenetét
+a terminálban; csak azt a sort látjuk, amely jelzi, hogy a teszt sikeres volt.
+Ha egy teszt megbukik, látni fogjuk mindazt, amit a standard kimenetre írtak, a
+bukási üzenet többi részével együtt.
 
-As an example, Listing 11-10 has a silly function that prints the value of its
-parameter and returns 10, as well as a test that passes and a test that fails.
+Példaként a 11-10. listán egy együgyű függvény szerepel, amely kiírja a
+paraméterének értékét, és 10-et ad vissza, valamint egy sikeres és egy
+megbukó teszt.
 
-<Listing number="11-10" file-name="src/lib.rs" caption="Tests for a function that calls `println!`">
+<Listing number="11-10" file-name="src/lib.rs" caption="Tesztek egy olyan függvényhez, amely meghívja a `println!` makrót">
 
 ```rust,panics,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-10/src/lib.rs}}
@@ -69,42 +74,46 @@ parameter and returns 10, as well as a test that passes and a test that fails.
 
 </Listing>
 
-When we run these tests with `cargo test`, we’ll see the following output:
+Amikor ezeket a teszteket a `cargo test` paranccsal futtatjuk, a következő
+kimenetet látjuk:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-10/output.txt}}
 ```
 
-Note that nowhere in this output do we see `I got the value 4`, which is
-printed when the test that passes runs. That output has been captured. The
-output from the test that failed, `I got the value 8`, appears in the section
-of the test summary output, which also shows the cause of the test failure.
+Figyeld meg, hogy ebben a kimenetben sehol nem látjuk az `I got the value 4`
+szöveget, amely a sikeres teszt futtatásakor íródik ki. Azt a kimenetet a
+rendszer elkapta. A megbukott teszt kimenete, az `I got the value 8`, megjelenik
+a teszt összegző kimenetének abban a szakaszában, amely a tesztbukás okát is
+mutatja.
 
-If we want to see printed values for passing tests as well, we can tell Rust to
-also show the output of successful tests with `--show-output`:
+Ha a sikeres tesztek kiírt értékeit is látni akarjuk, a `--show-output`
+kapcsolóval megmondhatjuk a Rustnak, hogy a sikeres tesztek kimenetét is
+jelenítse meg:
 
 ```console
 $ cargo test -- --show-output
 ```
 
-When we run the tests in Listing 11-10 again with the `--show-output` flag, we
-see the following output:
+Amikor a 11-10. lista tesztjeit újra lefuttatjuk a `--show-output` kapcsolóval,
+a következő kimenetet látjuk:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/output-only-01-show-output/output.txt}}
 ```
 
-### Running a Subset of Tests by Name {#running-a-subset-of-tests-by-name}
+### Tesztek egy részhalmazának futtatása név alapján {#running-a-subset-of-tests-by-name}
 
-Running a full test suite can sometimes take a long time. If you’re working on
-code in a particular area, you might want to run only the tests pertaining to
-that code. You can choose which tests to run by passing `cargo test` the name
-or names of the test(s) you want to run as an argument.
+Egy teljes tesztkészlet lefuttatása néha sokáig tarthat. Ha egy adott terület
+kódján dolgozol, előfordulhat, hogy csak az ahhoz a kódhoz tartozó teszteket
+akarod lefuttatni. Kiválaszthatod, mely tesztek fussanak, ha argumentumként
+átadod a `cargo test` parancsnak a futtatni kívánt teszt vagy tesztek nevét.
 
-To demonstrate how to run a subset of tests, we’ll first create three tests for
-our `add_two` function, as shown in Listing 11-11, and choose which ones to run.
+Hogy bemutassuk, hogyan futtathatók a tesztek egy részhalmaza, először három
+tesztet hozunk létre az `add_two` függvényünkhöz, ahogy a 11-11. listán
+látható, majd kiválasztjuk, melyik fusson.
 
-<Listing number="11-11" file-name="src/lib.rs" caption="Three tests with three different names">
+<Listing number="11-11" file-name="src/lib.rs" caption="Három teszt három különböző névvel">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-11/src/lib.rs}}
@@ -112,77 +121,82 @@ our `add_two` function, as shown in Listing 11-11, and choose which ones to run.
 
 </Listing>
 
-If we run the tests without passing any arguments, as we saw earlier, all the
-tests will run in parallel:
+Ha argumentumok átadása nélkül futtatjuk a teszteket, ahogy korábban láttuk, az
+összes teszt párhuzamosan fut:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-11/output.txt}}
 ```
 
-#### Running Single Tests
+#### Egyetlen teszt futtatása
 
-We can pass the name of any test function to `cargo test` to run only that test:
+Bármely tesztfüggvény nevét átadhatjuk a `cargo test` parancsnak, hogy csak azt
+a tesztet futtassuk:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/output-only-02-single-test/output.txt}}
 ```
 
-Only the test with the name `one_hundred` ran; the other two tests didn’t match
-that name. The test output lets us know we had more tests that didn’t run by
-displaying `2 filtered out` at the end.
+Csak az `one_hundred` nevű teszt futott le; a másik két teszt neve nem
+illeszkedett erre a névre. A teszt kimenete tudatja velünk, hogy voltak további
+tesztek, amelyek nem futottak le, azzal, hogy a végén megjeleníti a
+`2 filtered out` szöveget.
 
-We can’t specify the names of multiple tests in this way; only the first value
-given to `cargo test` will be used. But there is a way to run multiple tests.
+Több teszt nevét nem adhatjuk meg ilyen módon; a `cargo test` parancsnak csak
+az első megadott értéket használja. De van mód több teszt futtatására is.
 
-#### Filtering to Run Multiple Tests
+#### Szűrés több teszt futtatásához
 
-We can specify part of a test name, and any test whose name matches that value
-will be run. For example, because two of our tests’ names contain `add`, we can
-run those two by running `cargo test add`:
+Megadhatjuk egy tesztnév egy részét, és minden teszt lefut, amelynek a neve
+illeszkedik erre az értékre. Mivel például két tesztünk neve tartalmazza az
+`add` szót, ezt a kettőt a `cargo test add` parancs futtatásával futtathatjuk:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/output-only-03-multiple-tests/output.txt}}
 ```
 
-This command ran all tests with `add` in the name and filtered out the test
-named `one_hundred`. Also note that the module in which a test appears becomes
-part of the test’s name, so we can run all the tests in a module by filtering
-on the module’s name.
+Ez a parancs minden olyan tesztet lefuttatott, amelynek a nevében szerepel az
+`add`, és kiszűrte az `one_hundred` nevű tesztet. Vedd figyelembe azt is, hogy
+az a modul, amelyben egy teszt szerepel, a teszt nevének részévé válik, így egy
+modul összes tesztjét lefuttathatjuk a modul nevére való szűréssel.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ignoring-some-tests-unless-specifically-requested"></a>
 
-### Ignoring Tests Unless Specifically Requested {#ignoring-tests-unless-specifically-requested}
+### Tesztek kihagyása, hacsak nem kérjük őket kifejezetten {#ignoring-tests-unless-specifically-requested}
 
-Sometimes a few specific tests can be very time-consuming to execute, so you
-might want to exclude them during most runs of `cargo test`. Rather than
-listing as arguments all tests you do want to run, you can instead annotate the
-time-consuming tests using the `ignore` attribute to exclude them, as shown
-here:
+Néha néhány konkrét teszt végrehajtása nagyon időigényes lehet, ezért érdemes
+lehet kihagyni őket a `cargo test` futtatásainak nagy részében. Ahelyett, hogy
+argumentumként felsorolnád az összes tesztet, amelyet futtatni akarsz, az
+időigényes teszteket megjelölheted az `ignore` attribútummal, hogy kimaradjanak,
+ahogy itt látható:
 
-<span class="filename">Filename: src/lib.rs</span>
+<span class="filename">Fájlnév: src/lib.rs</span>
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-11-ignore-a-test/src/lib.rs:here}}
 ```
 
-After `#[test]`, we add the `#[ignore]` line to the test we want to exclude.
-Now when we run our tests, `it_works` runs, but `expensive_test` doesn’t:
+A `#[test]` után hozzáadjuk a `#[ignore]` sort ahhoz a teszthez, amelyet ki
+akarunk hagyni. Most, amikor lefuttatjuk a tesztjeinket, az `it_works` lefut, az
+`expensive_test` viszont nem:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-11-ignore-a-test/output.txt}}
 ```
 
-The `expensive_test` function is listed as `ignored`. If we want to run only
-the ignored tests, we can use `cargo test -- --ignored`:
+Az `expensive_test` függvény `ignored` jelöléssel szerepel a listában. Ha csak a
+figyelmen kívül hagyott teszteket akarjuk futtatni, használhatjuk a
+`cargo test -- --ignored` parancsot:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/output-only-04-running-ignored/output.txt}}
 ```
 
-By controlling which tests run, you can make sure your `cargo test` results
-will be returned quickly. When you’re at a point where it makes sense to check
-the results of the `ignored` tests and you have time to wait for the results,
-you can run `cargo test -- --ignored` instead. If you want to run all tests
-whether they’re ignored or not, you can run `cargo test -- --include-ignored`.
+Azzal, hogy szabályozod, mely tesztek fussanak, gondoskodhatsz róla, hogy a
+`cargo test` eredményei gyorsan megérkezzenek. Amikor eljutsz oda, hogy érdemes
+ellenőrizni az `ignored` tesztek eredményeit, és van időd megvárni azokat,
+helyette a `cargo test -- --ignored` parancsot futtathatod. Ha az összes
+tesztet futtatni akarod, akár figyelmen kívül vannak hagyva, akár nem, a
+`cargo test -- --include-ignored` parancsot futtathatod.

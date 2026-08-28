@@ -1,34 +1,38 @@
-## Running Code on Cleanup with the `Drop` Trait
+## Kód futtatása takarításkor a `Drop` trait-tel
 
-The second trait important to the smart pointer pattern is `Drop`, which lets
-you customize what happens when a value is about to go out of scope. You can
-provide an implementation for the `Drop` trait on any type, and that code can
-be used to release resources like files or network connections.
+A smart pointer mintában a második fontos trait a `Drop`, amellyel testre
+szabhatod, mi történjen akkor, amikor egy érték épp kilép a hatóköréből. A
+`Drop` trait-et bármilyen típusra implementálhatod, és az így megadott kód
+alkalmas erőforrások – például fájlok vagy hálózati kapcsolatok –
+felszabadítására.
 
-We’re introducing `Drop` in the context of smart pointers because the
-functionality of the `Drop` trait is almost always used when implementing a
-smart pointer. For example, when a `Box<T>` is dropped, it will deallocate the
-space on the heap that the box points to.
+Azért a smart pointerek kapcsán mutatjuk be a `Drop` trait-et, mert a
+funkcionalitására szinte mindig szükség van, amikor smart pointert
+implementálunk. Amikor például egy `Box<T>` megsemmisül, felszabadítja azt a
+heapen lévő területet, amelyre a box mutat.
 
-In some languages, for some types, the programmer must call code to free memory
-or resources every time they finish using an instance of those types. Examples
-include file handles, sockets, and locks. If the programmer forgets, the system
-might become overloaded and crash. In Rust, you can specify that a particular
-bit of code be run whenever a value goes out of scope, and the compiler will
-insert this code automatically. As a result, you don’t need to be careful about
-placing cleanup code everywhere in a program that an instance of a particular
-type is finished with—you still won’t leak resources!
+Néhány nyelvben bizonyos típusoknál a programozónak minden alkalommal meg kell
+hívnia a memóriát vagy az erőforrásokat felszabadító kódot, amikor befejezte az
+adott típus egy példányának használatát. Ilyen például a fájlkezelő (file
+handle), a socket és a lock. Ha a programozó elfelejti ezt megtenni, a rendszer
+túlterhelődhet és összeomolhat. Rustban megadhatod, hogy egy adott kódrészlet
+lefusson, valahányszor egy érték kilép a hatóköréből, és a fordító automatikusan
+beszúrja ezt a kódot. Ennek eredményeként nem kell gondosan ügyelned arra, hogy
+a program minden olyan pontján elhelyezd a takarítókódot, ahol egy adott típus
+példányával végeztél – mégsem szivárogtatsz el erőforrásokat!
 
-You specify the code to run when a value goes out of scope by implementing the
-`Drop` trait. The `Drop` trait requires you to implement one method named
-`drop` that takes a mutable reference to `self`. To see when Rust calls `drop`,
-let’s implement `drop` with `println!` statements for now.
+Azt, hogy milyen kód fusson le, amikor egy érték kilép a hatóköréből, a `Drop`
+trait implementálásával adod meg. A `Drop` trait egyetlen, `drop` nevű metódus
+implementálását követeli meg, amely egy módosítható referenciát vesz át a
+`self`-re. Hogy lássuk, mikor hívja meg a Rust a `drop`-ot, egyelőre `println!`
+utasításokkal implementáljuk.
 
-Listing 15-14 shows a `CustomSmartPointer` struct whose only custom
-functionality is that it will print `Dropping CustomSmartPointer!` when the
-instance goes out of scope, to show when Rust runs the `drop` method.
+A 15-14. listában egy `CustomSmartPointer` struct látható, amelynek egyetlen
+egyedi funkciója az, hogy kiírja a `Dropping CustomSmartPointer!` szöveget,
+amikor a példány kilép a hatóköréből – így megmutatja, mikor futtatja a Rust a
+`drop` metódust.
 
-<Listing number="15-14" file-name="src/main.rs" caption="A `CustomSmartPointer` struct that implements the `Drop` trait where we would put our cleanup code">
+<Listing number="15-14" file-name="src/main.rs" caption="Egy `CustomSmartPointer` struct, amely implementálja a `Drop` trait-et, ahová a takarítókódunk kerülne">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-14/src/main.rs}}
@@ -36,50 +40,52 @@ instance goes out of scope, to show when Rust runs the `drop` method.
 
 </Listing>
 
-The `Drop` trait is included in the prelude, so we don’t need to bring it into
-scope. We implement the `Drop` trait on `CustomSmartPointer` and provide an
-implementation for the `drop` method that calls `println!`. The body of the
-`drop` method is where you would place any logic that you wanted to run when an
-instance of your type goes out of scope. We’re printing some text here to
-demonstrate visually when Rust will call `drop`.
+A `Drop` trait benne van a preludeban, ezért nem kell külön behoznunk a
+hatókörbe. A `Drop` trait-et a `CustomSmartPointer`-re implementáljuk, és a
+`drop` metódushoz olyan implementációt adunk, amely meghívja a `println!`-t. A
+`drop` metódus törzsébe kerül minden olyan logika, amelyet akkor szeretnél
+futtatni, amikor a típusod egy példánya kilép a hatóköréből. Itt most szöveget
+írunk ki, hogy szemléletesen bemutassuk, mikor hívja meg a Rust a `drop`-ot.
 
-In `main`, we create two instances of `CustomSmartPointer` and then print
-`CustomSmartPointers created`. At the end of `main`, our instances of
-`CustomSmartPointer` will go out of scope, and Rust will call the code we put
-in the `drop` method, printing our final message. Note that we didn’t need to
-call the `drop` method explicitly.
+A `main`-ben létrehozzuk a `CustomSmartPointer` két példányát, majd kiírjuk a
+`CustomSmartPointers created` szöveget. A `main` végén a `CustomSmartPointer`
+példányaink kilépnek a hatókörükből, és a Rust meghívja a `drop` metódusba tett
+kódunkat, kiírva a záró üzenetünket. Vedd észre, hogy nem kellett explicit
+módon meghívnunk a `drop` metódust.
 
-When we run this program, we’ll see the following output:
+Ha lefuttatjuk ezt a programot, a következő kimenetet látjuk:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-14/output.txt}}
 ```
 
-Rust automatically called `drop` for us when our instances went out of scope,
-calling the code we specified. Variables are dropped in the reverse order of
-their creation, so `d` was dropped before `c`. This example’s purpose is to
-give you a visual guide to how the `drop` method works; usually you would
-specify the cleanup code that your type needs to run rather than a print
-message.
+A Rust automatikusan meghívta helyettünk a `drop`-ot, amikor a példányaink
+kiléptek a hatókörükből, így lefuttatta az általunk megadott kódot. A változók a
+létrehozásukkal ellentétes sorrendben semmisülnek meg, ezért `d` előbb
+semmisült meg, mint `c`. Ennek a példának az a célja, hogy szemléletes képet
+adjon a `drop` metódus működéséről; a valóságban általában a típusod számára
+szükséges takarítókódot adnád meg egy kiírt üzenet helyett.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="dropping-a-value-early-with-std-mem-drop"></a>
 
-Unfortunately, it’s not straightforward to disable the automatic `drop`
-functionality. Disabling `drop` isn’t usually necessary; the whole point of the
-`Drop` trait is that it’s taken care of automatically. Occasionally, however,
-you might want to clean up a value early. One example is when using smart
-pointers that manage locks: You might want to force the `drop` method that
-releases the lock so that other code in the same scope can acquire the lock.
-Rust doesn’t let you call the `Drop` trait’s `drop` method manually; instead,
-you have to call the `std::mem::drop` function provided by the standard library
-if you want to force a value to be dropped before the end of its scope.
+Sajnos az automatikus `drop` funkcionalitást nem lehet egyszerűen kikapcsolni.
+A `drop` letiltására általában nincs is szükség; a `Drop` trait lényege épp az,
+hogy mindez automatikusan történik. Időnként azonban előfordulhat, hogy egy
+értéket korábban szeretnél megtisztítani. Erre példa a lockokat kezelő smart
+pointerek használata: elképzelhető, hogy ki akarod kényszeríteni a lockot
+felszabadító `drop` metódus futását, hogy ugyanabban a hatókörben lévő másik
+kód megszerezhesse a lockot. A Rust nem engedi, hogy kézzel meghívd a `Drop`
+trait `drop` metódusát; helyette a standard könyvtár által biztosított
+`std::mem::drop` függvényt kell meghívnod, ha egy értéket a hatóköre vége előtt
+akarsz megsemmisíteni.
 
-Trying to call the `Drop` trait’s `drop` method manually by modifying the
-`main` function from Listing 15-14 won’t work, as shown in Listing 15-15.
+Ha úgy próbáljuk kézzel meghívni a `Drop` trait `drop` metódusát, hogy
+módosítjuk a 15-14. lista `main` függvényét, az nem fog működni – ezt mutatja a
+15-15. lista.
 
-<Listing number="15-15" file-name="src/main.rs" caption="Attempting to call the `drop` method from the `Drop` trait manually to clean up early">
+<Listing number="15-15" file-name="src/main.rs" caption="Kísérlet a `Drop` trait `drop` metódusának kézi meghívására a korai takarítás érdekében">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-15/src/main.rs:here}}
@@ -87,32 +93,35 @@ Trying to call the `Drop` trait’s `drop` method manually by modifying the
 
 </Listing>
 
-When we try to compile this code, we’ll get this error:
+Amikor megpróbáljuk lefordítani ezt a kódot, a következő hibát kapjuk:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-15/output.txt}}
 ```
 
-This error message states that we’re not allowed to explicitly call `drop`. The
-error message uses the term _destructor_, which is the general programming term
-for a function that cleans up an instance. A _destructor_ is analogous to a
-_constructor_, which creates an instance. The `drop` function in Rust is one
-particular destructor.
+Ez a hibaüzenet azt mondja, hogy nem hívhatjuk meg explicit módon a `drop`-ot.
+A hibaüzenet a _destructor_ kifejezést használja, ami az általános programozási
+elnevezése annak a függvénynek, amely megtisztít egy példányt. A _destructor_ a
+_constructor_ megfelelője, amely létrehoz egy példányt. A Rustban a `drop`
+függvény egy konkrét destructor.
 
-Rust doesn’t let us call `drop` explicitly, because Rust would still
-automatically call `drop` on the value at the end of `main`. This would cause a
-double free error because Rust would be trying to clean up the same value twice.
+A Rust azért nem engedi, hogy explicit módon meghívjuk a `drop`-ot, mert a
+`main` végén akkor is automatikusan meghívná a `drop`-ot az értékre. Ez kettős
+felszabadítási (double free) hibát okozna, mert a Rust ugyanazt az értéket
+kétszer próbálná megtisztítani.
 
-We can’t disable the automatic insertion of `drop` when a value goes out of
-scope, and we can’t call the `drop` method explicitly. So, if we need to force
-a value to be cleaned up early, we use the `std::mem::drop` function.
+Nem tudjuk kikapcsolni a `drop` automatikus beszúrását, amikor egy érték kilép
+a hatóköréből, és nem hívhatjuk meg explicit módon a `drop` metódust sem. Ha
+tehát ki kell kényszerítenünk egy érték korai megtisztítását, a
+`std::mem::drop` függvényt használjuk.
 
-The `std::mem::drop` function is different from the `drop` method in the `Drop`
-trait. We call it by passing as an argument the value we want to force-drop.
-The function is in the prelude, so we can modify `main` in Listing 15-15 to
-call the `drop` function, as shown in Listing 15-16.
+A `std::mem::drop` függvény különbözik a `Drop` trait `drop` metódusától. Úgy
+hívjuk meg, hogy argumentumként átadjuk neki azt az értéket, amelynek a
+megsemmisítését ki akarjuk kényszeríteni. A függvény benne van a preludeban,
+így a 15-15. lista `main`-jét módosíthatjuk úgy, hogy meghívja a `drop`
+függvényt, ahogy azt a 15-16. lista mutatja.
 
-<Listing number="15-16" file-name="src/main.rs" caption="Calling `std::mem::drop` to explicitly drop a value before it goes out of scope">
+<Listing number="15-16" file-name="src/main.rs" caption="A `std::mem::drop` meghívása egy érték explicit megsemmisítésére, mielőtt kilépne a hatóköréből">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-16/src/main.rs:here}}
@@ -120,27 +129,27 @@ call the `drop` function, as shown in Listing 15-16.
 
 </Listing>
 
-Running this code will print the following:
+Ennek a kódnak a futtatása a következőt írja ki:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-16/output.txt}}
 ```
 
-The text ``Dropping CustomSmartPointer with data `some data`!`` is printed
-between the `CustomSmartPointer created` and `CustomSmartPointer dropped before
-the end of main` text, showing that the `drop` method code is called to drop
-`c` at that point.
+A ``Dropping CustomSmartPointer with data `some data`!`` szöveg a
+`CustomSmartPointer created` és a `CustomSmartPointer dropped before the end of
+main` szövegek között jelenik meg, ami azt mutatja, hogy a `drop` metódus kódja
+ezen a ponton fut le `c` megsemmisítéséhez.
 
-You can use code specified in a `Drop` trait implementation in many ways to
-make cleanup convenient and safe: For instance, you could use it to create your
-own memory allocator! With the `Drop` trait and Rust’s ownership system, you
-don’t have to remember to clean up, because Rust does it automatically.
+A `Drop` trait implementációjában megadott kódot sokféleképpen használhatod
+arra, hogy a takarítás kényelmes és biztonságos legyen: például akár saját
+memóriafoglalót is készíthetsz vele! A `Drop` trait-tel és a Rust
+ownership-rendszerével nem kell emlékezned a takarításra, mert a Rust
+automatikusan elvégzi.
 
-You also don’t have to worry about problems resulting from accidentally
-cleaning up values still in use: The ownership system that makes sure
-references are always valid also ensures that `drop` gets called only once when
-the value is no longer being used.
+Amiatt sem kell aggódnod, hogy a még használatban lévő értékek véletlen
+megtisztításából problémák adódnának: ugyanaz az ownership-rendszer, amely
+gondoskodik a referenciák érvényességéről, azt is biztosítja, hogy a `drop`
+csak egyszer hívódjon meg, akkor, amikor az értéket már nem használjuk.
 
-Now that we’ve examined `Box<T>` and some of the characteristics of smart
-pointers, let’s look at a few other smart pointers defined in the standard
-library.
+Most, hogy megvizsgáltuk a `Box<T>`-t és a smart pointerek néhány jellemzőjét,
+nézzünk meg néhány további smart pointert a standard könyvtárból.

@@ -1,34 +1,35 @@
-## The Slice Type {#the-slice-type}
+## A slice típus {#the-slice-type}
 
-_Slices_ let you reference a contiguous sequence of elements in a
-[collection](ch08-00-common-collections.md)<!-- ignore -->. A slice is a kind
-of reference, so it does not have ownership.
+A _slice_-ok segítségével egy [kollekció](ch08-00-common-collections.md)<!--
+ignore --> összefüggő elemsorozatára hivatkozhatsz. A slice a referencia egy
+fajtája, ezért nincs ownershipje.
 
-Here’s a small programming problem: Write a function that takes a string of
-words separated by spaces and returns the first word it finds in that string.
-If the function doesn’t find a space in the string, the whole string must be
-one word, so the entire string should be returned.
+Íme egy kis programozási feladat: írj egy függvényt, amely egy szóközökkel
+elválasztott szavakból álló sztringet kap, és visszaadja az első szót, amit
+talál benne. Ha a függvény nem talál szóközt a sztringben, akkor az egész
+sztring egyetlen szó, tehát a teljes sztringet kell visszaadni.
 
-> Note: For the purposes of introducing slices, we are assuming ASCII only in
-> this section; a more thorough discussion of UTF-8 handling is in the
-> [“Storing UTF-8 Encoded Text with Strings”][strings]<!-- ignore --> section
-> of Chapter 8.
+> Megjegyzés: A slice-ok bemutatásának kedvéért ebben a szakaszban csak ASCII
+> karaktereket feltételezünk; az UTF-8 kezelésének alaposabb tárgyalása a 8.
+> fejezet [„UTF-8 kódolású szöveg tárolása sztringekkel”][strings]<!-- ignore
+> --> című szakaszában található.
 
-Let’s work through how we’d write the signature of this function without using
-slices, to understand the problem that slices will solve:
+Nézzük végig, hogyan írnánk meg ennek a függvénynek a szignatúráját slice-ok
+nélkül, hogy megértsük, milyen problémát oldanak majd meg a slice-ok:
 
 ```rust,ignore
 fn first_word(s: &String) -> ?
 ```
 
-The `first_word` function has a parameter of type `&String`. We don’t need
-ownership, so this is fine. (In idiomatic Rust, functions do not take ownership
-of their arguments unless they need to, and the reasons for that will become
-clear as we keep going.) But what should we return? We don’t really have a way
-to talk about *part* of a string. However, we could return the index of the end
-of the word, indicated by a space. Let’s try that, as shown in Listing 4-7.
+A `first_word` függvénynek egy `&String` típusú paramétere van. Ownershipre
+nincs szükségünk, tehát ez így rendben van. (Az idiomatikus Rustban a
+függvények nem veszik át az argumentumaik ownershipjét, hacsak nincs rá
+szükségük; ennek okai a továbbiakban válnak majd világossá.) De mit adjunk
+vissza? Igazából nincs módunk arra, hogy egy sztring egy *részéről* beszéljünk.
+Visszaadhatjuk viszont a szó végének indexét, amelyet egy szóköz jelez.
+Próbáljuk ki ezt, ahogy a 4-7. lista mutatja.
 
-<Listing number="4-7" file-name="src/main.rs" caption="The `first_word` function that returns a byte index value into the `String` parameter">
+<Listing number="4-7" file-name="src/main.rs" caption="A `first_word` függvény, amely egy bájtindexet ad vissza a `String` paraméterbe">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:here}}
@@ -36,50 +37,50 @@ of the word, indicated by a space. Let’s try that, as shown in Listing 4-7.
 
 </Listing>
 
-Because we need to go through the `String` element by element and check whether
-a value is a space, we’ll convert our `String` to an array of bytes using the
-`as_bytes` method.
+Mivel elemenként végig kell mennünk a `String`-en, és meg kell néznünk, hogy
+egy érték szóköz-e, az `as_bytes` metódussal bájttömbbé alakítjuk a
+`String`-ünket.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:as_bytes}}
 ```
 
-Next, we create an iterator over the array of bytes using the `iter` method:
+Ezután az `iter` metódussal iterátort készítünk a bájttömb fölé:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:iter}}
 ```
 
-We’ll discuss iterators in more detail in [Chapter 13][ch13]<!-- ignore -->.
-For now, know that `iter` is a method that returns each element in a collection
-and that `enumerate` wraps the result of `iter` and returns each element as
-part of a tuple instead. The first element of the tuple returned from
-`enumerate` is the index, and the second element is a reference to the element.
-This is a bit more convenient than calculating the index ourselves.
+Az iterátorokat részletesebben a [13. fejezetben][ch13]<!-- ignore -->
+tárgyaljuk. Egyelőre elég annyi, hogy az `iter` egy olyan metódus, amely egy
+kollekció minden elemét visszaadja, az `enumerate` pedig becsomagolja az `iter`
+eredményét, és minden elemet egy tuple részeként ad vissza. Az `enumerate`
+által visszaadott tuple első eleme az index, a második eleme pedig egy
+referencia az elemre. Ez kicsit kényelmesebb, mintha magunk számolnánk ki az
+indexet.
 
-Because the `enumerate` method returns a tuple, we can use patterns to
-destructure that tuple. We’ll be discussing patterns more in [Chapter
-6][ch6]<!-- ignore -->. In the `for` loop, we specify a pattern that has `i`
-for the index in the tuple and `&item` for the single byte in the tuple.
-Because we get a reference to the element from `.iter().enumerate()`, we use
-`&` in the pattern.
+Mivel az `enumerate` metódus tuple-t ad vissza, mintákkal szétbonthatjuk ezt a
+tuple-t. A mintákról bővebben a [6. fejezetben][ch6]<!-- ignore --> lesz szó. A
+`for` ciklusban olyan mintát adunk meg, amelyben `i` áll a tuple indexére és
+`&item` a tuple-ben lévő egyetlen bájtra. Mivel az `.iter().enumerate()`
+hívástól egy referenciát kapunk az elemre, `&` jelet használunk a mintában.
 
-Inside the `for` loop, we search for the byte that represents the space by
-using the byte literal syntax. If we find a space, we return the position.
-Otherwise, we return the length of the string by using `s.len()`.
+A `for` cikluson belül a bájtliterál-szintaxis segítségével keressük a szóközt
+jelentő bájtot. Ha találunk szóközt, visszaadjuk a pozícióját. Egyébként az
+`s.len()` hívással a sztring hosszát adjuk vissza.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:inside_for}}
 ```
 
-We now have a way to find out the index of the end of the first word in the
-string, but there’s a problem. We’re returning a `usize` on its own, but it’s
-only a meaningful number in the context of the `&String`. In other words,
-because it’s a separate value from the `String`, there’s no guarantee that it
-will still be valid in the future. Consider the program in Listing 4-8 that
-uses the `first_word` function from Listing 4-7.
+Most már meg tudjuk állapítani a sztringben lévő első szó végének indexét, de
+van egy probléma. Egy önmagában álló `usize` értéket adunk vissza, amely
+azonban csak a `&String` kontextusában jelent valamit. Más szóval: mivel a
+`String`-től különálló érték, semmi nem garantálja, hogy a jövőben is érvényes
+marad. Nézd meg a 4-8. listában szereplő programot, amely a 4-7. listából
+származó `first_word` függvényt használja.
 
-<Listing number="4-8" file-name="src/main.rs" caption="Storing the result from calling the `first_word` function and then changing the `String` contents">
+<Listing number="4-8" file-name="src/main.rs" caption="A `first_word` függvény hívási eredményének eltárolása, majd a `String` tartalmának megváltoztatása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-08/src/main.rs:here}}
@@ -87,60 +88,61 @@ uses the `first_word` function from Listing 4-7.
 
 </Listing>
 
-This program compiles without any errors and would also do so if we used `word`
-after calling `s.clear()`. Because `word` isn’t connected to the state of `s`
-at all, `word` still contains the value `5`. We could use that value `5` with
-the variable `s` to try to extract the first word out, but this would be a bug
-because the contents of `s` have changed since we saved `5` in `word`.
+Ez a program hiba nélkül lefordul, és akkor is lefordulna, ha az `s.clear()`
+hívása után használnánk a `word`-öt. Mivel a `word` egyáltalán nincs
+kapcsolatban az `s` állapotával, a `word` továbbra is az `5` értéket
+tartalmazza. Ezt az `5` értéket felhasználhatnánk az `s` változóval együtt,
+hogy kinyerjük az első szót, ez azonban hiba lenne, mert az `s` tartalma
+megváltozott azóta, hogy elmentettük az `5`-öt a `word`-be.
 
-Having to worry about the index in `word` getting out of sync with the data in
-`s` is tedious and error-prone! Managing these indices is even more brittle if
-we write a `second_word` function. Its signature would have to look like this:
+Fárasztó és hibára hajlamos, ha folyton azon kell aggódnunk, hogy a `word`-ben
+tárolt index kicsúszik az `s`-ben lévő adattal való szinkronból! Ezeknek az
+indexeknek a kezelése még törékenyebb, ha írunk egy `second_word` függvényt is.
+A szignatúrájának így kellene kinéznie:
 
 ```rust,ignore
 fn second_word(s: &String) -> (usize, usize) {
 ```
 
-Now we’re tracking a starting _and_ an ending index, and we have even more
-values that were calculated from data in a particular state but aren’t tied to
-that state at all. We have three unrelated variables floating around that need
-to be kept in sync.
+Most már egy kezdő- _és_ egy végindexet is nyilvántartunk, és még több olyan
+értékünk van, amelyet egy adott állapotú adatból számoltunk ki, de amely
+semmilyen módon nincs hozzákötve ehhez az állapothoz. Három egymástól
+független változó lebeg körülöttünk, amelyeket szinkronban kell tartani.
 
-Luckily, Rust has a solution to this problem: string slices.
+Szerencsére a Rustnak van megoldása erre a problémára: a string slice-ok.
 
-### String Slices {#string-slices}
+### String slice-ok {#string-slices}
 
-A _string slice_ is a reference to a contiguous sequence of the elements of a
-`String`, and it looks like this:
+A _string slice_ egy `String` összefüggő elemsorozatára mutató referencia, és
+így néz ki:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-17-slice/src/main.rs:here}}
 ```
 
-Rather than a reference to the entire `String`, `hello` is a reference to a
-portion of the `String`, specified in the extra `[0..5]` bit. We create slices
-using a range within square brackets by specifying
-`[starting_index..ending_index]`, where _`starting_index`_ is the first
-position in the slice and _`ending_index`_ is one more than the last position
-in the slice. Internally, the slice data structure stores the starting position
-and the length of the slice, which corresponds to _`ending_index`_ minus
-_`starting_index`_. So, in the case of `let world = &s[6..11];`, `world` would
-be a slice that contains a pointer to the byte at index 6 of `s` with a length
-value of `5`.
+A `hello` nem a teljes `String`-re mutató referencia, hanem a `String` egy
+részére, amelyet a plusz `[0..5]` rész jelöl ki. A slice-okat szögletes
+zárójelben megadott tartománnyal hozzuk létre, `[kezdő_index..vég_index]`
+formában, ahol a _`kezdő_index`_ a slice első pozíciója, a _`vég_index`_ pedig
+eggyel több a slice utolsó pozíciójánál. Belül a slice adatszerkezete a
+kezdőpozíciót és a slice hosszát tárolja, amely a _`vég_index`_ mínusz a
+_`kezdő_index`_ értékkel egyenlő. Tehát a `let world = &s[6..11];` esetében a
+`world` egy olyan slice lenne, amely az `s` 6-os indexű bájtjára mutató
+pointert és az `5` hosszértéket tartalmazza.
 
-Figure 4-7 shows this in a diagram.
+A 4-7. ábra ezt szemlélteti.
 
-<img alt="Three tables: a table representing the stack data of s, which points
-to the byte at index 0 in a table of the string data &quot;hello world&quot; on
-the heap. The third table represents the stack data of the slice world, which
-has a length value of 5 and points to byte 6 of the heap data table."
+<img alt="Három táblázat: az egyik az s stacken tárolt adatait ábrázolja, amely
+a heapen lévő &quot;hello world&quot; sztringadat táblázatának 0-s indexű
+bájtjára mutat. A harmadik táblázat a world slice stacken tárolt adatait
+ábrázolja, amelynek hosszértéke 5, és a heapadat-táblázat 6-os bájtjára mutat."
 src="img/trpl04-07.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-7: A string slice referring to part of a
-`String`</span>
+<span class="caption">4-7. ábra: Egy string slice, amely egy `String` egy
+részére hivatkozik</span>
 
-With Rust’s `..` range syntax, if you want to start at index 0, you can drop
-the value before the two periods. In other words, these are equal:
+A Rust `..` tartomány-szintaxisában, ha a 0-s indexnél akarsz kezdeni,
+elhagyhatod a két pont előtti értéket. Más szóval ezek egyenértékűek:
 
 ```rust
 let s = String::from("hello");
@@ -149,8 +151,8 @@ let slice = &s[0..2];
 let slice = &s[..2];
 ```
 
-By the same token, if your slice includes the last byte of the `String`, you
-can drop the trailing number. That means these are equal:
+Ugyanígy, ha a slice tartalmazza a `String` utolsó bájtját is, elhagyhatod a
+záró számot. Vagyis ezek egyenértékűek:
 
 ```rust
 let s = String::from("hello");
@@ -161,8 +163,8 @@ let slice = &s[3..len];
 let slice = &s[3..];
 ```
 
-You can also drop both values to take a slice of the entire string. So, these
-are equal:
+Mindkét értéket is elhagyhatod, ha a teljes sztringről akarsz slice-ot venni.
+Tehát ezek egyenértékűek:
 
 ```rust
 let s = String::from("hello");
@@ -173,12 +175,12 @@ let slice = &s[0..len];
 let slice = &s[..];
 ```
 
-> Note: String slice range indices must occur at valid UTF-8 character
-> boundaries. If you attempt to create a string slice in the middle of a
-> multibyte character, your program will exit with an error.
+> Megjegyzés: A string slice tartományindexeinek érvényes UTF-8
+> karakterhatárokra kell esniük. Ha egy többbájtos karakter közepén próbálsz
+> string slice-ot létrehozni, a programod hibával fog kilépni.
 
-With all this information in mind, let’s rewrite `first_word` to return a
-slice. The type that signifies “string slice” is written as `&str`:
+Mindezek ismeretében írjuk át a `first_word` függvényt úgy, hogy slice-ot adjon
+vissza. A „string slice” típust `&str` alakban írjuk:
 
 <Listing file-name="src/main.rs">
 
@@ -188,30 +190,31 @@ slice. The type that signifies “string slice” is written as `&str`:
 
 </Listing>
 
-We get the index for the end of the word the same way we did in Listing 4-7, by
-looking for the first occurrence of a space. When we find a space, we return a
-string slice using the start of the string and the index of the space as the
-starting and ending indices.
+A szó végének indexét ugyanúgy kapjuk meg, mint a 4-7. listában: az első
+szóköz előfordulását keressük. Amikor megtaláljuk a szóközt, egy string
+slice-ot adunk vissza, amelynek kezdő- és végindexe a sztring eleje, illetve a
+szóköz indexe.
 
-Now when we call `first_word`, we get back a single value that is tied to the
-underlying data. The value is made up of a reference to the starting point of
-the slice and the number of elements in the slice.
+Így amikor meghívjuk a `first_word` függvényt, egyetlen olyan értéket kapunk
+vissza, amely hozzá van kötve a mögöttes adathoz. Az érték a slice
+kezdőpontjára mutató referenciából és a slice elemszámából áll.
 
-Returning a slice would also work for a `second_word` function:
+Egy `second_word` függvénynél is működne a slice visszaadása:
 
 ```rust,ignore
 fn second_word(s: &String) -> &str {
 ```
 
-We now have a straightforward API that’s much harder to mess up because the
-compiler will ensure that the references into the `String` remain valid.
-Remember the bug in the program in Listing 4-8, when we got the index to the
-end of the first word but then cleared the string so our index was invalid?
-That code was logically incorrect but didn’t show any immediate errors. The
-problems would show up later if we kept trying to use the first word index with
-an emptied string. Slices make this bug impossible and let us know much sooner
-that we have a problem with our code. Using the slice version of `first_word`
-will throw a compile-time error:
+Így egy egyszerű API-t kapunk, amelyet sokkal nehezebb elrontani, mert a
+fordító gondoskodik róla, hogy a `String`-be mutató referenciák érvényesek
+maradjanak. Emlékszel a 4-8. listában szereplő program hibájára, amikor
+megkaptuk az első szó végének indexét, aztán kiürítettük a sztringet, így az
+indexünk érvénytelenné vált? Az a kód logikailag hibás volt, de nem jelzett
+azonnal semmilyen hibát. A problémák később bukkantak volna fel, ha
+továbbra is használni próbáljuk az első szó indexét egy kiürített sztringgel.
+A slice-ok lehetetlenné teszik ezt a hibát, és sokkal hamarabb tudtunkra
+adják, hogy baj van a kódunkkal. A `first_word` slice-os változata fordítási
+idejű hibát vált ki:
 
 <Listing file-name="src/main.rs">
 
@@ -221,52 +224,54 @@ will throw a compile-time error:
 
 </Listing>
 
-Here’s the compiler error:
+Íme a fordítói hiba:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-19-slice-error/output.txt}}
 ```
 
-Recall from the borrowing rules that if we have an immutable reference to
-something, we cannot also take a mutable reference. Because `clear` needs to
-truncate the `String`, it needs to get a mutable reference. The `println!`
-after the call to `clear` uses the reference in `word`, so the immutable
-reference must still be active at that point. Rust disallows the mutable
-reference in `clear` and the immutable reference in `word` from existing at the
-same time, and compilation fails. Not only has Rust made our API easier to use,
-but it has also eliminated an entire class of errors at compile time!
+Emlékezz vissza a borrowing szabályaira: ha van egy nem módosítható
+referenciánk valamire, akkor nem vehetünk fel rá módosítható referenciát is.
+Mivel a `clear` metódusnak meg kell rövidítenie a `String`-et, módosítható
+referenciát kell szereznie. A `clear` hívása utáni `println!` a `word`-ben lévő
+referenciát használja, tehát a nem módosítható referenciának azon a ponton még
+aktívnak kell lennie. A Rust nem engedi, hogy a `clear`-beli módosítható
+referencia és a `word`-beli nem módosítható referencia egyszerre létezzen, így
+a fordítás meghiúsul. A Rust nemcsak könnyebben használhatóvá tette az
+API-nkat, hanem a hibák egy egész osztályát is kiküszöbölte fordítási időben!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="string-literals-are-slices"></a>
 
-#### String Literals as Slices
+#### Sztringliterálok mint slice-ok
 
-Recall that we talked about string literals being stored inside the binary. Now
-that we know about slices, we can properly understand string literals:
+Emlékezz vissza: azt mondtuk, hogy a sztringliterálok a binárison belül
+tárolódnak. Most, hogy ismerjük a slice-okat, végre rendesen megérthetjük a
+sztringliterálokat:
 
 ```rust
 let s = "Hello, world!";
 ```
 
-The type of `s` here is `&str`: It’s a slice pointing to that specific point of
-the binary. This is also why string literals are immutable; `&str` is an
-immutable reference.
+Az `s` típusa itt `&str`: egy slice, amely a bináris adott pontjára mutat. Ez
+egyben az oka annak is, hogy a sztringliterálok nem módosíthatók; az `&str`
+ugyanis nem módosítható referencia.
 
-#### String Slices as Parameters {#string-slices-as-parameters}
+#### String slice-ok paraméterként {#string-slices-as-parameters}
 
-Knowing that you can take slices of literals and `String` values leads us to
-one more improvement on `first_word`, and that’s its signature:
+Ha tudjuk, hogy literálokból és `String` értékekből egyaránt vehetünk
+slice-okat, az elvezet minket a `first_word` egy újabb javításához, mégpedig a
+szignatúrájához:
 
 ```rust,ignore
 fn first_word(s: &String) -> &str {
 ```
 
-A more experienced Rustacean would write the signature shown in Listing 4-9
-instead because it allows us to use the same function on both `&String` values
-and `&str` values.
+Egy tapasztaltabb rustacean helyette a 4-9. listában látható szignatúrát írná,
+mert így ugyanazt a függvényt használhatjuk `&String` és `&str` értékekre is.
 
-<Listing number="4-9" caption="Improving the `first_word` function by using a string slice for the type of the `s` parameter">
+<Listing number="4-9" caption="A `first_word` függvény javítása azzal, hogy az `s` paraméter típusához string slice-ot használunk">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-09/src/main.rs:here}}
@@ -274,14 +279,15 @@ and `&str` values.
 
 </Listing>
 
-If we have a string slice, we can pass that directly. If we have a `String`, we
-can pass a slice of the `String` or a reference to the `String`. This
-flexibility takes advantage of deref coercions, a feature we will cover in
-the [“Using Deref Coercions in Functions and Methods”][deref-coercions]<!--
-ignore --> section of Chapter 15.
+Ha string slice-unk van, azt közvetlenül átadhatjuk. Ha `String`-ünk van,
+átadhatjuk a `String` egy slice-át vagy egy referenciát a `String`-re. Ez a
+rugalmasság a deref coercionöket használja ki, amely képességet a 15. fejezet
+[„Deref coercionök használata függvényekben és metódusokban”][deref-coercions]<!--
+ignore --> című szakaszában tárgyalunk.
 
-Defining a function to take a string slice instead of a reference to a `String`
-makes our API more general and useful without losing any functionality:
+Ha egy függvényt úgy definiálunk, hogy egy `String`-re mutató referencia
+helyett string slice-ot vegyen át, azzal általánosabbá és hasznosabbá tesszük
+az API-nkat anélkül, hogy bármilyen funkcionalitást elveszítenénk:
 
 <Listing file-name="src/main.rs">
 
@@ -291,17 +297,17 @@ makes our API more general and useful without losing any functionality:
 
 </Listing>
 
-### Other Slices
+### Egyéb slice-ok
 
-String slices, as you might imagine, are specific to strings. But there’s a
-more general slice type too. Consider this array:
+A string slice-ok, ahogy sejthető, kifejezetten sztringekhez valók. Létezik
+azonban egy általánosabb slice típus is. Nézd meg ezt a tömböt:
 
 ```rust
 let a = [1, 2, 3, 4, 5];
 ```
 
-Just as we might want to refer to part of a string, we might want to refer to
-part of an array. We’d do so like this:
+Ahogy egy sztring egy részére szeretnénk hivatkozni, úgy egy tömb egy részére
+is hivatkozhatunk. Ezt így tennénk:
 
 ```rust
 let a = [1, 2, 3, 4, 5];
@@ -311,22 +317,24 @@ let slice = &a[1..3];
 assert_eq!(slice, &[2, 3]);
 ```
 
-This slice has the type `&[i32]`. It works the same way as string slices do, by
-storing a reference to the first element and a length. You’ll use this kind of
-slice for all sorts of other collections. We’ll discuss these collections in
-detail when we talk about vectors in Chapter 8.
+Ennek a slice-nak a típusa `&[i32]`. Ugyanúgy működik, mint a string slice-ok:
+az első elemre mutató referenciát és egy hosszt tárol. Ezt a fajta slice-ot
+mindenféle más kollekcióhoz is használni fogod. Ezekről a kollekciókról
+részletesen a 8. fejezetben, a vektorok kapcsán lesz szó.
 
-## Summary
+## Összefoglalás
 
-The concepts of ownership, borrowing, and slices ensure memory safety in Rust
-programs at compile time. The Rust language gives you control over your memory
-usage in the same way as other systems programming languages. But having the
-owner of data automatically clean up that data when the owner goes out of scope
-means you don’t have to write and debug extra code to get this control.
+Az ownership, a borrowing és a slice-ok fogalmai fordítási időben biztosítják a
+memóriabiztonságot a Rust-programokban. A Rust nyelv ugyanúgy kezedbe adja a
+memóriahasználat feletti irányítást, mint a többi rendszerprogramozási nyelv.
+Az viszont, hogy az adat ownere automatikusan feltakarít az adat után, amikor
+kikerül a hatóköréből, azt jelenti, hogy nem kell külön kódot írnod és
+hibakeresned ehhez az irányításhoz.
 
-Ownership affects how lots of other parts of Rust work, so we’ll talk about
-these concepts further throughout the rest of the book. Let’s move on to
-Chapter 5 and look at grouping pieces of data together in a `struct`.
+Az ownership a Rust sok más részének a működésére is hatással van, ezért ezekről
+a fogalmakról a könyv hátralévő részében is beszélni fogunk. Lépjünk tovább az
+5. fejezetre, és nézzük meg, hogyan csoportosíthatunk adatdarabkákat egy
+`struct`-ba.
 
 [ch13]: ch13-02-iterators.html
 [ch6]: ch06-02-match.html#patterns-that-bind-to-values

@@ -1,42 +1,45 @@
-## How to Write Tests {#how-to-write-tests}
+## Hogyan írjunk teszteket {#how-to-write-tests}
 
-_Tests_ are Rust functions that verify that the non-test code is functioning in
-the expected manner. The bodies of test functions typically perform these three
-actions:
+A _tesztek_ olyan Rust-függvények, amelyek ellenőrzik, hogy a nem teszt jellegű
+kód az elvárt módon működik-e. A tesztfüggvények törzse jellemzően a következő
+három műveletet végzi el:
 
-- Set up any needed data or state.
-- Run the code you want to test.
-- Assert that the results are what you expect.
+- Előkészíti a szükséges adatokat vagy állapotot.
+- Lefuttatja a tesztelni kívánt kódot.
+- Állítást fogalmaz meg arról, hogy az eredmények megfelelnek az elvárásnak.
 
-Let’s look at the features Rust provides specifically for writing tests that
-take these actions, which include the `test` attribute, a few macros, and the
-`should_panic` attribute.
+Nézzük meg, milyen eszközöket ad a Rust kifejezetten az ilyen műveleteket végző
+tesztek írásához: ilyen a `test` attribútum, néhány makró és a `should_panic`
+attribútum.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="the-anatomy-of-a-test-function"></a>
 
-### Structuring Test Functions
+### Tesztfüggvények felépítése
 
-At its simplest, a test in Rust is a function that’s annotated with the `test`
-attribute. Attributes are metadata about pieces of Rust code; one example is
-the `derive` attribute we used with structs in Chapter 5. To change a function
-into a test function, add `#[test]` on the line before `fn`. When you run your
-tests with the `cargo test` command, Rust builds a test runner binary that runs
-the annotated functions and reports on whether each test function passes or
-fails.
+A legegyszerűbb esetben egy teszt a Rustban nem más, mint egy `test`
+attribútummal ellátott függvény. Az attribútumok metaadatok a Rust-kód egyes
+darabjairól; egy példa erre a `derive` attribútum, amelyet az 5. fejezetben
+struct-okkal használtunk. Ahhoz, hogy egy függvényből tesztfüggvény legyen,
+írd a `#[test]` sort az `fn` elé. Amikor a `cargo test` paranccsal futtatod a
+tesztjeidet, a Rust felépít egy tesztfuttató binárist, amely lefuttatja az
+annotált függvényeket, és jelenti, hogy az egyes tesztfüggvények sikeresek
+vagy sikertelenek voltak-e.
 
-Whenever we make a new library project with Cargo, a test module with a test
-function in it is automatically generated for us. This module gives you a
-template for writing your tests so that you don’t have to look up the exact
-structure and syntax every time you start a new project. You can add as many
-additional test functions and as many test modules as you want!
+Valahányszor új library projektet hozunk létre a Cargóval, automatikusan
+generálódik egy teszt modul benne egy tesztfüggvénnyel. Ez a modul mintát ad a
+tesztek írásához, így nem kell minden új projekt kezdetén utánanézned a pontos
+szerkezetnek és szintaxisnak. Annyi további tesztfüggvényt és annyi teszt
+modult adhatsz hozzá, amennyit csak akarsz!
 
-We’ll explore some aspects of how tests work by experimenting with the template
-test before we actually test any code. Then, we’ll write some real-world tests
-that call some code that we’ve written and assert that its behavior is correct.
+A tesztek működésének néhány aspektusát a minta teszttel kísérletezve fogjuk
+felfedezni, mielőtt bármilyen valódi kódot tesztelnénk. Utána írunk néhány
+életszerű tesztet, amelyek az általunk írt kódot hívják meg, és állítást
+fogalmaznak meg a helyes viselkedéséről.
 
-Let’s create a new library project called `adder` that will add two numbers:
+Hozzunk létre egy új, `adder` nevű library projektet, amely két számot ad
+össze:
 
 ```console
 $ cargo new adder --lib
@@ -44,10 +47,10 @@ $ cargo new adder --lib
 $ cd adder
 ```
 
-The contents of the _src/lib.rs_ file in your `adder` library should look like
-Listing 11-1.
+Az `adder` library _src/lib.rs_ fájljának tartalma a 11-1. listához hasonlóan
+néz ki.
 
-<Listing number="11-1" file-name="src/lib.rs" caption="The code generated automatically by `cargo new`">
+<Listing number="11-1" file-name="src/lib.rs" caption="A `cargo new` által automatikusan generált kód">
 
 <!-- manual-regeneration
 cd listings/ch11-writing-automated-tests
@@ -66,24 +69,24 @@ cd ../../..
 
 </Listing>
 
-The file starts with an example `add` function so that we have something to
-test.
+A fájl egy példa `add` függvénnyel kezdődik, hogy legyen mit tesztelnünk.
 
-For now, let’s focus solely on the `it_works` function. Note the `#[test]`
-annotation: This attribute indicates this is a test function, so the test
-runner knows to treat this function as a test. We might also have non-test
-functions in the `tests` module to help set up common scenarios or perform
-common operations, so we always need to indicate which functions are tests.
+Egyelőre összpontosítsunk kizárólag az `it_works` függvényre. Figyeld meg a
+`#[test]` annotációt: ez az attribútum jelzi, hogy ez egy tesztfüggvény, így a
+tesztfuttató tudja, hogy tesztként kell kezelnie. A `tests` modulban lehetnek
+nem teszt jellegű függvények is, amelyek gyakori helyzetek előkészítésében vagy
+gyakori műveletek elvégzésében segítenek, ezért mindig jeleznünk kell, mely
+függvények a tesztek.
 
-The example function body uses the `assert_eq!` macro to assert that `result`,
-which contains the result of calling `add` with 2 and 2, equals 4. This
-assertion serves as an example of the format for a typical test. Let’s run it
-to see that this test passes.
+A példafüggvény törzse az `assert_eq!` makrót használja annak állítására, hogy
+a `result`, amely az `add` 2-vel és 2-vel való meghívásának eredményét
+tartalmazza, egyenlő 4-gyel. Ez az állítás egy tipikus teszt formáját mutatja
+be példaként. Futtassuk le, hogy lássuk: a teszt sikeres.
 
-The `cargo test` command runs all tests in our project, as shown in Listing
-11-2.
+A `cargo test` parancs lefuttatja a projektünk összes tesztjét, ahogy a 11-2.
+listán látható.
 
-<Listing number="11-2" caption="The output from running the automatically generated test">
+<Listing number="11-2" caption="Az automatikusan generált teszt futtatásának kimenete">
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-01/output.txt}}
@@ -91,57 +94,60 @@ The `cargo test` command runs all tests in our project, as shown in Listing
 
 </Listing>
 
-Cargo compiled and ran the test. We see the line `running 1 test`. The next
-line shows the name of the generated test function, called `tests::it_works`,
-and that the result of running that test is `ok`. The overall summary `test
-result: ok.` means that all the tests passed, and the portion that reads `1
-passed; 0 failed` totals the number of tests that passed or failed.
+A Cargo lefordította és lefuttatta a tesztet. Látjuk a `running 1 test` sort. A
+következő sor a generált tesztfüggvény nevét mutatja, amely `tests::it_works`,
+és azt, hogy a teszt futtatásának eredménye `ok`. Az összegző `test result:
+ok.` azt jelenti, hogy minden teszt sikeres volt, a `1 passed; 0 failed` rész
+pedig összesíti a sikeres, illetve sikertelen tesztek számát.
 
-It’s possible to mark a test as ignored so that it doesn’t run in a particular
-instance; we’ll cover that in the [“Ignoring Tests Unless Specifically
-Requested”][ignoring]<!-- ignore --> section later in this chapter. Because we
-haven’t done that here, the summary shows `0 ignored`. We can also pass an
-argument to the `cargo test` command to run only tests whose name matches a
-string; this is called _filtering_, and we’ll cover it in the [“Running a
-Subset of Tests by Name”][subset]<!-- ignore --> section. Here, we haven’t
-filtered the tests being run, so the end of the summary shows `0 filtered out`.
+Egy tesztet meg lehet jelölni figyelmen kívül hagyottként, hogy adott esetben
+ne fusson le; erről az [„Tesztek kihagyása, hacsak nem kérjük őket
+kifejezetten”][ignoring]<!-- ignore --> szakaszban lesz szó a fejezet későbbi
+részében. Mivel ezt itt nem tettük meg, az összegzés `0 ignored` értéket mutat.
+A `cargo test` parancsnak argumentumot is átadhatunk, hogy csak azokat a
+teszteket futtassa, amelyek neve illeszkedik egy adott karakterláncra; ezt
+_szűrésnek_ nevezzük, és a [„Tesztek egy részhalmazának futtatása név
+alapján”][subset]<!-- ignore --> szakaszban tárgyaljuk. Itt nem szűrtük a
+lefuttatott teszteket, ezért az összegzés végén `0 filtered out` szerepel.
 
-The `0 measured` statistic is for benchmark tests that measure performance.
-Benchmark tests are, as of this writing, only available in nightly Rust. See
-[the documentation about benchmark tests][bench] to learn more.
+A `0 measured` statisztika a teljesítményt mérő benchmark tesztekre vonatkozik.
+A benchmark tesztek e sorok írásakor csak a nightly Rustban érhetők el.
+További információért lásd [a benchmark tesztekről szóló
+dokumentációt][bench].
 
-The next part of the test output starting at `Doc-tests adder` is for the
-results of any documentation tests. We don’t have any documentation tests yet,
-but Rust can compile any code examples that appear in our API documentation.
-This feature helps keep your docs and your code in sync! We’ll discuss how to
-write documentation tests in the [“Documentation Comments as
-Tests”][doc-comments]<!-- ignore --> section of Chapter 14. For now, we’ll
-ignore the `Doc-tests` output.
+A teszt kimenetének következő része, amely a `Doc-tests adder` sorral kezdődik,
+az esetleges dokumentációs tesztek eredményeit tartalmazza. Egyelőre nincsenek
+dokumentációs tesztjeink, de a Rust le tudja fordítani az API-dokumentációnkban
+megjelenő kódpéldákat. Ez a képesség segít szinkronban tartani a dokumentációt
+és a kódot! A dokumentációs tesztek írásáról a 14. fejezet [„Dokumentációs
+kommentek tesztként”][doc-comments]<!-- ignore --> szakaszában lesz szó.
+Egyelőre figyelmen kívül hagyjuk a `Doc-tests` kimenetet.
 
-Let’s start to customize the test to our own needs. First, change the name of
-the `it_works` function to a different name, such as `exploration`, like so:
+Kezdjük el a tesztet a saját igényeinkhez igazítani. Először nevezd át az
+`it_works` függvényt valami másra, például `exploration`-re, így:
 
-<span class="filename">Filename: src/lib.rs</span>
+<span class="filename">Fájlnév: src/lib.rs</span>
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-01-changing-test-name/src/lib.rs}}
 ```
 
-Then, run `cargo test` again. The output now shows `exploration` instead of
-`it_works`:
+Ezután futtasd újra a `cargo test` parancsot. A kimenet most már `it_works`
+helyett `exploration`-t mutat:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-01-changing-test-name/output.txt}}
 ```
 
-Now we’ll add another test, but this time we’ll make a test that fails! Tests
-fail when something in the test function panics. Each test is run in a new
-thread, and when the main thread sees that a test thread has died, the test is
-marked as failed. In Chapter 9, we talked about how the simplest way to panic
-is to call the `panic!` macro. Enter the new test as a function named
-`another`, so your _src/lib.rs_ file looks like Listing 11-3.
+Most hozzáadunk még egy tesztet, de ezúttal olyat, amely megbukik! A tesztek
+akkor buknak meg, ha a tesztfüggvényben valami panicot vált ki. Minden teszt
+külön szálon fut, és amikor a fő szál látja, hogy egy tesztszál elhalálozott, a
+tesztet sikertelennek jelöli. A 9. fejezetben szó volt róla, hogy a panic
+kiváltásának legegyszerűbb módja a `panic!` makró meghívása. Vidd be az új
+tesztet `another` nevű függvényként, hogy a _src/lib.rs_ fájlod a 11-3. listához
+hasonlóan nézzen ki.
 
-<Listing number="11-3" file-name="src/lib.rs" caption="Adding a second test that will fail because we call the `panic!` macro">
+<Listing number="11-3" file-name="src/lib.rs" caption="Egy második teszt hozzáadása, amely megbukik, mert meghívjuk a `panic!` makrót">
 
 ```rust,panics,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-03/src/lib.rs}}
@@ -149,10 +155,11 @@ is to call the `panic!` macro. Enter the new test as a function named
 
 </Listing>
 
-Run the tests again using `cargo test`. The output should look like Listing
-11-4, which shows that our `exploration` test passed and `another` failed.
+Futtasd le újra a teszteket a `cargo test` paranccsal. A kimenetnek a 11-4.
+listához hasonlóan kell kinéznie, amely azt mutatja, hogy az `exploration`
+tesztünk sikeres volt, az `another` pedig megbukott.
 
-<Listing number="11-4" caption="Test results when one test passes and one test fails">
+<Listing number="11-4" caption="Teszteredmények, amikor az egyik teszt sikeres, a másik megbukik">
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-03/output.txt}}
@@ -165,41 +172,44 @@ rg panicked listings/ch11-writing-automated-tests/listing-11-03/output.txt
 check the line number of the panic matches the line number in the following paragraph
  -->
 
-Instead of `ok`, the line `test tests::another` shows `FAILED`. Two new
-sections appear between the individual results and the summary: The first
-displays the detailed reason for each test failure. In this case, we get the
-details that `tests::another` failed because it panicked with the message `Make
-this test fail` on line 17 in the _src/lib.rs_ file. The next section lists
-just the names of all the failing tests, which is useful when there are lots of
-tests and lots of detailed failing test output. We can use the name of a
-failing test to run just that test to debug it more easily; we’ll talk more
-about ways to run tests in the [“Controlling How Tests Are
-Run”][controlling-how-tests-are-run]<!-- ignore --> section.
+Az `ok` helyett a `test tests::another` sorban `FAILED` áll. Két új szakasz
+jelenik meg az egyes eredmények és az összegzés között: az első az egyes
+tesztbukások részletes okát mutatja. Ebben az esetben azt a részletet kapjuk,
+hogy a `tests::another` azért bukott meg, mert panicot váltott ki a `Make this
+test fail` üzenettel a _src/lib.rs_ fájl 17. sorában. A következő szakasz csak
+az összes megbukott teszt nevét sorolja fel, ami akkor hasznos, ha sok teszt
+van és sok részletes bukási kimenet. Egy megbukott teszt nevét felhasználhatjuk
+arra, hogy csak azt az egy tesztet futtassuk le, és könnyebben hibakeressünk;
+a tesztek futtatásának módjairól bővebben a [„A tesztek futtatásának
+szabályozása”][controlling-how-tests-are-run]<!-- ignore --> szakaszban lesz
+szó.
 
-The summary line displays at the end: Overall, our test result is `FAILED`. We
-had one test pass and one test fail.
+Az összegző sor a végén jelenik meg: összességében a teszteredményünk `FAILED`.
+Egy teszt sikeres volt, egy pedig megbukott.
 
-Now that you’ve seen what the test results look like in different scenarios,
-let’s look at some macros other than `panic!` that are useful in tests.
+Most, hogy láttad, hogyan néznek ki a teszteredmények különböző helyzetekben,
+nézzünk meg néhány `panic!`-on kívüli makrót, amelyek hasznosak a tesztekben.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="checking-results-with-the-assert-macro"></a>
 
-### Checking Results with `assert!`
+### Eredmények ellenőrzése az `assert!` makróval
 
-The `assert!` macro, provided by the standard library, is useful when you want
-to ensure that some condition in a test evaluates to `true`. We give the
-`assert!` macro an argument that evaluates to a Boolean. If the value is
-`true`, nothing happens and the test passes. If the value is `false`, the
-`assert!` macro calls `panic!` to cause the test to fail. Using the `assert!`
-macro helps us check that our code is functioning in the way we intend.
+A standard könyvtár által biztosított `assert!` makró akkor hasznos, ha meg
+akarsz bizonyosodni arról, hogy egy tesztben valamilyen feltétel `true`
+értékűre értékelődik ki. Az `assert!` makrónak olyan argumentumot adunk, amely
+logikai értékre értékelődik ki. Ha az érték `true`, semmi sem történik, és a
+teszt sikeres. Ha az érték `false`, az `assert!` makró meghívja a `panic!`
+makrót, amivel a teszt megbukik. Az `assert!` makró használata segít
+ellenőrizni, hogy a kódunk a szándékunknak megfelelően működik-e.
 
-In Chapter 5, Listing 5-15, we used a `Rectangle` struct and a `can_hold`
-method, which are repeated here in Listing 11-5. Let’s put this code in the
-_src/lib.rs_ file, then write some tests for it using the `assert!` macro.
+Az 5. fejezet 5-15. listáján egy `Rectangle` struct-ot és egy `can_hold`
+metódust használtunk, amelyeket itt megismétlünk a 11-5. listán. Tegyük ezt a
+kódot a _src/lib.rs_ fájlba, majd írjunk hozzá néhány tesztet az `assert!`
+makróval.
 
-<Listing number="11-5" file-name="src/lib.rs" caption="The `Rectangle` struct and its `can_hold` method from Chapter 5">
+<Listing number="11-5" file-name="src/lib.rs" caption="A `Rectangle` struct és a `can_hold` metódusa az 5. fejezetből">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-05/src/lib.rs}}
@@ -207,13 +217,13 @@ _src/lib.rs_ file, then write some tests for it using the `assert!` macro.
 
 </Listing>
 
-The `can_hold` method returns a Boolean, which means it’s a perfect use case
-for the `assert!` macro. In Listing 11-6, we write a test that exercises the
-`can_hold` method by creating a `Rectangle` instance that has a width of 8 and
-a height of 7 and asserting that it can hold another `Rectangle` instance that
-has a width of 5 and a height of 1.
+A `can_hold` metódus logikai értéket ad vissza, ami azt jelenti, hogy tökéletes
+felhasználási eset az `assert!` makró számára. A 11-6. listán olyan tesztet
+írunk, amely úgy próbálja ki a `can_hold` metódust, hogy létrehoz egy 8
+szélességű és 7 magasságú `Rectangle` példányt, és azt állítja, hogy ez képes
+befogadni egy másik, 5 szélességű és 1 magasságú `Rectangle` példányt.
 
-<Listing number="11-6" file-name="src/lib.rs" caption="A test for `can_hold` that checks whether a larger rectangle can indeed hold a smaller rectangle">
+<Listing number="11-6" file-name="src/lib.rs" caption="Egy teszt a `can_hold`-hoz, amely azt ellenőrzi, hogy egy nagyobb téglalap valóban be tud-e fogadni egy kisebbet">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-06/src/lib.rs:here}}
@@ -221,81 +231,83 @@ has a width of 5 and a height of 1.
 
 </Listing>
 
-Note the `use super::*;` line inside the `tests` module. The `tests` module is
-a regular module that follows the usual visibility rules we covered in Chapter
-7 in the [“Paths for Referring to an Item in the Module
-Tree”][paths-for-referring-to-an-item-in-the-module-tree]<!-- ignore -->
-section. Because the `tests` module is an inner module, we need to bring the
-code under test in the outer module into the scope of the inner module. We use
-a glob here, so anything we define in the outer module is available to this
-`tests` module.
+Figyeld meg a `use super::*;` sort a `tests` modulon belül. A `tests` modul
+egy szokásos modul, amely a 7. fejezet [„Útvonalak elemekre való hivatkozáshoz
+a modulfában”][paths-for-referring-to-an-item-in-the-module-tree]<!-- ignore -->
+szakaszában tárgyalt szokásos láthatósági szabályokat követi. Mivel a `tests`
+modul belső modul, a külső modulban lévő, tesztelendő kódot be kell hoznunk a
+belső modul hatókörébe. Itt glob-ot használunk, így minden, amit a külső
+modulban definiálunk, elérhető ebben a `tests` modulban.
 
-We’ve named our test `larger_can_hold_smaller`, and we’ve created the two
-`Rectangle` instances that we need. Then, we called the `assert!` macro and
-passed it the result of calling `larger.can_hold(&smaller)`. This expression is
-supposed to return `true`, so our test should pass. Let’s find out!
+A tesztünket `larger_can_hold_smaller`-nek neveztük el, és létrehoztuk a két
+szükséges `Rectangle` példányt. Ezután meghívtuk az `assert!` makrót, és átadtuk
+neki a `larger.can_hold(&smaller)` hívás eredményét. Ennek a kifejezésnek
+`true` értéket kell adnia, tehát a tesztünknek sikeresnek kell lennie.
+Nézzük meg!
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-06/output.txt}}
 ```
 
-It does pass! Let’s add another test, this time asserting that a smaller
-rectangle cannot hold a larger rectangle:
+Valóban sikeres! Adjunk hozzá egy másik tesztet, ezúttal azt állítva, hogy egy
+kisebb téglalap nem tud befogadni egy nagyobbat:
 
-<span class="filename">Filename: src/lib.rs</span>
+<span class="filename">Fájlnév: src/lib.rs</span>
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-02-adding-another-rectangle-test/src/lib.rs:here}}
 ```
 
-Because the correct result of the `can_hold` function in this case is `false`,
-we need to negate that result before we pass it to the `assert!` macro. As a
-result, our test will pass if `can_hold` returns `false`:
+Mivel a `can_hold` függvény helyes eredménye ebben az esetben `false`, ezt az
+eredményt negálnunk kell, mielőtt átadjuk az `assert!` makrónak. Ennek
+eredményeként a tesztünk akkor lesz sikeres, ha a `can_hold` `false` értéket ad
+vissza:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-02-adding-another-rectangle-test/output.txt}}
 ```
 
-Two tests that pass! Now let’s see what happens to our test results when we
-introduce a bug in our code. We’ll change the implementation of the `can_hold`
-method by replacing the greater-than sign (`>`) with a less-than sign (`<`)
-when it compares the widths:
+Két sikeres teszt! Most nézzük meg, mi történik a teszteredményeinkkel, ha hibát
+viszünk a kódunkba. Módosítjuk a `can_hold` metódus implementációját úgy, hogy a
+nagyobb-mint jelet (`>`) kisebb-mint jelre (`<`) cseréljük a szélességek
+összehasonlításakor:
 
 ```rust,not_desired_behavior,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-03-introducing-a-bug/src/lib.rs:here}}
 ```
 
-Running the tests now produces the following:
+A tesztek futtatása most a következőt eredményezi:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-03-introducing-a-bug/output.txt}}
 ```
 
-Our tests caught the bug! Because `larger.width` is `8` and `smaller.width` is
-`5`, the comparison of the widths in `can_hold` now returns `false`: 8 is not
-less than 5.
+A tesztjeink elkapták a hibát! Mivel a `larger.width` értéke `8`, a
+`smaller.width` értéke pedig `5`, a szélességek összehasonlítása a `can_hold`
+metódusban most `false` értéket ad: a 8 nem kisebb, mint az 5.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="testing-equality-with-the-assert_eq-and-assert_ne-macros"></a>
 
-### Testing Equality with `assert_eq!` and `assert_ne!`
+### Egyenlőség tesztelése az `assert_eq!` és `assert_ne!` makróval
 
-A common way to verify functionality is to test for equality between the result
-of the code under test and the value you expect the code to return. You could
-do this by using the `assert!` macro and passing it an expression using the
-`==` operator. However, this is such a common test that the standard library
-provides a pair of macros—`assert_eq!` and `assert_ne!`—to perform this test
-more conveniently. These macros compare two arguments for equality or
-inequality, respectively. They’ll also print the two values if the assertion
-fails, which makes it easier to see _why_ the test failed; conversely, the
-`assert!` macro only indicates that it got a `false` value for the `==`
-expression, without printing the values that led to the `false` value.
+A működés ellenőrzésének gyakori módja, hogy egyenlőséget tesztelünk a
+tesztelendő kód eredménye és a kódtól várt érték között. Ezt megtehetnéd úgy is,
+hogy az `assert!` makrót használod, és egy `==` operátort tartalmazó kifejezést
+adsz át neki. Ez azonban olyan gyakori teszt, hogy a standard könyvtár egy
+makrópárt – az `assert_eq!` és `assert_ne!` makrót – biztosít ennek a tesztnek a
+kényelmesebb elvégzésére. Ezek a makrók két argumentumot hasonlítanak össze
+egyenlőség, illetve egyenlőtlenség szempontjából. Ráadásul ki is írják a két
+értéket, ha az állítás nem teljesül, ami megkönnyíti annak megállapítását, hogy
+_miért_ bukott meg a teszt; ezzel szemben az `assert!` makró csak azt jelzi,
+hogy `false` értéket kapott az `==` kifejezésre, anélkül hogy kiírná azokat az
+értékeket, amelyek a `false` értékhez vezettek.
 
-In Listing 11-7, we write a function named `add_two` that adds `2` to its
-parameter, and then we test this function using the `assert_eq!` macro.
+A 11-7. listán írunk egy `add_two` nevű függvényt, amely `2`-t ad a
+paraméteréhez, majd az `assert_eq!` makróval teszteljük ezt a függvényt.
 
-<Listing number="11-7" file-name="src/lib.rs" caption="Testing the function `add_two` using the `assert_eq!` macro">
+<Listing number="11-7" file-name="src/lib.rs" caption="Az `add_two` függvény tesztelése az `assert_eq!` makróval">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-07/src/lib.rs}}
@@ -303,143 +315,150 @@ parameter, and then we test this function using the `assert_eq!` macro.
 
 </Listing>
 
-Let’s check that it passes!
+Ellenőrizzük, hogy sikeres-e!
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-07/output.txt}}
 ```
 
-We create a variable named `result` that holds the result of calling
-`add_two(2)`. Then, we pass `result` and `4` as the arguments to the
-`assert_eq!` macro. The output line for this test is `test tests::it_adds_two
-... ok`, and the `ok` text indicates that our test passed!
+Létrehozunk egy `result` nevű változót, amely az `add_two(2)` hívás eredményét
+tartalmazza. Ezután a `result` és a `4` értéket adjuk át argumentumként az
+`assert_eq!` makrónak. Ennek a tesztnek a kimeneti sora `test tests::it_adds_two
+... ok`, és az `ok` szöveg jelzi, hogy a tesztünk sikeres volt!
 
-Let’s introduce a bug into our code to see what `assert_eq!` looks like when it
-fails. Change the implementation of the `add_two` function to instead add `3`:
+Vigyünk hibát a kódunkba, hogy lássuk, hogyan néz ki az `assert_eq!`, amikor
+megbukik. Módosítsd az `add_two` függvény implementációját úgy, hogy `3`-at
+adjon hozzá:
 
 ```rust,not_desired_behavior,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-04-bug-in-add-two/src/lib.rs:here}}
 ```
 
-Run the tests again:
+Futtasd le újra a teszteket:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-04-bug-in-add-two/output.txt}}
 ```
 
-Our test caught the bug! The `tests::it_adds_two` test failed, and the message
-tells us that the assertion that failed was `left == right` and what the `left`
-and `right` values are. This message helps us start debugging: The `left`
-argument, where we had the result of calling `add_two(2)`, was `5`, but the
-`right` argument was `4`. You can imagine that this would be especially helpful
-when we have a lot of tests going on.
+A tesztünk elkapta a hibát! A `tests::it_adds_two` teszt megbukott, és az
+üzenet elárulja, hogy a `left == right` állítás nem teljesült, valamint azt is,
+mi a `left` és a `right` értéke. Ez az üzenet segít elindulni a hibakeresésben:
+a `left` argumentum, ahol az `add_two(2)` hívás eredménye volt, `5` lett, a
+`right` argumentum viszont `4`. Elképzelheted, hogy ez különösen hasznos, amikor
+sok tesztünk fut egyszerre.
 
-Note that in some languages and test frameworks, the parameters to equality
-assertion functions are called `expected` and `actual`, and the order in which
-we specify the arguments matters. However, in Rust, they’re called `left` and
-`right`, and the order in which we specify the value we expect and the value
-the code produces doesn’t matter. We could write the assertion in this test as
-`assert_eq!(4, result)`, which would result in the same failure message that
-displays `` assertion `left == right` failed ``.
+Vedd figyelembe, hogy egyes nyelvekben és tesztelési keretrendszerekben az
+egyenlőséget vizsgáló állításfüggvények paramétereit `expected` és `actual`
+néven hívják, és számít, milyen sorrendben adjuk meg az argumentumokat. A
+Rustban azonban `left` és `right` a nevük, és nem számít, milyen sorrendben
+adjuk meg az elvárt értéket és a kód által előállított értéket. Ebben a
+tesztben az állítást `assert_eq!(4, result)` alakban is írhattuk volna, ami
+ugyanazt a bukási üzenetet eredményezte volna, amely az
+`` assertion `left == right` failed `` szöveget jeleníti meg.
 
-The `assert_ne!` macro will pass if the two values we give it are not equal and
-will fail if they are equal. This macro is most useful for cases when we’re not
-sure what a value _will_ be, but we know what the value definitely _shouldn’t_
-be. For example, if we’re testing a function that is guaranteed to change its
-input in some way, but the way in which the input is changed depends on the day
-of the week that we run our tests, the best thing to assert might be that the
-output of the function is not equal to the input.
+Az `assert_ne!` makró akkor sikeres, ha a két megadott érték nem egyenlő, és
+akkor bukik meg, ha egyenlők. Ez a makró leginkább azokban az esetekben
+hasznos, amikor nem tudjuk biztosan, mi _lesz_ egy érték, de tudjuk, minek
+biztosan _nem_ szabad lennie. Ha például egy olyan függvényt tesztelünk,
+amelyről garantált, hogy valamilyen módon megváltoztatja a bemenetét, de a
+változtatás módja attól függ, a hét melyik napján futtatjuk a tesztjeinket,
+akkor a legjobb, amit állíthatunk, az lehet, hogy a függvény kimenete nem
+egyenlő a bemenetével.
 
-Under the surface, the `assert_eq!` and `assert_ne!` macros use the operators
-`==` and `!=`, respectively. When the assertions fail, these macros print their
-arguments using debug formatting, which means the values being compared must
-implement the `PartialEq` and `Debug` traits. All primitive types and most of
-the standard library types implement these traits. For structs and enums that
-you define yourself, you’ll need to implement `PartialEq` to assert equality of
-those types. You’ll also need to implement `Debug` to print the values when the
-assertion fails. Because both traits are derivable traits, as mentioned in
-Listing 5-12 in Chapter 5, this is usually as straightforward as adding the
-`#[derive(PartialEq, Debug)]` annotation to your struct or enum definition. See
-Appendix C, [“Derivable Traits,”][derivable-traits]<!-- ignore --> for more
-details about these and other derivable traits.
+A felszín alatt az `assert_eq!` és `assert_ne!` makró a `==`, illetve a `!=`
+operátort használja. Amikor az állítások nem teljesülnek, ezek a makrók debug
+formázással írják ki az argumentumaikat, ami azt jelenti, hogy az
+összehasonlított értékeknek implementálniuk kell a `PartialEq` és `Debug`
+trait-et. Minden primitív típus és a standard könyvtár típusainak nagy része
+implementálja ezeket a trait-eket. Az általad definiált struct-oknál és
+enumoknál implementálnod kell a `PartialEq`-et, hogy egyenlőséget állíthass
+ezekre a típusokra. A `Debug`-ot is implementálnod kell, hogy az értékek
+kiíródjanak, amikor az állítás nem teljesül. Mivel mindkét trait
+származtatható, ahogy az 5. fejezet 5-12. listájánál említettük, ez általában
+annyira egyszerű, mint hozzáadni a `#[derive(PartialEq, Debug)]` annotációt a
+struct- vagy enum-definíciódhoz. További részletekért ezekről és más
+származtatható trait-ekről lásd a C függeléket, [„Származtatható
+trait-ek”][derivable-traits]<!-- ignore -->.
 
-### Adding Custom Failure Messages
+### Egyedi hibaüzenetek hozzáadása
 
-You can also add a custom message to be printed with the failure message as
-optional arguments to the `assert!`, `assert_eq!`, and `assert_ne!` macros. Any
-arguments specified after the required arguments are passed along to the
-`format!` macro (discussed in [“Concatenating with `+` or
-`format!`”][concatenating]<!--
-ignore --> in Chapter 8), so you can pass a format string that contains `{}`
-placeholders and values to go in those placeholders. Custom messages are useful
-for documenting what an assertion means; when a test fails, you’ll have a better
-idea of what the problem is with the code.
+Az `assert!`, `assert_eq!` és `assert_ne!` makróknak opcionális argumentumként
+egyedi üzenetet is átadhatsz, amely a bukási üzenettel együtt kiíródik. A
+kötelező argumentumok után megadott bármely argumentum továbbadódik a `format!`
+makrónak (amelyről a 8. fejezet [„Összefűzés a `+` operátorral vagy a `format!`
+makróval”][concatenating]<!--
+ignore --> szakaszában volt szó), így átadhatsz egy `{}` helyőrzőket tartalmazó
+formázósztringet és a helyőrzőkbe kerülő értékeket. Az egyedi üzenetek
+hasznosak annak dokumentálására, hogy egy állítás mit jelent; amikor egy teszt
+megbukik, jobban átlátod, mi a baj a kóddal.
 
-For example, let’s say we have a function that greets people by name and we
-want to test that the name we pass into the function appears in the output:
+Tegyük fel például, hogy van egy függvényünk, amely név szerint köszönti az
+embereket, és tesztelni akarjuk, hogy a függvénynek átadott név megjelenik-e a
+kimenetben:
 
-<span class="filename">Filename: src/lib.rs</span>
+<span class="filename">Fájlnév: src/lib.rs</span>
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-05-greeter/src/lib.rs}}
 ```
 
-The requirements for this program haven’t been agreed upon yet, and we’re
-pretty sure the `Hello` text at the beginning of the greeting will change. We
-decided we don’t want to have to update the test when the requirements change,
-so instead of checking for exact equality to the value returned from the
-`greeting` function, we’ll just assert that the output contains the text of the
-input parameter.
+Ennek a programnak a követelményeiről még nem született megállapodás, és eléggé
+biztosak vagyunk benne, hogy a köszöntés elején álló `Hello` szöveg meg fog
+változni. Úgy döntöttünk, hogy nem akarjuk frissíteni a tesztet, valahányszor a
+követelmények változnak, ezért ahelyett, hogy a `greeting` függvény által
+visszaadott értékkel való pontos egyezést ellenőriznénk, csak azt állítjuk,
+hogy a kimenet tartalmazza a bemeneti paraméter szövegét.
 
-Now let’s introduce a bug into this code by changing `greeting` to exclude
-`name` to see what the default test failure looks like:
+Most vigyünk hibát ebbe a kódba úgy, hogy a `greeting` függvényből kihagyjuk a
+`name`-et, és nézzük meg, hogyan néz ki az alapértelmezett tesztbukás:
 
 ```rust,not_desired_behavior,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-06-greeter-with-bug/src/lib.rs:here}}
 ```
 
-Running this test produces the following:
+Ennek a tesztnek a futtatása a következőt eredményezi:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-06-greeter-with-bug/output.txt}}
 ```
 
-This result just indicates that the assertion failed and which line the
-assertion is on. A more useful failure message would print the value from the
-`greeting` function. Let’s add a custom failure message composed of a format
-string with a placeholder filled in with the actual value we got from the
-`greeting` function:
+Ez az eredmény csak azt jelzi, hogy az állítás nem teljesült, és azt, hogy
+melyik sorban van az állítás. Egy hasznosabb bukási üzenet kiírná a `greeting`
+függvénytől kapott értéket. Adjunk hozzá egy egyedi bukási üzenetet, amely egy
+formázósztringből áll, benne egy helyőrzővel, amelyet a `greeting` függvénytől
+ténylegesen kapott érték tölt ki:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-07-custom-failure-message/src/lib.rs:here}}
 ```
 
-Now when we run the test, we’ll get a more informative error message:
+Most, amikor lefuttatjuk a tesztet, informatívabb hibaüzenetet kapunk:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-07-custom-failure-message/output.txt}}
 ```
 
-We can see the value we actually got in the test output, which would help us
-debug what happened instead of what we were expecting to happen.
+A teszt kimenetében látjuk a ténylegesen kapott értéket, ami segít
+felderíteni, mi történt ahelyett, aminek történnie kellett volna.
 
-### Checking for Panics with `should_panic`
+### Panicok ellenőrzése a `should_panic` attribútummal
 
-In addition to checking return values, it’s important to check that our code
-handles error conditions as we expect. For example, consider the `Guess` type
-that we created in Chapter 9, Listing 9-13. Other code that uses `Guess`
-depends on the guarantee that `Guess` instances will contain only values
-between 1 and 100. We can write a test that ensures that attempting to create a
-`Guess` instance with a value outside that range panics.
+A visszatérési értékek ellenőrzésén túl fontos ellenőrizni azt is, hogy a
+kódunk az elvárásainknak megfelelően kezeli-e a hibahelyzeteket. Vegyük például
+a `Guess` típust, amelyet a 9. fejezet 9-13. listáján hoztunk létre. A `Guess`-t
+használó többi kód arra a garanciára támaszkodik, hogy a `Guess` példányok csak
+1 és 100 közötti értékeket tartalmaznak. Írhatunk olyan tesztet, amely
+biztosítja, hogy egy ezen a tartományon kívüli értékkel létrehozott `Guess`
+példány létrehozásának kísérlete panicot vált ki.
 
-We do this by adding the attribute `should_panic` to our test function. The
-test passes if the code inside the function panics; the test fails if the code
-inside the function doesn’t panic.
+Ezt úgy tesszük meg, hogy hozzáadjuk a `should_panic` attribútumot a
+tesztfüggvényünkhöz. A teszt akkor sikeres, ha a függvényen belüli kód panicot
+vált ki; a teszt megbukik, ha a függvényen belüli kód nem vált ki panicot.
 
-Listing 11-8 shows a test that checks that the error conditions of `Guess::new`
-happen when we expect them to.
+A 11-8. lista olyan tesztet mutat, amely azt ellenőrzi, hogy a `Guess::new`
+hibahelyzetei akkor következnek-e be, amikor várjuk őket.
 
-<Listing number="11-8" file-name="src/lib.rs" caption="Testing that a condition will cause a `panic!`">
+<Listing number="11-8" file-name="src/lib.rs" caption="Annak tesztelése, hogy egy feltétel `panic!`-ot okoz">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-08/src/lib.rs}}
@@ -447,41 +466,42 @@ happen when we expect them to.
 
 </Listing>
 
-We place the `#[should_panic]` attribute after the `#[test]` attribute and
-before the test function it applies to. Let’s look at the result when this test
-passes:
+A `#[should_panic]` attribútumot a `#[test]` attribútum után és az általa
+érintett tesztfüggvény elé helyezzük. Nézzük meg az eredményt, amikor ez a
+teszt sikeres:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/listing-11-08/output.txt}}
 ```
 
-Looks good! Now let’s introduce a bug in our code by removing the condition
-that the `new` function will panic if the value is greater than 100:
+Jól néz ki! Most vigyünk hibát a kódunkba úgy, hogy eltávolítjuk azt a
+feltételt, amely miatt a `new` függvény panicot vált ki, ha az érték nagyobb,
+mint 100:
 
 ```rust,not_desired_behavior,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-08-guess-with-bug/src/lib.rs:here}}
 ```
 
-When we run the test in Listing 11-8, it will fail:
+Amikor lefuttatjuk a 11-8. lista tesztjét, meg fog bukni:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-08-guess-with-bug/output.txt}}
 ```
 
-We don’t get a very helpful message in this case, but when we look at the test
-function, we see that it’s annotated with `#[should_panic]`. The failure we got
-means that the code in the test function did not cause a panic.
+Ebben az esetben nem kapunk túl sok segítséget az üzenetből, de ha megnézzük a
+tesztfüggvényt, látjuk, hogy `#[should_panic]` annotációval van ellátva. A
+kapott bukás azt jelenti, hogy a tesztfüggvényben lévő kód nem okozott panicot.
 
-Tests that use `should_panic` can be imprecise. A `should_panic` test would
-pass even if the test panics for a different reason from the one we were
-expecting. To make `should_panic` tests more precise, we can add an optional
-`expected` parameter to the `should_panic` attribute. The test harness will
-make sure that the failure message contains the provided text. For example,
-consider the modified code for `Guess` in Listing 11-9 where the `new` function
-panics with different messages depending on whether the value is too small or
-too large.
+A `should_panic` attribútumot használó tesztek pontatlanok lehetnek. Egy
+`should_panic` teszt akkor is sikeres lenne, ha a teszt a vártól eltérő okból
+váltana ki panicot. Ahhoz, hogy a `should_panic` teszteket pontosabbá tegyük,
+hozzáadhatunk egy opcionális `expected` paramétert a `should_panic`
+attribútumhoz. A tesztkeretrendszer megbizonyosodik róla, hogy a bukási üzenet
+tartalmazza a megadott szöveget. Vegyük például a `Guess` módosított kódját a
+11-9. listán, ahol a `new` függvény attól függően más-más üzenettel vált ki
+panicot, hogy az érték túl kicsi vagy túl nagy.
 
-<Listing number="11-9" file-name="src/lib.rs" caption="Testing for a `panic!` with a panic message containing a specified substring">
+<Listing number="11-9" file-name="src/lib.rs" caption="Egy `panic!` tesztelése olyan panicüzenettel, amely egy megadott részsztringet tartalmaz">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/listing-11-09/src/lib.rs:here}}
@@ -489,63 +509,65 @@ too large.
 
 </Listing>
 
-This test will pass because the value we put in the `should_panic` attribute’s
-`expected` parameter is a substring of the message that the `Guess::new`
-function panics with. We could have specified the entire panic message that we
-expect, which in this case would be `Guess value must be less than or equal to
-100, got 200`. What you choose to specify depends on how much of the panic
-message is unique or dynamic and how precise you want your test to be. In this
-case, a substring of the panic message is enough to ensure that the code in the
-test function executes the `else if value > 100` case.
+Ez a teszt sikeres lesz, mert a `should_panic` attribútum `expected`
+paraméterébe írt érték részsztringje annak az üzenetnek, amellyel a
+`Guess::new` függvény panicot vált ki. Megadhattuk volna a teljes elvárt
+panicüzenetet is, ami ebben az esetben `Guess value must be less than or equal
+to 100, got 200` lenne. Az, hogy mit adsz meg, attól függ, mennyire egyedi vagy
+dinamikus a panicüzenet, és mennyire szeretnéd pontossá tenni a tesztedet.
+Ebben az esetben a panicüzenet egy részsztringje is elegendő annak
+biztosítására, hogy a tesztfüggvényben lévő kód az `else if value > 100` ágat
+futtassa le.
 
-To see what happens when a `should_panic` test with an `expected` message
-fails, let’s again introduce a bug into our code by swapping the bodies of the
-`if value < 1` and the `else if value > 100` blocks:
+Hogy lássuk, mi történik, amikor egy `expected` üzenettel ellátott
+`should_panic` teszt megbukik, vigyünk ismét hibát a kódunkba úgy, hogy
+felcseréljük az `if value < 1` és az `else if value > 100` blokkok törzsét:
 
 ```rust,ignore,not_desired_behavior
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-09-guess-with-panic-msg-bug/src/lib.rs:here}}
 ```
 
-This time when we run the `should_panic` test, it will fail:
+Ezúttal, amikor lefuttatjuk a `should_panic` tesztet, meg fog bukni:
 
 ```console
 {{#include ../listings/ch11-writing-automated-tests/no-listing-09-guess-with-panic-msg-bug/output.txt}}
 ```
 
-The failure message indicates that this test did indeed panic as we expected,
-but the panic message did not include the expected string `less than or equal
-to 100`. The panic message that we did get in this case was `Guess value must
-be greater than or equal to 1, got 200`. Now we can start figuring out where
-our bug is!
+A bukási üzenet jelzi, hogy ez a teszt valóban kiváltott panicot, ahogy vártuk,
+de a panicüzenet nem tartalmazta az elvárt `less than or equal to 100`
+sztringet. A ténylegesen kapott panicüzenet ebben az esetben `Guess value must
+be greater than or equal to 1, got 200` volt. Most már elkezdhetjük kideríteni,
+hol van a hibánk!
 
-### Using `Result<T, E>` in Tests
+### `Result<T, E>` használata a tesztekben
 
-All of our tests so far panic when they fail. We can also write tests that use
-`Result<T, E>`! Here’s the test from Listing 11-1, rewritten to use `Result<T,
-E>` and return an `Err` instead of panicking:
+Az eddigi tesztjeink mind panicot váltanak ki, amikor megbuknak. Írhatunk
+olyan teszteket is, amelyek a `Result<T, E>` típust használják! Íme a 11-1.
+lista tesztje átírva úgy, hogy `Result<T, E>` típust használjon, és panic
+helyett `Err` értéket adjon vissza:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch11-writing-automated-tests/no-listing-10-result-in-tests/src/lib.rs:here}}
 ```
 
-The `it_works` function now has the `Result<(), String>` return type. In the
-body of the function, rather than calling the `assert_eq!` macro, we return
-`Ok(())` when the test passes and an `Err` with a `String` inside when the test
-fails.
+Az `it_works` függvény visszatérési típusa most `Result<(), String>`. A
+függvény törzsében az `assert_eq!` makró meghívása helyett `Ok(())` értéket
+adunk vissza, ha a teszt sikeres, és egy `String`-et tartalmazó `Err` értéket,
+ha a teszt megbukik.
 
-Writing tests so that they return a `Result<T, E>` enables you to use the
-question mark operator in the body of tests, which can be a convenient way to
-write tests that should fail if any operation within them returns an `Err`
-variant.
+Ha úgy írod meg a teszteket, hogy `Result<T, E>` értéket adjanak vissza, akkor
+használhatod a kérdőjel operátort a tesztek törzsében, ami kényelmes módja
+lehet olyan tesztek írásának, amelyeknek meg kell bukniuk, ha bármely bennük
+lévő művelet `Err` variánst ad vissza.
 
-You can’t use the `#[should_panic]` annotation on tests that use `Result<T,
-E>`. To assert that an operation returns an `Err` variant, _don’t_ use the
-question mark operator on the `Result<T, E>` value. Instead, use
-`assert!(value.is_err())`.
+A `#[should_panic]` annotációt nem használhatod olyan teszteken, amelyek
+`Result<T, E>` típust használnak. Ahhoz, hogy azt állítsd, egy művelet `Err`
+variánst ad vissza, _ne_ használd a kérdőjel operátort a `Result<T, E>`
+értéken. Ehelyett használd az `assert!(value.is_err())` alakot.
 
-Now that you know several ways to write tests, let’s look at what is happening
-when we run our tests and explore the different options we can use with `cargo
-test`.
+Most, hogy már többféle módot ismersz a tesztek írására, nézzük meg, mi
+történik a tesztjeink futtatásakor, és fedezzük fel a `cargo test` parancshoz
+használható különböző opciókat.
 
 [concatenating]: ch08-02-strings.html#concatenating-with--or-format
 [bench]: ../unstable-book/library-features/test.html

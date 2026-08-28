@@ -1,46 +1,46 @@
-## Using Threads to Run Code Simultaneously
+## Szálak használata kód egyidejű futtatására
 
-In most current operating systems, an executed program’s code is run in a
-_process_, and the operating system will manage multiple processes at once.
-Within a program, you can also have independent parts that run simultaneously.
-The features that run these independent parts are called _threads_. For
-example, a web server could have multiple threads so that it can respond to
-more than one request at the same time.
+A legtöbb mai operációs rendszerben egy futtatott program kódja egy
+_folyamatban_ (process) fut, és az operációs rendszer egyszerre több folyamatot
+kezel. Egy programon belül is lehetnek egymástól független részek, amelyek
+egyszerre futnak. Az ezeket a független részeket futtató elemeket _szálaknak_
+nevezzük. Egy webszervernek például több szála is lehet, hogy egyszerre több
+kérésre is válaszolni tudjon.
 
-Splitting the computation in your program into multiple threads to run multiple
-tasks at the same time can improve performance, but it also adds complexity.
-Because threads can run simultaneously, there’s no inherent guarantee about the
-order in which parts of your code on different threads will run. This can lead
-to problems, such as:
+Ha a programod számításait több szálra osztod, hogy egyszerre több feladat
+fusson, azzal javíthatod a teljesítményt, de bonyolultságot is viszel a
+rendszerbe. Mivel a szálak egyidejűleg futnak, semmi nem garantálja eleve, hogy
+a kódod különböző szálakon futó részei milyen sorrendben hajtódnak végre. Ez
+problémákhoz vezethet, például:
 
-- Race conditions, in which threads are accessing data or resources in an
-  inconsistent order
-- Deadlocks, in which two threads are waiting for each other, preventing both
-  threads from continuing
-- Bugs that only happen in certain situations and are hard to reproduce and fix
-  reliably
+- Versenyhelyzetek, amelyekben a szálak inkonzisztens sorrendben férnek hozzá
+  adatokhoz vagy erőforrásokhoz
+- Holtpontok, amelyekben két szál egymásra vár, így egyikük sem tud
+  továbblépni
+- Olyan hibák, amelyek csak bizonyos helyzetekben jelentkeznek, és nehéz őket
+  megbízhatóan reprodukálni és javítani
 
-Rust attempts to mitigate the negative effects of using threads, but
-programming in a multithreaded context still takes careful thought and requires
-a code structure that is different from that in programs running in a single
-thread.
+A Rust igyekszik mérsékelni a szálak használatának negatív hatásait, de a
+többszálú környezetben való programozás így is alapos átgondolást igényel, és
+más kódszerkezetet kíván, mint az egyetlen szálon futó programoké.
 
-Programming languages implement threads in a few different ways, and many
-operating systems provide an API the programming language can call for creating
-new threads. The Rust standard library uses a _1:1_ model of thread
-implementation, whereby a program uses one operating system thread per one
-language thread. There are crates that implement other models of threading that
-make different trade-offs to the 1:1 model. (Rust’s async system, which we will
-see in the next chapter, provides another approach to concurrency as well.)
+A programozási nyelvek többféleképpen implementálják a szálakat, és sok
+operációs rendszer olyan API-t kínál, amelyet a programozási nyelv új szálak
+létrehozásához hívhat. A Rust standard könyvtára a szálak _1:1_ modelljét
+használja: a program nyelvi szálanként egy operációsrendszer-szálat használ.
+Léteznek crate-ek, amelyek másfajta szálmodelleket implementálnak, más
+kompromisszumokkal, mint az 1:1 modell. (A Rust async rendszere, amelyet a
+következő fejezetben látunk majd, szintén másféle megközelítést ad a
+konkurenciához.)
 
-### Creating a New Thread with `spawn` {#creating-a-new-thread-with-spawn}
+### Új szál létrehozása a `spawn` függvénnyel {#creating-a-new-thread-with-spawn}
 
-To create a new thread, we call the `thread::spawn` function and pass it a
-closure (we talked about closures in Chapter 13) containing the code we want to
-run in the new thread. The example in Listing 16-1 prints some text from a main
-thread and other text from a new thread.
+Új szál létrehozásához meghívjuk a `thread::spawn` függvényt, és átadunk neki
+egy closure-t (a closure-ökről a 13. fejezetben volt szó), amely az új szálon
+futtatni kívánt kódot tartalmazza. A 16-1. listában látható példa kiír némi
+szöveget a fő szálról, és más szöveget egy új szálról.
 
-<Listing number="16-1" file-name="src/main.rs" caption="Creating a new thread to print one thing while the main thread prints something else">
+<Listing number="16-1" file-name="src/main.rs" caption="Új szál létrehozása, amely kiír valamit, miközben a fő szál mást ír ki">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-01/src/main.rs}}
@@ -48,10 +48,9 @@ thread and other text from a new thread.
 
 </Listing>
 
-Note that when the main thread of a Rust program completes, all spawned threads
-are shut down, whether or not they have finished running. The output from this
-program might be a little different every time, but it will look similar to the
-following:
+Vedd észre, hogy amikor egy Rust program fő szála befejeződik, minden elindított
+szál leáll, függetlenül attól, hogy befejezte-e a futását. A program kimenete
+minden alkalommal kicsit más lehet, de nagyjából így fog kinézni:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -69,38 +68,39 @@ hi number 4 from the spawned thread!
 hi number 5 from the spawned thread!
 ```
 
-The calls to `thread::sleep` force a thread to stop its execution for a short
-duration, allowing a different thread to run. The threads will probably take
-turns, but that isn’t guaranteed: It depends on how your operating system
-schedules the threads. In this run, the main thread printed first, even though
-the print statement from the spawned thread appears first in the code. And even
-though we told the spawned thread to print until `i` is `9`, it only got to `5`
-before the main thread shut down.
+A `thread::sleep` hívások arra kényszerítenek egy szálat, hogy rövid időre
+szüneteltesse a futását, így egy másik szál futhat. A szálak valószínűleg
+váltogatni fogják egymást, de ez nem garantált: attól függ, hogyan ütemezi őket
+az operációs rendszered. Ebben a futásban a fő szál írt ki először, pedig az
+elindított szál kiíró utasítása szerepel előbb a kódban. És bár azt mondtuk az
+elindított szálnak, hogy addig írjon ki, amíg `i` el nem éri a `9`-et, csak
+`5`-ig jutott, mielőtt a fő szál leállt.
 
-If you run this code and only see output from the main thread, or don’t see any
-overlap, try increasing the numbers in the ranges to create more opportunities
-for the operating system to switch between the threads.
+Ha lefuttatod ezt a kódot, és csak a fő szál kimenetét látod, vagy nem látsz
+átfedést, próbáld megnövelni a tartományokban szereplő számokat, hogy több
+lehetőséget adj az operációs rendszernek a szálak közötti váltásra.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="waiting-for-all-threads-to-finish-using-join-handles"></a>
 
-### Waiting for All Threads to Finish {#waiting-for-all-threads-to-finish}
+### Várakozás az összes szál befejeződésére {#waiting-for-all-threads-to-finish}
 
-The code in Listing 16-1 not only stops the spawned thread prematurely most of
-the time due to the main thread ending, but because there is no guarantee on
-the order in which threads run, we also can’t guarantee that the spawned thread
-will get to run at all!
+A 16-1. lista kódja nemcsak azért állítja le idő előtt az elindított szálat az
+esetek nagy részében, mert a fő szál véget ér, hanem mivel a szálak futási
+sorrendjére sincs garancia, azt sem tudjuk garantálni, hogy az elindított szál
+egyáltalán fut-e!
 
-We can fix the problem of the spawned thread not running or of it ending
-prematurely by saving the return value of `thread::spawn` in a variable. The
-return type of `thread::spawn` is `JoinHandle<T>`. A `JoinHandle<T>` is an
-owned value that, when we call the `join` method on it, will wait for its
-thread to finish. Listing 16-2 shows how to use the `JoinHandle<T>` of the
-thread we created in Listing 16-1 and how to call `join` to make sure the
-spawned thread finishes before `main` exits.
+Azt a problémát, hogy az elindított szál nem fut, vagy idő előtt véget ér,
+megoldhatjuk úgy, hogy a `thread::spawn` visszatérési értékét elmentjük egy
+változóba. A `thread::spawn` visszatérési típusa `JoinHandle<T>`. A
+`JoinHandle<T>` egy birtokolt érték, amelyen a `join` metódust meghívva megvárja,
+amíg a hozzá tartozó szál befejeződik. A 16-2. lista bemutatja, hogyan
+használjuk a 16-1. listában létrehozott szál `JoinHandle<T>` értékét, és hogyan
+hívjuk meg a `join`-t annak biztosítására, hogy az elindított szál a `main`
+kilépése előtt befejeződjön.
 
-<Listing number="16-2" file-name="src/main.rs" caption="Saving a `JoinHandle<T>` from `thread::spawn` to guarantee the thread is run to completion">
+<Listing number="16-2" file-name="src/main.rs" caption="A `thread::spawn` által adott `JoinHandle<T>` elmentése annak garantálására, hogy a szál végigfusson">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-02/src/main.rs}}
@@ -108,11 +108,11 @@ spawned thread finishes before `main` exits.
 
 </Listing>
 
-Calling `join` on the handle blocks the thread currently running until the
-thread represented by the handle terminates. _Blocking_ a thread means that
-thread is prevented from performing work or exiting. Because we’ve put the call
-to `join` after the main thread’s `for` loop, running Listing 16-2 should
-produce output similar to this:
+Ha meghívjuk a `join`-t a handle-ön, az blokkolja az éppen futó szálat mindaddig,
+amíg a handle által képviselt szál be nem fejeződik. Egy szál _blokkolása_ azt
+jelenti, hogy a szál nem tud munkát végezni vagy kilépni. Mivel a `join` hívást
+a fő szál `for` ciklusa után helyeztük el, a 16-2. lista futtatása körülbelül
+ilyen kimenetet ad:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -134,11 +134,11 @@ hi number 8 from the spawned thread!
 hi number 9 from the spawned thread!
 ```
 
-The two threads continue alternating, but the main thread waits because of the
-call to `handle.join()` and does not end until the spawned thread is finished.
+A két szál továbbra is váltogatja egymást, de a fő szál a `handle.join()` hívás
+miatt vár, és nem ér véget, amíg az elindított szál be nem fejeződik.
 
-But let’s see what happens when we instead move `handle.join()` before the
-`for` loop in `main`, like this:
+De nézzük meg, mi történik, ha ehelyett a `handle.join()` hívást a `main`
+`for` ciklusa elé mozgatjuk, így:
 
 <Listing file-name="src/main.rs">
 
@@ -148,8 +148,9 @@ But let’s see what happens when we instead move `handle.join()` before the
 
 </Listing>
 
-The main thread will wait for the spawned thread to finish and then run its
-`for` loop, so the output won’t be interleaved anymore, as shown here:
+A fő szál megvárja, amíg az elindított szál befejeződik, és csak utána futtatja
+a saját `for` ciklusát, így a kimenet többé nem lesz összefésülve, ahogy itt
+látható:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -171,26 +172,28 @@ hi number 3 from the main thread!
 hi number 4 from the main thread!
 ```
 
-Small details, such as where `join` is called, can affect whether or not your
-threads run at the same time.
+Az apró részletek, például az, hogy hol hívjuk meg a `join`-t, befolyásolhatják,
+hogy a szálaid egyszerre futnak-e vagy sem.
 
-### Using `move` Closures with Threads {#using-move-closures-with-threads}
+### `move` closure-ök használata szálakkal {#using-move-closures-with-threads}
 
-We’ll often use the `move` keyword with closures passed to `thread::spawn`
-because the closure will then take ownership of the values it uses from the
-environment, thus transferring ownership of those values from one thread to
-another. In [“Capturing References or Moving Ownership”][capture]<!-- ignore
---> in Chapter 13, we discussed `move` in the context of closures. Now we’ll
-concentrate more on the interaction between `move` and `thread::spawn`.
+A `thread::spawn`-nak átadott closure-öknél gyakran használjuk a `move`
+kulcsszót, mert így a closure átveszi az ownershipet a környezetből használt
+értékek felett, ezzel átadva ezen értékek ownershipjét az egyik szálról a
+másikra. A 13. fejezet [„Referenciák elkapása vagy az ownership
+átadása”][capture]<!-- ignore --> című részében a closure-ök kapcsán tárgyaltuk
+a `move`-ot. Most inkább a `move` és a `thread::spawn` együttműködésére
+összpontosítunk.
 
-Notice in Listing 16-1 that the closure we pass to `thread::spawn` takes no
-arguments: We’re not using any data from the main thread in the spawned
-thread’s code. To use data from the main thread in the spawned thread, the
-spawned thread’s closure must capture the values it needs. Listing 16-3 shows
-an attempt to create a vector in the main thread and use it in the spawned
-thread. However, this won’t work yet, as you’ll see in a moment.
+Figyeld meg, hogy a 16-1. listában a `thread::spawn`-nak átadott closure nem vesz
+át argumentumot: az elindított szál kódjában nem használunk semmilyen adatot a
+fő szálról. Ahhoz, hogy az elindított szálban a fő szál adatait használhassuk, az
+elindított szál closure-jének el kell kapnia a szükséges értékeket. A 16-3. lista
+egy olyan kísérletet mutat, amelyben a fő szálon létrehozunk egy vektort, és az
+elindított szálban használjuk. Ez azonban egyelőre nem fog működni, ahogy
+mindjárt látni fogod.
 
-<Listing number="16-3" file-name="src/main.rs" caption="Attempting to use a vector created by the main thread in another thread">
+<Listing number="16-3" file-name="src/main.rs" caption="Kísérlet a fő szálon létrehozott vektor használatára egy másik szálban">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-03/src/main.rs}}
@@ -198,24 +201,25 @@ thread. However, this won’t work yet, as you’ll see in a moment.
 
 </Listing>
 
-The closure uses `v`, so it will capture `v` and make it part of the closure’s
-environment. Because `thread::spawn` runs this closure in a new thread, we
-should be able to access `v` inside that new thread. But when we compile this
-example, we get the following error:
+A closure használja a `v`-t, tehát el fogja kapni, és a closure környezetének
+részévé teszi. Mivel a `thread::spawn` ezt a closure-t egy új szálon futtatja,
+elvileg hozzá kellene férnünk a `v`-hez az új szálon belül. Amikor viszont
+lefordítjuk ezt a példát, a következő hibát kapjuk:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-03/output.txt}}
 ```
 
-Rust _infers_ how to capture `v`, and because `println!` only needs a reference
-to `v`, the closure tries to borrow `v`. However, there’s a problem: Rust can’t
-tell how long the spawned thread will run, so it doesn’t know whether the
-reference to `v` will always be valid.
+A Rust _kikövetkezteti_, hogyan kapja el a `v`-t, és mivel a `println!`-nek csak
+egy referenciára van szüksége a `v`-hez, a closure megpróbálja kölcsönvenni
+(borrow) a `v`-t. Csakhogy van egy probléma: a Rust nem tudja megmondani, meddig
+fog futni az elindított szál, így azt sem tudja, hogy a `v`-re mutató referencia
+mindig érvényes lesz-e.
 
-Listing 16-4 provides a scenario that’s more likely to have a reference to `v`
-that won’t be valid.
+A 16-4. lista egy olyan forgatókönyvet mutat be, amelyben nagyobb az esély arra,
+hogy a `v`-re mutató referencia érvénytelenné válik.
 
-<Listing number="16-4" file-name="src/main.rs" caption="A thread with a closure that attempts to capture a reference to `v` from a main thread that drops `v`">
+<Listing number="16-4" file-name="src/main.rs" caption="Szál olyan closure-rel, amely megpróbál elkapni egy `v`-re mutató referenciát egy olyan fő szálról, amely eldobja a `v`-t">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-04/src/main.rs}}
@@ -223,15 +227,15 @@ that won’t be valid.
 
 </Listing>
 
-If Rust allowed us to run this code, there’s a possibility that the spawned
-thread would be immediately put in the background without running at all. The
-spawned thread has a reference to `v` inside, but the main thread immediately
-drops `v`, using the `drop` function we discussed in Chapter 15. Then, when the
-spawned thread starts to execute, `v` is no longer valid, so a reference to it
-is also invalid. Oh no!
+Ha a Rust megengedné, hogy ezt a kódot futtassuk, előfordulhatna, hogy az
+elindított szál azonnal a háttérbe kerül, és egyáltalán nem fut le. Az elindított
+szál egy `v`-re mutató referenciát tartalmaz, de a fő szál azonnal eldobja a
+`v`-t a 15. fejezetben tárgyalt `drop` függvénnyel. Ezután, amikor az elindított
+szál futni kezd, a `v` már nem érvényes, így a rá mutató referencia is
+érvénytelen. Jaj, ne!
 
-To fix the compiler error in Listing 16-3, we can use the error message’s
-advice:
+A 16-3. lista fordítási hibájának javításához követhetjük a hibaüzenet
+tanácsát:
 
 <!-- manual-regeneration
 after automatic regeneration, look at listings/ch16-fearless-concurrency/listing-16-03/output.txt and copy the relevant part
@@ -244,12 +248,13 @@ help: to force the closure to take ownership of `v` (and any other referenced va
   |                                ++++
 ```
 
-By adding the `move` keyword before the closure, we force the closure to take
-ownership of the values it’s using rather than allowing Rust to infer that it
-should borrow the values. The modification to Listing 16-3 shown in Listing
-16-5 will compile and run as we intend.
+Ha a closure elé odaírjuk a `move` kulcsszót, arra kényszerítjük a closure-t,
+hogy vegye át az ownershipet az általa használt értékek felett, ahelyett hogy
+hagynánk a Rustot arra következtetni, hogy kölcsönvegye őket. A 16-3. lista
+16-5. listában látható módosítása le fog fordulni, és úgy fog futni, ahogy
+szeretnénk.
 
-<Listing number="16-5" file-name="src/main.rs" caption="Using the `move` keyword to force a closure to take ownership of the values it uses">
+<Listing number="16-5" file-name="src/main.rs" caption="A `move` kulcsszó használata arra, hogy a closure átvegye az ownershipet az általa használt értékek felett">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-05/src/main.rs}}
@@ -257,28 +262,29 @@ should borrow the values. The modification to Listing 16-3 shown in Listing
 
 </Listing>
 
-We might be tempted to try the same thing to fix the code in Listing 16-4 where
-the main thread called `drop` by using a `move` closure. However, this fix will
-not work because what Listing 16-4 is trying to do is disallowed for a
-different reason. If we added `move` to the closure, we would move `v` into the
-closure’s environment, and we could no longer call `drop` on it in the main
-thread. We would get this compiler error instead:
+Kísértést érezhetnénk arra, hogy ugyanezzel próbáljuk megjavítani a 16-4. lista
+kódját, ahol a fő szál meghívta a `drop`-ot, vagyis hogy `move` closure-t
+használjunk. Ez a javítás azonban nem működik, mert amit a 16-4. lista meg
+akar tenni, az egy másik ok miatt nem megengedett. Ha hozzáadnánk a `move`-ot a
+closure-höz, a `v`-t bemozgatnánk a closure környezetébe, és többé nem tudnánk
+meghívni rá a `drop`-ot a fő szálon. Helyette ezt a fordítási hibát kapnánk:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/output-only-01-move-drop/output.txt}}
 ```
 
-Rust’s ownership rules have saved us again! We got an error from the code in
-Listing 16-3 because Rust was being conservative and only borrowing `v` for the
-thread, which meant the main thread could theoretically invalidate the spawned
-thread’s reference. By telling Rust to move ownership of `v` to the spawned
-thread, we’re guaranteeing to Rust that the main thread won’t use `v` anymore.
-If we change Listing 16-4 in the same way, we’re then violating the ownership
-rules when we try to use `v` in the main thread. The `move` keyword overrides
-Rust’s conservative default of borrowing; it doesn’t let us violate the
-ownership rules.
+A Rust ownership-szabályai megint megmentettek minket! A 16-3. lista kódjából
+azért kaptunk hibát, mert a Rust óvatos volt, és a `v`-t csak kölcsönvette a
+szál számára, ami azt jelentette, hogy a fő szál elméletileg érvénytelenné
+tehette volna az elindított szál referenciáját. Azzal, hogy megmondjuk a
+Rustnak, mozgassa át a `v` ownershipjét az elindított szálra, garantáljuk a
+Rustnak, hogy a fő szál többé nem használja a `v`-t. Ha a 16-4. listát ugyanígy
+módosítjuk, akkor megsértjük az ownership-szabályokat, amikor a fő szálon
+próbáljuk használni a `v`-t. A `move` kulcsszó felülírja a Rust óvatos,
+alapértelmezett kölcsönzési viselkedését; azt nem engedi meg, hogy megsértsük
+az ownership-szabályokat.
 
-Now that we’ve covered what threads are and the methods supplied by the thread
-API, let’s look at some situations in which we can use threads.
+Most, hogy áttekintettük, mik a szálak, és milyen metódusokat kínál a szál-API,
+nézzünk meg néhány helyzetet, amelyben szálakat használhatunk.
 
 [capture]: ch13-01-closures.html#capturing-references-or-moving-ownership
