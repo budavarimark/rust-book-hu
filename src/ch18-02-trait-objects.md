@@ -2,72 +2,78 @@
 
 <a id="using-trait-objects-that-allow-for-values-of-different-types"></a>
 
-## Using Trait Objects to Abstract over Shared Behavior {#using-trait-objects-to-abstract-over-shared-behavior}
+## Trait objectek használata a közös viselkedés absztrahálására {#using-trait-objects-to-abstract-over-shared-behavior}
 
-In Chapter 8, we mentioned that one limitation of vectors is that they can
-store elements of only one type. We created a workaround in Listing 8-9 where
-we defined a `SpreadsheetCell` enum that had variants to hold integers, floats,
-and text. This meant we could store different types of data in each cell and
-still have a vector that represented a row of cells. This is a perfectly good
-solution when our interchangeable items are a fixed set of types that we know
-when our code is compiled.
+A 8. fejezetben említettük, hogy a vektorok egyik korlátja, hogy csak egyetlen
+típusú elemeket tudnak tárolni. A 8-9. listában készítettünk erre egy
+megkerülő megoldást: definiáltunk egy `SpreadsheetCell` enumot, amelynek
+voltak egész számokat, lebegőpontos számokat és szöveget tároló variánsai. Így
+minden cellában más-más típusú adatot tárolhattunk, és mégis olyan vektorunk
+volt, amely egy cellákból álló sort ábrázolt. Ez tökéletesen jó megoldás
+akkor, ha a felcserélhető elemeink a típusok olyan rögzített halmazát alkotják,
+amelyet már a kód fordításakor ismerünk.
 
-However, sometimes we want our library user to be able to extend the set of
-types that are valid in a particular situation. To show how we might achieve
-this, we’ll create an example graphical user interface (GUI) tool that iterates
-through a list of items, calling a `draw` method on each one to draw it to the
-screen—a common technique for GUI tools. We’ll create a library crate called
-`gui` that contains the structure of a GUI library. This crate might include
-some types for people to use, such as `Button` or `TextField`. In addition,
-`gui` users will want to create their own types that can be drawn: For
-instance, one programmer might add an `Image`, and another might add a
-`SelectBox`.
+Néha azonban azt szeretnénk, hogy a könyvtárunk használója bővíthesse az adott
+helyzetben érvényes típusok halmazát. Hogy megmutassuk, ezt hogyan érhetjük
+el, készítünk egy példaként szolgáló grafikus felhasználói felület (GUI)
+eszközt, amely végigmegy egy elemlistán, és mindegyik elemen meghívja a `draw`
+metódust, hogy kirajzolja a képernyőre – ez a GUI-eszközök egyik bevett
+technikája. Létrehozunk egy `gui` nevű library crate-et, amely egy
+GUI-könyvtár vázát tartalmazza. Ebben a crate-ben lehet néhány típus, amelyet
+az emberek használhatnak, például `Button` vagy `TextField`. Ezenfelül a `gui`
+felhasználói szeretnének majd saját, kirajzolható típusokat is létrehozni:
+lehet, hogy az egyik programozó hozzáad egy `Image` típust, egy másik pedig egy
+`SelectBox` típust.
 
-At the time of writing the library, we can’t know and define all the types
-other programmers might want to create. But we do know that `gui` needs to keep
-track of many values of different types, and it needs to call a `draw` method
-on each of these differently typed values. It doesn’t need to know exactly what
-will happen when we call the `draw` method, just that the value will have that
-method available for us to call.
+A könyvtár megírásakor nem tudhatjuk és nem definiálhatjuk előre az összes
+típust, amelyet más programozók létre akarnak majd hozni. Azt viszont tudjuk,
+hogy a `gui`-nak sok különböző típusú értéket kell nyilvántartania, és
+mindegyik ilyen eltérő típusú értéken meg kell hívnia egy `draw` metódust. Azt
+nem kell tudnia, pontosan mi történik, amikor meghívjuk a `draw` metódust,
+csak azt, hogy az adott értéken ez a metódus meghívható lesz.
 
-To do this in a language with inheritance, we might define a class named
-`Component` that has a method named `draw` on it. The other classes, such as
-`Button`, `Image`, and `SelectBox`, would inherit from `Component` and thus
-inherit the `draw` method. They could each override the `draw` method to define
-their custom behavior, but the framework could treat all of the types as if
-they were `Component` instances and call `draw` on them. But because Rust
-doesn’t have inheritance, we need another way to structure the `gui` library to
-allow users to create new types compatible with the library.
+Egy öröklődéssel rendelkező nyelvben ezt úgy oldanánk meg, hogy definiálnánk
+egy `Component` nevű osztályt, amelyen van egy `draw` nevű metódus. A többi
+osztály, például a `Button`, az `Image` és a `SelectBox`, a `Component`-től
+örökölne, és így megörökölné a `draw` metódust is. Mindegyikük felülírhatná a
+`draw` metódust, hogy a saját viselkedését adja meg, a keretrendszer viszont az
+összes típust úgy kezelhetné, mintha `Component` példányok lennének, és
+meghívhatná rajtuk a `draw`-t. Mivel azonban a Rustban nincs öröklődés, más
+módot kell találnunk a `gui` könyvtár felépítésére, hogy a felhasználók a
+könyvtárral kompatibilis új típusokat hozhassanak létre.
 
-### Defining a Trait for Common Behavior
+### Trait definiálása a közös viselkedéshez
 
-To implement the behavior that we want `gui` to have, we’ll define a trait
-named `Draw` that will have one method named `draw`. Then, we can define a
-vector that takes a trait object. A _trait object_ points to both an instance
-of a type implementing our specified trait and a table used to look up trait
-methods on that type at runtime. We create a trait object by specifying some
-sort of pointer, such as a reference or a `Box<T>` smart pointer, then the
-`dyn` keyword, and then specifying the relevant trait. (We’ll talk about the
-reason trait objects must use a pointer in [“Dynamically Sized Types and the
-`Sized` Trait”][dynamically-sized]<!-- ignore --> in Chapter 20.) We can use
-trait objects in place of a generic or concrete type. Wherever we use a trait
-object, Rust’s type system will ensure at compile time that any value used in
-that context will implement the trait object’s trait. Consequently, we don’t
-need to know all the possible types at compile time.
+Ahhoz, hogy megvalósítsuk a `gui`-tól elvárt viselkedést, definiálunk egy
+`Draw` nevű traitet, amelynek egyetlen `draw` nevű metódusa lesz. Ezután
+definiálhatunk egy olyan vektort, amely trait objectet vesz fel. Egy _trait
+object_ egyszerre mutat az általunk megadott traitet implementáló típus egyik
+példányára, és egy táblázatra, amelynek segítségével futásidőben megkereshetők
+az adott típus trait-metódusai. Trait objectet úgy hozunk létre, hogy megadunk
+valamiféle pointert – például egy referenciát vagy egy `Box<T>` smart pointert
+–, majd a `dyn` kulcsszót, végül pedig a megfelelő traitet. (Arról, hogy a
+trait objecteknek miért kell pointert használniuk, a 20. fejezet [„Dinamikusan
+méretezett típusok és a `Sized` trait”][dynamically-sized]<!-- ignore -->
+részében lesz szó.) A trait objecteket generikus vagy konkrét típus helyén
+használhatjuk. Bárhol is használunk trait objectet, a Rust típusrendszere
+fordítási időben biztosítja, hogy az adott környezetben használt minden érték
+implementálja a trait object traitjét. Ennek következtében nem kell fordítási
+időben ismernünk az összes lehetséges típust.
 
-We’ve mentioned that, in Rust, we refrain from calling structs and enums
-“objects” to distinguish them from other languages’ objects. In a struct or
-enum, the data in the struct fields and the behavior in `impl` blocks are
-separated, whereas in other languages, the data and behavior combined into one
-concept is often labeled an object. Trait objects differ from objects in other
-languages in that we can’t add data to a trait object. Trait objects aren’t as
-generally useful as objects in other languages: Their specific purpose is to
-allow abstraction across common behavior.
+Említettük már, hogy a Rustban tartózkodunk attól, hogy a structokat és az
+enumokat „objektumnak” nevezzük, hogy megkülönböztessük őket más nyelvek
+objektumaitól. Egy structban vagy enumban a struct mezőiben lévő adatok és az
+`impl` blokkokban lévő viselkedés elkülönül, míg más nyelvekben az egyetlen
+fogalommá összevont adatot és viselkedést gyakran objektumnak nevezik. A trait
+objectek abban különböznek más nyelvek objektumaitól, hogy egy trait objecthez
+nem tudunk adatot hozzáadni. A trait objectek általánosságban nem olyan
+hasznosak, mint más nyelvek objektumai: kifejezetten az a céljuk, hogy közös
+viselkedésre lehessen absztrahálni.
 
-Listing 18-3 shows how to define a trait named `Draw` with one method named
-`draw`.
+A 18-3. lista bemutatja, hogyan definiálhatunk egy `Draw` nevű traitet egyetlen
+`draw` nevű metódussal.
 
-<Listing number="18-3" file-name="src/lib.rs" caption="Definition of the `Draw` trait">
+<Listing number="18-3" file-name="src/lib.rs" caption="A `Draw` trait definíciója">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-03/src/lib.rs}}
@@ -75,13 +81,14 @@ Listing 18-3 shows how to define a trait named `Draw` with one method named
 
 </Listing>
 
-This syntax should look familiar from our discussions on how to define traits
-in Chapter 10. Next comes some new syntax: Listing 18-4 defines a struct named
-`Screen` that holds a vector named `components`. This vector is of type
-`Box<dyn Draw>`, which is a trait object; it’s a stand-in for any type inside a
-`Box` that implements the `Draw` trait.
+Ez a szintaxis ismerősnek tűnhet abból, amit a 10. fejezetben a traitek
+definiálásáról beszéltünk. Ezután jön némi új szintaxis: a 18-4. lista
+definiál egy `Screen` nevű structot, amely egy `components` nevű vektort
+tartalmaz. Ez a vektor `Box<dyn Draw>` típusú, ami egy trait object;
+helyettesítője bármely olyan típusnak egy `Box`-on belül, amely implementálja a
+`Draw` traitet.
 
-<Listing number="18-4" file-name="src/lib.rs" caption="Definition of the `Screen` struct with a `components` field holding a vector of trait objects that implement the `Draw` trait">
+<Listing number="18-4" file-name="src/lib.rs" caption="A `Screen` struct definíciója egy `components` mezővel, amely a `Draw` traitet implementáló trait objectek vektorát tartalmazza">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-04/src/lib.rs:here}}
@@ -89,10 +96,11 @@ in Chapter 10. Next comes some new syntax: Listing 18-4 defines a struct named
 
 </Listing>
 
-On the `Screen` struct, we’ll define a method named `run` that will call the
-`draw` method on each of its `components`, as shown in Listing 18-5.
+A `Screen` structon definiálunk egy `run` nevű metódust, amely meghívja a
+`draw` metódust minden egyes elemén a `components` vektorban, ahogy a 18-5.
+listában látható.
 
-<Listing number="18-5" file-name="src/lib.rs" caption="A `run` method on `Screen` that calls the `draw` method on each component">
+<Listing number="18-5" file-name="src/lib.rs" caption="A `Screen` `run` metódusa, amely minden komponensen meghívja a `draw` metódust">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-05/src/lib.rs:here}}
@@ -100,14 +108,15 @@ On the `Screen` struct, we’ll define a method named `run` that will call the
 
 </Listing>
 
-This works differently from defining a struct that uses a generic type
-parameter with trait bounds. A generic type parameter can be substituted with
-only one concrete type at a time, whereas trait objects allow for multiple
-concrete types to fill in for the trait object at runtime. For example, we
-could have defined the `Screen` struct using a generic type and a trait bound,
-as in Listing 18-6.
+Ez másképp működik, mint amikor olyan structot definiálunk, amely trait
+boundokkal ellátott generikus típusparamétert használ. Egy generikus
+típusparaméter egyszerre csak egyetlen konkrét típussal helyettesíthető, a
+trait objectek viszont lehetővé teszik, hogy futásidőben több konkrét típus is
+betöltse a trait object helyét. Definiálhattuk volna például a `Screen`
+structot generikus típussal és trait bounddal is, ahogy a 18-6. listában
+látható.
 
-<Listing number="18-6" file-name="src/lib.rs" caption="An alternate implementation of the `Screen` struct and its `run` method using generics and trait bounds">
+<Listing number="18-6" file-name="src/lib.rs" caption="A `Screen` struct és `run` metódusának alternatív implementációja generikusokkal és trait boundokkal">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-06/src/lib.rs:here}}
@@ -115,25 +124,27 @@ as in Listing 18-6.
 
 </Listing>
 
-This restricts us to a `Screen` instance that has a list of components all of
-type `Button` or all of type `TextField`. If you’ll only ever have homogeneous
-collections, using generics and trait bounds is preferable because the
-definitions will be monomorphized at compile time to use the concrete types.
+Ez arra korlátoz minket, hogy a `Screen` példány komponenslistájában minden
+elem `Button` típusú legyen, vagy minden elem `TextField` típusú. Ha úgyis
+mindig homogén kollekcióid lesznek, a generikusok és a trait boundok
+használata az előnyösebb, mert a definíciók fordítási időben monomorfizálódnak
+a konkrét típusokra.
 
-On the other hand, with the method using trait objects, one `Screen` instance
-can hold a `Vec<T>` that contains a `Box<Button>` as well as a
-`Box<TextField>`. Let’s look at how this works, and then we’ll talk about the
-runtime performance implications.
+A trait objecteket használó megoldásnál viszont egyetlen `Screen` példány
+tarthat olyan `Vec<T>` vektort, amely egy `Box<Button>` és egy `Box<TextField>`
+értéket is tartalmaz. Nézzük meg, hogyan működik ez, aztán beszélünk a
+futásidejű teljesítménybeli következményekről.
 
-### Implementing the Trait
+### A trait implementálása
 
-Now we’ll add some types that implement the `Draw` trait. We’ll provide the
-`Button` type. Again, actually implementing a GUI library is beyond the scope
-of this book, so the `draw` method won’t have any useful implementation in its
-body. To imagine what the implementation might look like, a `Button` struct
-might have fields for `width`, `height`, and `label`, as shown in Listing 18-7.
+Most hozzáadunk néhány olyan típust, amely implementálja a `Draw` traitet.
+Elkészítjük a `Button` típust. Egy GUI-könyvtár tényleges megvalósítása
+ismételten túlmutat e könyv keretein, ezért a `draw` metódus törzsében nem lesz
+használható implementáció. Hogy elképzelhessük, hogyan nézhetne ki az
+implementáció, a `Button` structnak lehetnének `width`, `height` és `label`
+mezői, ahogy a 18-7. listában látható.
 
-<Listing number="18-7" file-name="src/lib.rs" caption="A `Button` struct that implements the `Draw` trait">
+<Listing number="18-7" file-name="src/lib.rs" caption="Egy `Button` struct, amely implementálja a `Draw` traitet">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-07/src/lib.rs:here}}
@@ -141,21 +152,23 @@ might have fields for `width`, `height`, and `label`, as shown in Listing 18-7.
 
 </Listing>
 
-The `width`, `height`, and `label` fields on `Button` will differ from the
-fields on other components; for example, a `TextField` type might have those
-same fields plus a `placeholder` field. Each of the types we want to draw on
-the screen will implement the `Draw` trait but will use different code in the
-`draw` method to define how to draw that particular type, as `Button` has here
-(without the actual GUI code, as mentioned). The `Button` type, for instance,
-might have an additional `impl` block containing methods related to what
-happens when a user clicks the button. These kinds of methods won’t apply to
-types like `TextField`.
+A `Button` `width`, `height` és `label` mezői eltérnek majd a többi komponens
+mezőitől; egy `TextField` típusnak például lehetnek ugyanezek a mezői, plusz
+egy `placeholder` mező. Minden olyan típus, amelyet a képernyőre akarunk
+rajzolni, implementálja majd a `Draw` traitet, de a `draw` metódusban más-más
+kódot használ annak megadására, hogyan kell az adott típust kirajzolni, ahogy
+itt a `Button` teszi (az említett módon a tényleges GUI-kód nélkül). A `Button`
+típusnak például lehet egy további `impl` blokkja, amely azzal kapcsolatos
+metódusokat tartalmaz, hogy mi történik, amikor a felhasználó rákattint a
+gombra. Az ilyesféle metódusoknak nincs értelmük olyan típusoknál, mint a
+`TextField`.
 
-If someone using our library decides to implement a `SelectBox` struct that has
-`width`, `height`, and `options` fields, they would implement the `Draw` trait
-on the `SelectBox` type as well, as shown in Listing 18-8.
+Ha a könyvtárunk valamelyik használója úgy dönt, hogy implementál egy
+`SelectBox` structot `width`, `height` és `options` mezőkkel, akkor a
+`SelectBox` típusra is implementálná a `Draw` traitet, ahogy a 18-8. listában
+látható.
 
-<Listing number="18-8" file-name="src/main.rs" caption="Another crate using `gui` and implementing the `Draw` trait on a `SelectBox` struct">
+<Listing number="18-8" file-name="src/main.rs" caption="Egy másik crate, amely a `gui`-t használja, és implementálja a `Draw` traitet egy `SelectBox` structra">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-08/src/main.rs:here}}
@@ -163,13 +176,14 @@ on the `SelectBox` type as well, as shown in Listing 18-8.
 
 </Listing>
 
-Our library’s user can now write their `main` function to create a `Screen`
-instance. To the `Screen` instance, they can add a `SelectBox` and a `Button`
-by putting each in a `Box<T>` to become a trait object. They can then call the
-`run` method on the `Screen` instance, which will call `draw` on each of the
-components. Listing 18-9 shows this implementation.
+A könyvtárunk használója most már megírhatja a `main` függvényét, hogy
+létrehozzon egy `Screen` példányt. A `Screen` példányhoz hozzáadhat egy
+`SelectBox`-ot és egy `Button`-t úgy, hogy mindegyiket egy `Box<T>`-ba teszi,
+és így trait objectté válnak. Ezután meghívhatja a `Screen` példány `run`
+metódusát, amely minden komponensen meghívja a `draw` metódust. A 18-9. lista
+mutatja ezt az implementációt.
 
-<Listing number="18-9" file-name="src/main.rs" caption="Using trait objects to store values of different types that implement the same trait">
+<Listing number="18-9" file-name="src/main.rs" caption="Trait objectek használata ugyanazt a traitet implementáló, különböző típusú értékek tárolására">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-09/src/main.rs:here}}
@@ -177,32 +191,33 @@ components. Listing 18-9 shows this implementation.
 
 </Listing>
 
-When we wrote the library, we didn’t know that someone might add the
-`SelectBox` type, but our `Screen` implementation was able to operate on the
-new type and draw it because `SelectBox` implements the `Draw` trait, which
-means it implements the `draw` method.
+Amikor megírtuk a könyvtárat, nem tudtuk, hogy valaki hozzáadhat egy
+`SelectBox` típust, a `Screen` implementációnk mégis képes volt kezelni és
+kirajzolni az új típust, mert a `SelectBox` implementálja a `Draw` traitet,
+vagyis implementálja a `draw` metódust.
 
-This concept—of being concerned only with the messages a value responds to
-rather than the value’s concrete type—is similar to the concept of _duck
-typing_ in dynamically typed languages: If it walks like a duck and quacks like
-a duck, then it must be a duck! In the implementation of `run` on `Screen` in
-Listing 18-5, `run` doesn’t need to know what the concrete type of each
-component is. It doesn’t check whether a component is an instance of a `Button`
-or a `SelectBox`, it just calls the `draw` method on the component. By
-specifying `Box<dyn Draw>` as the type of the values in the `components`
-vector, we’ve defined `Screen` to need values that we can call the `draw`
-method on.
+Ez az elgondolás – hogy csak az számít, milyen üzenetekre válaszol egy érték,
+nem pedig az, hogy mi az érték konkrét típusa – hasonlít a dinamikusan típusos
+nyelvekben ismert _duck typing_ fogalmához: ha úgy jár, mint egy kacsa, és úgy
+hápog, mint egy kacsa, akkor biztosan kacsa! A `Screen` `run` metódusának
+18-5. listabeli implementációjában a `run`-nak nem kell tudnia, mi az egyes
+komponensek konkrét típusa. Nem ellenőrzi, hogy egy komponens `Button` vagy
+`SelectBox` példány-e, egyszerűen meghívja rajta a `draw` metódust. Azzal,
+hogy a `components` vektorban lévő értékek típusaként `Box<dyn Draw>`-t adtunk
+meg, a `Screen`-t úgy definiáltuk, hogy olyan értékekre van szüksége,
+amelyeken meghívható a `draw` metódus.
 
-The advantage of using trait objects and Rust’s type system to write code
-similar to code using duck typing is that we never have to check whether a
-value implements a particular method at runtime or worry about getting errors
-if a value doesn’t implement a method but we call it anyway. Rust won’t compile
-our code if the values don’t implement the traits that the trait objects need.
+A trait objectek és a Rust típusrendszerének használatával a duck typinghoz
+hasonló kódot írhatunk, azzal az előnnyel, hogy soha nem kell futásidőben
+ellenőriznünk, egy érték implementál-e egy adott metódust, és nem kell attól
+tartanunk, hogy hibát kapunk, mert egy érték nem implementál egy metódust, mi
+mégis meghívjuk. A Rust le sem fordítja a kódunkat, ha az értékek nem
+implementálják azokat a traiteket, amelyekre a trait objecteknek szükségük van.
 
-For example, Listing 18-10 shows what happens if we try to create a `Screen`
-with a `String` as a component.
+A 18-10. lista például azt mutatja meg, mi történik, ha megpróbálunk olyan
+`Screen`-t létrehozni, amelynek egyik komponense egy `String`.
 
-<Listing number="18-10" file-name="src/main.rs" caption="Attempting to use a type that doesn’t implement the trait object’s trait">
+<Listing number="18-10" file-name="src/main.rs" caption="Kísérlet olyan típus használatára, amely nem implementálja a trait object traitjét">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch18-oop/listing-18-10/src/main.rs}}
@@ -210,45 +225,49 @@ with a `String` as a component.
 
 </Listing>
 
-We’ll get this error because `String` doesn’t implement the `Draw` trait:
+Ezt a hibát fogjuk kapni, mert a `String` nem implementálja a `Draw` traitet:
 
 ```console
 {{#include ../listings/ch18-oop/listing-18-10/output.txt}}
 ```
 
-This error lets us know that either we’re passing something to `Screen` that we
-didn’t mean to pass and so should pass a different type, or we should implement
-`Draw` on `String` so that `Screen` is able to call `draw` on it.
+Ez a hiba azt jelzi, hogy vagy olyasmit adunk át a `Screen`-nek, amit nem
+akartunk, és így más típust kellene átadnunk, vagy implementálnunk kellene a
+`Draw`-t a `String`-re, hogy a `Screen` meg tudja hívni rajta a `draw`-t.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="trait-objects-perform-dynamic-dispatch"></a>
 
-### Performing Dynamic Dispatch
+### Dinamikus dispatch végrehajtása
 
-Recall in [“Performance of Code Using
-Generics”][performance-of-code-using-generics]<!-- ignore --> in Chapter 10 our
-discussion on the monomorphization process performed on generics by the
-compiler: The compiler generates nongeneric implementations of functions and
-methods for each concrete type that we use in place of a generic type
-parameter. The code that results from monomorphization is doing _static
-dispatch_, which is when the compiler knows what method you’re calling at
-compile time. This is opposed to _dynamic dispatch_, which is when the compiler
-can’t tell at compile time which method you’re calling. In dynamic dispatch
-cases, the compiler emits code that at runtime will know which method to call.
+Emlékezz vissza a 10. fejezet [„A generikusokat használó kód
+teljesítménye”][performance-of-code-using-generics]<!-- ignore --> részére, ahol
+arról a monomorfizációs folyamatról volt szó, amelyet a fordító a generikusokon
+végez: a fordító minden olyan konkrét típusra, amelyet egy generikus
+típusparaméter helyén használunk, nem generikus implementációt állít elő a
+függvényekből és metódusokból. A monomorfizációból származó kód _statikus
+dispatchet_ végez, vagyis olyat, amikor a fordító már fordítási időben tudja,
+melyik metódust hívod. Ennek ellentéte a _dinamikus dispatch_, amikor a fordító
+fordítási időben nem tudja megállapítani, melyik metódust hívod. Dinamikus
+dispatch esetén a fordító olyan kódot állít elő, amely futásidőben fogja
+tudni, melyik metódust kell meghívni.
 
-When we use trait objects, Rust must use dynamic dispatch. The compiler doesn’t
-know all the types that might be used with the code that’s using trait objects,
-so it doesn’t know which method implemented on which type to call. Instead, at
-runtime, Rust uses the pointers inside the trait object to know which method to
-call. This lookup incurs a runtime cost that doesn’t occur with static dispatch.
-Dynamic dispatch also prevents the compiler from choosing to inline a method’s
-code, which in turn prevents some optimizations, and Rust has some rules about
-where you can and cannot use dynamic dispatch, called _dyn compatibility_. Those
-rules are beyond the scope of this discussion, but you can read more about them
-[in the reference][dyn-compatibility]<!-- ignore -->. However, we did get extra
-flexibility in the code that we wrote in Listing 18-5 and were able to support
-in Listing 18-9, so it’s a trade-off to consider.
+Amikor trait objecteket használunk, a Rustnak dinamikus dispatchet kell
+alkalmaznia. A fordító nem ismeri az összes olyan típust, amelyet a trait
+objecteket használó kóddal használhatnak, így nem tudja, melyik típuson
+implementált melyik metódust kell meghívni. Ehelyett a Rust futásidőben a trait
+objecten belüli pointerek alapján tudja meg, melyik metódust kell meghívni. Ez a
+keresés olyan futásidejű költséggel jár, amely a statikus dispatchnél nem
+jelentkezik. A dinamikus dispatch emellett megakadályozza, hogy a fordító
+beinline-olja egy metódus kódját, ami viszont bizonyos optimalizációkat is
+kizár, és a Rustnak vannak szabályai arra, hol használhatsz dinamikus
+dispatchet és hol nem; ezeket _dyn kompatibilitásnak_ nevezik. Ezek a szabályok
+túlmutatnak e tárgyalás keretein, de többet olvashatsz róluk [a
+referenciában][dyn-compatibility]<!-- ignore -->. Cserébe viszont többletbeli
+rugalmasságot kaptunk abban a kódban, amelyet a 18-5. listában írtunk, és
+amelyet a 18-9. listában sikerült támogatnunk, szóval ez egy mérlegelendő
+kompromisszum.
 
 [performance-of-code-using-generics]: ch10-01-syntax.html#performance-of-code-using-generics
 [dynamically-sized]: ch20-03-advanced-types.html#dynamically-sized-types-and-the-sized-trait

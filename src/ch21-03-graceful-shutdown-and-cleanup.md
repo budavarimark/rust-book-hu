@@ -1,32 +1,32 @@
-## Graceful Shutdown and Cleanup
+## Szabályos leállítás és takarítás
 
-The code in Listing 21-20 is responding to requests asynchronously through the
-use of a thread pool, as we intended. We get some warnings about the `workers`,
-`id`, and `thread` fields that we’re not using in a direct way that reminds us
-we’re not cleaning up anything. When we use the less elegant
-<kbd>ctrl</kbd>-<kbd>C</kbd> method to halt the main thread, all other threads
-are stopped immediately as well, even if they’re in the middle of serving a
-request.
+A 21-20. listában szereplő kód a szándékunknak megfelelően, egy thread pool
+segítségével, aszinkron módon válaszol a kérésekre. Kapunk néhány figyelmeztetést
+a `workers`, az `id` és a `thread` mezőkről, amelyeket nem használunk közvetlenül;
+ez arra emlékeztet minket, hogy semmit nem takarítunk el. Amikor a kevésbé elegáns
+<kbd>ctrl</kbd>-<kbd>C</kbd> módszerrel állítjuk le a fő szálat, azonnal minden
+más szál is leáll, még akkor is, ha éppen egy kérés kiszolgálásának közepén
+tartanak.
 
-Next, then, we’ll implement the `Drop` trait to call `join` on each of the
-threads in the pool so that they can finish the requests they’re working on
-before closing. Then, we’ll implement a way to tell the threads they should
-stop accepting new requests and shut down. To see this code in action, we’ll
-modify our server to accept only two requests before gracefully shutting down
-its thread pool.
+Ezután tehát implementáljuk a `Drop` trait-et, hogy a pool minden szálán
+meghívjuk a `join`-t, így azok befejezhetik a folyamatban lévő kéréseket a
+bezárás előtt. Utána megvalósítunk egy módot arra, hogy szóljunk a szálaknak:
+ne fogadjanak több új kérést, és álljanak le. Hogy működés közben is lássuk ezt a
+kódot, úgy módosítjuk a szerverünket, hogy csak két kérést fogadjon, mielőtt
+szabályosan leállítja a thread poolt.
 
-One thing to notice as we go: None of this affects the parts of the code that
-handle executing the closures, so everything here would be the same if we were
-using a thread pool for an async runtime.
+Egy dolgot érdemes menet közben észrevenni: mindez nem érinti a kódnak azokat a
+részeit, amelyek a closure-ök végrehajtását intézik, tehát minden ugyanígy nézne
+ki akkor is, ha egy async runtime-hoz használnánk a thread poolt.
 
-### Implementing the `Drop` Trait on `ThreadPool`
+### A `Drop` trait implementálása a `ThreadPool`-on
 
-Let’s start with implementing `Drop` on our thread pool. When the pool is
-dropped, our threads should all join to make sure they finish their work.
-Listing 21-22 shows a first attempt at a `Drop` implementation; this code won’t
-quite work yet.
+Kezdjük azzal, hogy implementáljuk a `Drop`-ot a thread poolunkon. Amikor a pool
+dropolódik, minden szálunknak join-olnia kell, hogy biztosan befejezzék a
+munkájukat. A 21-22. lista egy első próbálkozást mutat a `Drop`
+implementációra; ez a kód még nem egészen fog működni.
 
-<Listing number="21-22" file-name="src/lib.rs" caption="Joining each thread when the thread pool goes out of scope">
+<Listing number="21-22" file-name="src/lib.rs" caption="Az egyes szálak join-olása, amikor a thread pool kikerül a hatókörből">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-22/src/lib.rs:here}}
@@ -34,44 +34,45 @@ quite work yet.
 
 </Listing>
 
-First, we loop through each of the thread pool `workers`. We use `&mut` for this
-because `self` is a mutable reference, and we also need to be able to mutate
-`worker`. For each `worker`, we print a message saying that this particular
-`Worker` instance is shutting down, and then we call `join` on that `Worker`
-instance’s thread. If the call to `join` fails, we use `unwrap` to make Rust
-panic and go into an ungraceful shutdown.
+Először végigmegyünk a thread pool `workers` elemein. A `&mut`-ot azért
+használjuk, mert a `self` egy módosítható referencia, és a `worker`-t is
+módosítani akarjuk. Minden `worker` esetén kiírunk egy üzenetet arról, hogy az
+adott `Worker` példány leáll, majd meghívjuk a `join`-t az adott `Worker` példány
+szálán. Ha a `join` hívása sikertelen, az `unwrap`-pel panicot váltunk ki a
+Rustban, és nem szabályos leállásba megyünk át.
 
-Here is the error we get when we compile this code:
+Íme a hiba, amit a kód fordításakor kapunk:
 
 ```console
 {{#include ../listings/ch21-web-server/listing-21-22/output.txt}}
 ```
 
-The error tells us we can’t call `join` because we only have a mutable borrow
-of each `worker` and `join` takes ownership of its argument. To solve this
-issue, we need to move the thread out of the `Worker` instance that owns
-`thread` so that `join` can consume the thread. One way to do this is to take
-the same approach we took in Listing 18-15. If `Worker` held an
-`Option<thread::JoinHandle<()>>`, we could call the `take` method on the
-`Option` to move the value out of the `Some` variant and leave a `None` variant
-in its place. In other words, a `Worker` that is running would have a `Some`
-variant in `thread`, and when we wanted to clean up a `Worker`, we’d replace
-`Some` with `None` so that the `Worker` wouldn’t have a thread to run.
+A hiba azt mondja, hogy nem hívhatjuk meg a `join`-t, mert csak egy módosítható
+borrow-unk van az egyes `worker`-ekre, a `join` viszont átveszi az argumentuma
+ownership-jét. A probléma megoldásához ki kell mozgatnunk a szálat abból a
+`Worker` példányból, amely a `thread`-et birtokolja, hogy a `join` fel tudja
+használni a szálat. Ennek egyik módja ugyanaz a megközelítés, amit a 18-15.
+listában alkalmaztunk. Ha a `Worker` egy `Option<thread::JoinHandle<()>>`-t
+tartalmazna, meghívhatnánk a `take` metódust az `Option`-ön, hogy kimozgassuk az
+értéket a `Some` variánsból, és a helyére egy `None` variánst tegyünk. Más
+szóval: egy futó `Worker`-nek `Some` variáns lenne a `thread` mezőjében, és
+amikor ki akarnánk takarítani egy `Worker`-t, a `Some`-ot `None`-ra cserélnénk,
+hogy a `Worker`-nek ne legyen futtatható szála.
 
-However, the _only_ time this would come up would be when dropping the
-`Worker`. In exchange, we’d have to deal with an
-`Option<thread::JoinHandle<()>>` anywhere we accessed `worker.thread`.
-Idiomatic Rust uses `Option` quite a bit, but when you find yourself wrapping
-something you know will always be present in an `Option` as a workaround like
-this, it’s a good idea to look for alternative approaches to make your code
-cleaner and less error-prone.
+Ez azonban _csak_ a `Worker` dropolásakor kerülne elő. Cserébe egy
+`Option<thread::JoinHandle<()>>`-vel kellene bajlódnunk mindenhol, ahol a
+`worker.thread`-hez hozzáférünk. Az idiomatikus Rust elég gyakran használ
+`Option`-t, de ha azon kapod magad, hogy kerülő megoldásként egy `Option`-be
+csomagolsz valamit, amiről tudod, hogy mindig jelen lesz, jó ötlet más
+megközelítéseket keresni, amelyekkel tisztább és kevésbé hibalehetőséges lesz a
+kódod.
 
-In this case, a better alternative exists: the `Vec::drain` method. It accepts
-a range parameter to specify which items to remove from the vector and returns
-an iterator of those items. Passing the `..` range syntax will remove *every*
-value from the vector.
+Ebben az esetben létezik jobb alternatíva: a `Vec::drain` metódus. Ez egy
+tartományparamétert fogad, amely megadja, mely elemeket távolítsa el a
+vektorból, és ezeknek az elemeknek egy iterátorát adja vissza. A `..` tartomány
+szintaxisának átadásával *minden* értéket eltávolítunk a vektorból.
 
-So, we need to update the `ThreadPool` `drop` implementation like this:
+A `ThreadPool` `drop` implementációját tehát így kell frissítenünk:
 
 <Listing file-name="src/lib.rs">
 
@@ -81,32 +82,32 @@ So, we need to update the `ThreadPool` `drop` implementation like this:
 
 </Listing>
 
-This resolves the compiler error and does not require any other changes to our
-code. Note that, because drop can be called when panicking, the unwrap
-could also panic and cause a double panic, which immediately crashes the
-program and ends any cleanup in progress. This is fine for an example program,
-but it isn’t recommended for production code.
+Ez megoldja a fordítási hibát, és semmilyen más változtatást nem igényel a
+kódunkban. Vedd figyelembe, hogy mivel a drop meghívódhat panic közben is, az
+unwrap szintén panicot válthat ki, ami dupla panicot okoz; az pedig azonnal
+összeomlasztja a programot, és megszakítja a folyamatban lévő takarítást. Egy
+példaprogramnál ez rendben van, de éles kódban nem ajánlott.
 
-### Signaling to the Threads to Stop Listening for Jobs
+### Jelzés a szálaknak, hogy hagyják abba a munkák figyelését
 
-With all the changes we’ve made, our code compiles without any warnings.
-However, the bad news is that this code doesn’t function the way we want it to
-yet. The key is the logic in the closures run by the threads of the `Worker`
-instances: At the moment, we call `join`, but that won’t shut down the threads,
-because they `loop` forever looking for jobs. If we try to drop our
-`ThreadPool` with our current implementation of `drop`, the main thread will
-block forever, waiting for the first thread to finish.
+Az összes eddigi változtatással a kódunk figyelmeztetések nélkül fordul. A rossz
+hír azonban az, hogy ez a kód még nem úgy működik, ahogy szeretnénk. A kulcs a
+`Worker` példányok szálai által futtatott closure-ök logikájában van: jelenleg
+meghívjuk a `join`-t, de az nem állítja le a szálakat, mert azok végtelen
+`loop`-ban keresnek munkát. Ha a `drop` jelenlegi implementációjával
+megpróbálnánk dropolni a `ThreadPool`-t, a fő szál örökre blokkolódna, miközben
+az első szál befejezésére vár.
 
-To fix this problem, we’ll need a change in the `ThreadPool` `drop`
-implementation and then a change in the `Worker` loop.
+A probléma megoldásához változtatnunk kell a `ThreadPool` `drop`
+implementációján, majd a `Worker` ciklusán is.
 
-First, we’ll change the `ThreadPool` `drop` implementation to explicitly drop
-the `sender` before waiting for the threads to finish. Listing 21-23 shows the
-changes to `ThreadPool` to explicitly drop `sender`. Unlike with the thread,
-here we _do_ need to use an `Option` to be able to move `sender` out of
-`ThreadPool` with `Option::take`.
+Először a `ThreadPool` `drop` implementációját változtatjuk meg úgy, hogy
+explicit módon dropolja a `sender`-t, mielőtt megvárná a szálak befejeződését. A
+21-23. lista a `ThreadPool` változtatásait mutatja a `sender` explicit
+dropolásához. A szállal ellentétben itt _valóban_ szükségünk van egy `Option`-re,
+hogy az `Option::take`-kel ki tudjuk mozgatni a `sender`-t a `ThreadPool`-ból.
 
-<Listing number="21-23" file-name="src/lib.rs" caption="Explicitly dropping `sender` before joining the `Worker` threads">
+<Listing number="21-23" file-name="src/lib.rs" caption="A `sender` explicit dropolása a `Worker` szálak join-olása előtt">
 
 ```rust,noplayground,not_desired_behavior
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-23/src/lib.rs:here}}
@@ -114,13 +115,14 @@ here we _do_ need to use an `Option` to be able to move `sender` out of
 
 </Listing>
 
-Dropping `sender` closes the channel, which indicates no more messages will be
-sent. When that happens, all the calls to `recv` that the `Worker` instances do
-in the infinite loop will return an error. In Listing 21-24, we change the
-`Worker` loop to gracefully exit the loop in that case, which means the threads
-will finish when the `ThreadPool` `drop` implementation calls `join` on them.
+A `sender` dropolása lezárja a csatornát, ami azt jelzi, hogy több üzenet nem
+lesz elküldve. Amikor ez megtörténik, a `Worker` példányok végtelen ciklusában
+lévő összes `recv` hívás hibát ad vissza. A 21-24. listában úgy módosítjuk a
+`Worker` ciklusát, hogy ilyenkor szabályosan kilépjen a ciklusból; ez azt
+jelenti, hogy a szálak befejeződnek, amikor a `ThreadPool` `drop`
+implementációja meghívja rajtuk a `join`-t.
 
-<Listing number="21-24" file-name="src/lib.rs" caption="Explicitly breaking out of the loop when `recv` returns an error">
+<Listing number="21-24" file-name="src/lib.rs" caption="Explicit kilépés a ciklusból, amikor a `recv` hibát ad vissza">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-24/src/lib.rs:here}}
@@ -128,10 +130,11 @@ will finish when the `ThreadPool` `drop` implementation calls `join` on them.
 
 </Listing>
 
-To see this code in action, let’s modify `main` to accept only two requests
-before gracefully shutting down the server, as shown in Listing 21-25.
+Hogy működés közben lássuk ezt a kódot, módosítsuk a `main`-t úgy, hogy csak két
+kérést fogadjon el, mielőtt szabályosan leállítja a szervert, ahogy a 21-25.
+lista mutatja.
 
-<Listing number="21-25" file-name="src/main.rs" caption="Shutting down the server after serving two requests by exiting the loop">
+<Listing number="21-25" file-name="src/main.rs" caption="A szerver leállítása két kérés kiszolgálása után, a ciklusból kilépve">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-25/src/main.rs:here}}
@@ -139,16 +142,17 @@ before gracefully shutting down the server, as shown in Listing 21-25.
 
 </Listing>
 
-You wouldn’t want a real-world web server to shut down after serving only two
-requests. This code just demonstrates that the graceful shutdown and cleanup is
-in working order.
+Egy valós webszervernél nem szeretnéd, ha mindössze két kérés kiszolgálása után
+leállna. Ez a kód csak azt demonstrálja, hogy a szabályos leállítás és takarítás
+rendben működik.
 
-The `take` method is defined in the `Iterator` trait and limits the iteration
-to the first two items at most. The `ThreadPool` will go out of scope at the
-end of `main`, and the `drop` implementation will run.
+A `take` metódus az `Iterator` trait-ben van definiálva, és legfeljebb az első
+két elemre korlátozza az iterációt. A `ThreadPool` a `main` végén kikerül a
+hatókörből, és lefut a `drop` implementáció.
 
-Start the server with `cargo run` and make three requests. The third request
-should error, and in your terminal, you should see output similar to this:
+Indítsd el a szervert a `cargo run` paranccsal, és küldj három kérést. A harmadik
+kérésnek hibára kell futnia, a termináldban pedig valami ehhez hasonló kimenetet
+kell látnod:
 
 <!-- manual-regeneration
 cd listings/ch21-web-server/listing-21-25
@@ -179,28 +183,29 @@ Shutting down worker 2
 Shutting down worker 3
 ```
 
-You might see a different ordering of `Worker` IDs and messages printed. We can
-see how this code works from the messages: `Worker` instances 0 and 3 got the
-first two requests. The server stopped accepting connections after the second
-connection, and the `Drop` implementation on `ThreadPool` starts executing
-before `Worker 3` even starts its job. Dropping the `sender` disconnects all the
-`Worker` instances and tells them to shut down. The `Worker` instances each
-print a message when they disconnect, and then the thread pool calls `join` to
-wait for each `Worker` thread to finish.
+Lehet, hogy a `Worker` azonosítók és az üzenetek más sorrendben jelennek meg. Az
+üzenetekből látszik, hogyan működik ez a kód: a 0-s és a 3-as `Worker` példány
+kapta meg az első két kérést. A szerver a második kapcsolat után nem fogadott
+több kapcsolatot, és a `ThreadPool`-on lévő `Drop` implementáció még azelőtt
+elkezdett futni, hogy a `Worker 3` egyáltalán belekezdett volna a munkájába. A
+`sender` dropolása lekapcsolja az összes `Worker` példányt, és jelzi nekik, hogy
+álljanak le. Minden `Worker` példány kiír egy üzenetet, amikor lekapcsolódik,
+majd a thread pool meghívja a `join`-t, hogy megvárja az egyes `Worker` szálak
+befejeződését.
 
-Notice one interesting aspect of this particular execution: The `ThreadPool`
-dropped the `sender`, and before any `Worker` received an error, we tried to
-join `Worker 0`. `Worker 0` had not yet gotten an error from `recv`, so the main
-thread blocked, waiting for `Worker 0` to finish. In the meantime, `Worker 3`
-received a job and then all threads received an error. When `Worker 0` finished,
-the main thread waited for the rest of the `Worker` instances to finish. At that
-point, they had all exited their loops and stopped.
+Vegyünk észre egy érdekes részletet ebben a konkrét futásban: a `ThreadPool`
+dropolta a `sender`-t, és még mielőtt bármelyik `Worker` hibát kapott volna,
+megpróbáltuk join-olni a `Worker 0`-t. A `Worker 0` még nem kapott hibát a
+`recv`-től, így a fő szál blokkolódott, és megvárta, hogy a `Worker 0`
+befejeződjön. Közben a `Worker 3` kapott egy munkát, majd minden szál hibát
+kapott. Amikor a `Worker 0` befejeződött, a fő szál megvárta a többi `Worker`
+példány befejeződését is. Addigra mindegyik kilépett a ciklusából, és leállt.
 
-Congrats! We’ve now completed our project; we have a basic web server that uses
-a thread pool to respond asynchronously. We’re able to perform a graceful
-shutdown of the server, which cleans up all the threads in the pool.
+Gratulálunk! Ezzel elkészültünk a projektünkkel: van egy alap webszerverünk,
+amely thread poolt használ az aszinkron válaszadáshoz. Képesek vagyunk a szerver
+szabályos leállítására, ami kitakarítja a pool összes szálát.
 
-Here’s the full code for reference:
+Íme a teljes kód referenciaként:
 
 <Listing file-name="src/main.rs">
 
@@ -218,21 +223,22 @@ Here’s the full code for reference:
 
 </Listing>
 
-We could do more here! If you want to continue enhancing this project, here are
-some ideas:
+Itt még többet is tehetnénk! Ha tovább szeretnéd fejleszteni ezt a projektet,
+íme néhány ötlet:
 
-- Add more documentation to `ThreadPool` and its public methods.
-- Add tests of the library’s functionality.
-- Change calls to `unwrap` to more robust error handling.
-- Use `ThreadPool` to perform some task other than serving web requests.
-- Find a thread pool crate on [crates.io](https://crates.io/) and implement a
-  similar web server using the crate instead. Then, compare its API and
-  robustness to the thread pool we implemented.
+- Írj több dokumentációt a `ThreadPool`-hoz és a publikus metódusaihoz.
+- Írj teszteket a könyvtár funkcionalitásához.
+- Cseréld le az `unwrap` hívásokat robusztusabb hibakezelésre.
+- Használd a `ThreadPool`-t webes kérések kiszolgálásán kívüli feladatra is.
+- Keress egy thread pool crate-et a [crates.io](https://crates.io/) oldalon, és
+  implementálj egy hasonló webszervert a saját megoldásunk helyett azzal a
+  crate-tel. Utána hasonlítsd össze az API-ját és a robusztusságát az általunk
+  implementált thread poolével.
 
-## Summary
+## Összefoglalás
 
-Well done! You’ve made it to the end of the book! We want to thank you for
-joining us on this tour of Rust. You’re now ready to implement your own Rust
-projects and help with other people’s projects. Keep in mind that there is a
-welcoming community of other Rustaceans who would love to help you with any
-challenges you encounter on your Rust journey.
+Szép munka! Eljutottál a könyv végére! Köszönjük, hogy velünk tartottál ezen a
+Rust-körutazáson. Most már készen állsz arra, hogy megvalósítsd a saját Rust
+projektjeidet, és segíts mások projektjeiben. Ne feledd: van egy befogadó
+közösség a többi Rustaceanből, akik szívesen segítenek bármilyen kihívásban,
+amivel a Rust-utad során találkozol.
