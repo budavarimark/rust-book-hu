@@ -381,6 +381,19 @@ A következőhöz hasonló hibát kapsz, mert a Rust megakadályozza, hogy az
 {{#include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/output.txt}}
 ```
 
+Az alábbi ábra ugyanezt a hibás programot szimulálja: az `L1` pontban `s1` ki
+van szürkítve, mert az értéke már `s2`-be került, a heap-en lévő sztringre pedig
+csak `s2` mutat. A `println!` mégis `s1`-et akarja olvasni – ezért jelzi az ábra
+alatt a rák, hogy ez a kód nem fordul le:
+
+```aquascope,interpreter,shouldFail
+#fn main() {
+let s1 = String::from("hello");
+let s2 = s1;
+println!("{s1}, world!");`[]`
+#}
+```
+
 Ha más nyelvekkel dolgozva már hallottad a _sekély másolat_ (shallow copy) és a
 _mély másolat_ (deep copy) kifejezéseket, akkor a pointer, a hossz és a
 kapacitás másolása az adat másolása nélkül valószínűleg sekély másolat
@@ -457,6 +470,18 @@ találkoztál már velük.
 Ez remekül működik, és explicit módon azt a viselkedést eredményezi, amelyet a
 4-3. ábra mutat, ahol a heap-en lévő adat _valóban_ másolódik.
 
+Az ábrán jól látszik a különbség a move-hoz képest: az `L2` pontban két külön
+heap-foglalás van, mindkettő a saját `"hello"` tartalmával, és `s1` továbbra is
+érvényes marad:
+
+```aquascope,interpreter
+#fn main() {
+let s1 = String::from("hello");`[]`
+let s2 = s1.clone();`[]`
+println!("s1 = {s1}, s2 = {s2}");
+#}
+```
+
 Amikor egy `clone` hívást látsz, tudod, hogy valamilyen tetszőleges kód fut le,
 és az a kód költséges lehet. Ez egy vizuális jelzés arról, hogy valami más
 történik.
@@ -526,6 +551,31 @@ változók a hatókörbe, és hol lépnek ki belőle.
 
 </Listing>
 
+Kövesd végig ugyanezt a programot az ábrán. Az `L1` pontban `s` a `main`
+keretében él, és a heap-en lévő `"hello"` sztring gazdája. Az `L2` pontban a
+`takes_ownership` kerete a `main` fölé került: a sztring `some_string`-be
+move-olódott, ezért `s` kiszürkült a `main` keretében. Az `L3` pontban a
+`makes_copy` már az `x` értékének a _másolatát_ kapta meg, így az `L4` pontban
+`x` a `main` keretében is érvényes marad – a heap pedig üres, mert a sztringet a
+`takes_ownership` visszatérésekor a `drop` felszabadította:
+
+```aquascope,interpreter
+fn main() {
+    let s = String::from("hello");`[]`
+    takes_ownership(s);
+    let x = 5;
+    makes_copy(x);`[]`
+}
+
+fn takes_ownership(some_string: String) {
+    `[]`println!("{some_string}");
+}
+
+fn makes_copy(some_integer: i32) {
+    `[]`println!("{some_integer}");
+}
+```
+
 Ha a `takes_ownership` hívása után megpróbálnánk használni `s`-et, a Rust
 fordítási idejű hibát dobna. Ezek a statikus ellenőrzések megóvnak minket a
 hibáktól. Próbálj meg olyan kódot hozzáadni a `main` függvényhez, amely `s`-et
@@ -545,6 +595,30 @@ listához hasonló kommentekkel.
 ```
 
 </Listing>
+
+Az ábrán az látszik, hogyan vándorol az ownership a visszatérési értékkel. Az
+`L1` pontban a `"yours"` sztring még a `gives_ownership` keretében lévő
+`some_string` tulajdona, az `L2` pontban viszont – a függvény visszatérése után
+– már `s1`-é: a heap-en lévő adat ugyanaz maradt, csak a gazdája változott meg.
+Az `L3` pontban `s2` sztringje `a_string`-be move-olódott, majd az `L4` pontban
+a visszatérési érték `s3`-hoz került, ezért `s2` kiszürkülve látszik:
+
+```aquascope,interpreter
+fn main() {
+    let s1 = gives_ownership();`[]`
+    let s2 = String::from("hello");
+    let s3 = takes_and_gives_back(s2);`[]`
+}
+
+fn gives_ownership() -> String {
+    let some_string = String::from("yours");
+    `[]`some_string
+}
+
+fn takes_and_gives_back(a_string: String) -> String {
+    `[]`a_string
+}
+```
 
 Egy változó ownershipje minden alkalommal ugyanezt a mintát követi: ha egy
 értéket egy másik változóhoz rendelünk, az move-olódik. Amikor egy heap-en lévő
