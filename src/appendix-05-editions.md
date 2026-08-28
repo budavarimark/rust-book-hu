@@ -1,59 +1,62 @@
-## Appendix E: Editions
+## E függelék: Editionök
 
-In Chapter 1, you saw that `cargo new` adds a bit of metadata to your
-_Cargo.toml_ file about an edition. This appendix talks about what that means!
+Az 1. fejezetben láttad, hogy a `cargo new` egy kevés metaadatot ad a
+_Cargo.toml_ fájlodhoz egy editionről. Ez a függelék arról szól, mit is jelent
+ez!
 
-The Rust language and compiler have a six-week release cycle, meaning users get
-a constant stream of new features. Other programming languages release larger
-changes less often; Rust releases smaller updates more frequently. After a
-while, all of these tiny changes add up. But from release to release, it can be
-difficult to look back and say, “Wow, between Rust 1.10 and Rust 1.31, Rust has
-changed a lot!”
+A Rust nyelvnek és fordítónak hathetes kiadási ciklusa van, vagyis a
+felhasználók folyamatosan kapják az új nyelvi elemeket. Más programozási nyelvek
+nagyobb változásokat adnak ki ritkábban; a Rust kisebb frissítéseket ad ki
+gyakrabban. Egy idő után ezek az apró változások összeadódnak. Kiadásról kiadásra
+azonban nehéz visszatekinteni és azt mondani: „Nahát, a Rust 1.10 és a Rust 1.31
+között a Rust sokat változott!”
 
-Every three years or so, the Rust team produces a new Rust _edition_. Each
-edition brings together the features that have landed into a clear package with
-fully updated documentation and tooling. New editions ship as part of the usual
-six-week release process.
+Nagyjából háromévente a Rust csapata új Rust _editiont_ állít elő. Minden edition
+egy áttekinthető csomagba fogja össze a beérkezett újításokat, teljesen
+frissített dokumentációval és eszközkészlettel. Az új editionök a szokásos
+hathetes kiadási folyamat részeként érkeznek.
 
-Editions serve different purposes for different people:
+Az editionök különböző emberek számára különböző célt szolgálnak:
 
-- For active Rust users, a new edition brings together incremental changes into
-  an easy-to-understand package.
-- For non-users, a new edition signals that some major advancements have
-  landed, which might make Rust worth another look.
-- For those developing Rust, a new edition provides a rallying point for the
-  project as a whole.
+- Az aktív Rust-felhasználók számára az új edition könnyen érthető csomagba
+  gyűjti az apránként érkező változásokat.
+- Azok számára, akik nem használják a nyelvet, az új edition azt jelzi, hogy
+  jelentős előrelépések történtek, ami miatt érdemes lehet újra megnézni a
+  Rustot.
+- Azok számára, akik a Rustot fejlesztik, az új edition gyülekezőpontot ad az
+  egész projekt számára.
 
-At the time of this writing, four Rust editions are available: Rust 2015, Rust
-2018, Rust 2021, and Rust 2024. This book is written using Rust 2024 edition
-idioms.
+E sorok írásakor négy Rust edition érhető el: a Rust 2015, a Rust 2018, a Rust
+2021 és a Rust 2024. Ez a könyv a Rust 2024 edition idiómáit használva íródott.
 
-The `edition` key in _Cargo.toml_ indicates which edition the compiler should
-use for your code. If the key doesn’t exist, Rust uses `2015` as the edition
-value for backward compatibility reasons.
+A _Cargo.toml_ fájlban az `edition` kulcs jelzi, hogy a fordító melyik editiont
+használja a kódodhoz. Ha a kulcs nem létezik, a Rust visszafelé kompatibilitási
+okokból a `2015`-öt használja edition értékként.
 
-Each project can opt in to an edition other than the default 2015 edition.
-Editions can contain incompatible changes, such as including a new keyword that
-conflicts with identifiers in code. However, unless you opt in to those
-changes, your code will continue to compile even as you upgrade the Rust
-compiler version you use.
+Minden projekt dönthet úgy, hogy az alapértelmezett 2015-ös editiontől eltérőt
+használ. Az editionök tartalmazhatnak inkompatibilis változásokat, például egy
+olyan új kulcsszót, amely ütközik a kódban lévő azonosítókkal. Hacsak nem
+választod kifejezetten ezeket a változásokat, a kódod továbbra is lefordul akkor
+is, amikor frissíted az általad használt Rust fordító verzióját.
 
-All Rust compiler versions support any edition that existed prior to that
-compiler’s release, and they can link crates of any supported editions
-together. Edition changes only affect the way the compiler initially parses
-code. Therefore, if you’re using Rust 2015 and one of your dependencies uses
-Rust 2018, your project will compile and be able to use that dependency. The
-opposite situation, where your project uses Rust 2018 and a dependency uses
-Rust 2015, works as well.
+Minden Rust fordítóverzió támogatja az összes olyan editiont, amely a fordító
+kiadása előtt létezett, és képes bármely támogatott edition crate-jeit
+összelinkelni. Az edition változásai csak azt befolyásolják, ahogy a fordító
+kezdetben elemzi a kódot. Ezért ha te a Rust 2015-öt használod, és az egyik
+függőséged a Rust 2018-at, a projekted lefordul, és használni tudja azt a
+függőséget. A fordított helyzet is működik, amikor a projekted a Rust 2018-at, a
+függőség pedig a Rust 2015-öt használja.
 
-To be clear: Most features will be available on all editions. Developers using
-any Rust edition will continue to see improvements as new stable releases are
-made. However, in some cases, mainly when new keywords are added, some new
-features might only be available in later editions. You will need to switch
-editions if you want to take advantage of such features.
+Hogy világos legyen: a legtöbb nyelvi elem minden editionben elérhető lesz.
+Bármelyik Rust editiont használó fejlesztők továbbra is látni fogják a
+fejlesztéseket, ahogy az új stabil kiadások megjelennek. Bizonyos esetekben
+azonban – főként amikor új kulcsszavak kerülnek be – néhány új képesség csak a
+későbbi editionökben lesz elérhető. Editiont kell váltanod, ha ki akarod
+használni az ilyen újításokat.
 
-For more details, see [_The Rust Edition Guide_][edition-guide]. This is a
-complete book that enumerates the differences between editions and explains how
-to automatically upgrade your code to a new edition via `cargo fix`.
+További részletekért lásd a [_The Rust Edition Guide_][edition-guide] című
+kiadványt. Ez egy teljes könyv, amely számba veszi az editionök közti
+különbségeket, és elmagyarázza, hogyan frissítheted automatikusan a kódodat egy
+új editionre a `cargo fix` segítségével.
 
 [edition-guide]: https://doc.rust-lang.org/stable/edition-guide

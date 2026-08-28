@@ -1,7 +1,7 @@
-## Appendix F: Translations of the Book
+## F függelék: A könyv fordításai
 
-For resources in languages other than English. Most are still in progress; see
-[the Translations label][label] to help or let us know about a new translation!
+Angoltól eltérő nyelvű anyagok. A legtöbb még készül; ha segítenél, vagy
+szólnál nekünk egy új fordításról, nézd meg a [Translations címkét][label]!
 
 [label]: https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations
 
@@ -10,7 +10,7 @@ For resources in languages other than English. Most are still in progress; see
 - 简体中文: [KaiserY/trpl-zh-cn](https://github.com/KaiserY/trpl-zh-cn), [gnu4cn/rust-lang-Zh_CN](https://github.com/gnu4cn/rust-lang-Zh_CN)
 - [正體中文](https://github.com/rust-tw/book-tw)
 - [Українська](https://rust-lang-ua.github.io/rustbook_ukrainian)
-- [Español](https://github.com/thecodix/book), [alternate](https://github.com/ManRR/rust-book-es), [Español por RustLangES](https://github.com/RustLangES/rust-book-es)
+- [Español](https://github.com/thecodix/book), [alternatív](https://github.com/ManRR/rust-book-es), [Español por RustLangES](https://github.com/RustLangES/rust-book-es)
 - [Русский](https://github.com/rust-lang-ru/book)
 - [한국어](https://github.com/rust-kr/doc.rust-kr.org)
 - [日本語](https://github.com/rust-lang-ja/book-ja)
