@@ -24,7 +24,7 @@ mutability mintát követi.
 
 ### A borrowing-szabályok érvényesítése futásidőben
 
-Az `Rc<T>`-vel ellentétben a `RefCell<T>` típus egyedüli ownershipet képvisel az
+Az `Rc<T>`-vel ellentétben a `RefCell<T>` típus egyedüli ownership-et képvisel az
 általa tárolt adatok felett. Mitől más akkor a `RefCell<T>`, mint mondjuk egy
 `Box<T>`? Idézzük fel a borrowing-szabályokat a 4. fejezetből:
 
@@ -147,7 +147,7 @@ alkalmazásoknak kell biztosítaniuk: az alkalmazás megjelenítheti az üzenete
 közvetlenül a felhasználónak, küldhet e-mailt, küldhet SMS-t, vagy tehet valami
 mást. A könyvtárnak nem kell ismernie ezt a részletet. Csak annyira van
 szüksége, hogy legyen valami, ami implementálja az általunk biztosított
-`Messenger` traitet. A 15-20. lista mutatja a könyvtár kódját.
+`Messenger` trait-et. A 15-20. lista mutatja a könyvtár kódját.
 
 <Listing number="15-20" file-name="src/lib.rs" caption="Egy könyvtár, amely nyomon követi, mennyire közelít egy érték a maximumhoz, és figyelmeztet, amikor az érték bizonyos szintekre ér">
 
@@ -157,7 +157,7 @@ szüksége, hogy legyen valami, ami implementálja az általunk biztosított
 
 </Listing>
 
-Ennek a kódnak az egyik fontos része, hogy a `Messenger` traitnek egyetlen,
+Ennek a kódnak az egyik fontos része, hogy a `Messenger` trait-nek egyetlen,
 `send` nevű metódusa van, amely egy nem módosítható referenciát vesz át a
 `self`-re, valamint az üzenet szövegét. Ez a trait az az interfész, amelyet a
 mock objektumunknak implementálnia kell, hogy ugyanúgy lehessen használni, mint
@@ -165,7 +165,7 @@ egy valódi objektumot. A másik fontos rész, hogy a `LimitTracker` `set_value`
 metódusának viselkedését akarjuk tesztelni. Meg tudjuk változtatni, mit adunk át
 a `value` paraméternek, de a `set_value` nem ad vissza semmit, amiről állítást
 fogalmazhatnánk meg. Azt szeretnénk kimondani, hogy ha létrehozunk egy
-`LimitTracker`-t valamivel, ami implementálja a `Messenger` traitet, és egy adott
+`LimitTracker`-t valamivel, ami implementálja a `Messenger` trait-et, és egy adott
 `max` értékkel, akkor a messenger utasítást kap a megfelelő üzenetek elküldésére,
 amikor különböző számokat adunk át a `value`-nak.
 
@@ -190,7 +190,7 @@ Ez a tesztkód definiál egy `MockMessenger` structot, amelynek van egy
 `sent_messages` mezője `String` értékek `Vec`-jével, hogy nyilvántartsa azokat
 az üzeneteket, amelyek elküldésére utasítást kapott. Definiálunk egy `new`
 asszociált függvényt is, hogy kényelmesen létrehozhassunk üres üzenetlistával
-induló új `MockMessenger` értékeket. Ezután implementáljuk a `Messenger` traitet
+induló új `MockMessenger` értékeket. Ezután implementáljuk a `Messenger` trait-et
 a `MockMessenger`-re, hogy egy `MockMessenger`-t adhassunk egy
 `LimitTracker`-nek. A `send` metódus definíciójában fogjuk a paraméterként
 átadott üzenetet, és eltároljuk a `MockMessenger` `sent_messages` listájában.
@@ -215,7 +215,7 @@ Nem tudjuk úgy módosítani a `MockMessenger`-t, hogy nyilvántartsa az üzenet
 mert a `send` metódus nem módosítható referenciát vesz át a `self`-re. A
 hibaüzenet javaslatát sem tudjuk követni, amely szerint `&mut self`-et
 használjunk mind az `impl`-beli metódusban, mind a trait definíciójában. Nem
-akarjuk pusztán a tesztelés kedvéért megváltoztatni a `Messenger` traitet.
+akarjuk pusztán a tesztelés kedvéért megváltoztatni a `Messenger` trait-et.
 Ehelyett olyan megoldást kell találnunk, amellyel a tesztkódunk helyesen működik
 a meglévő tervünkkel.
 
@@ -327,7 +327,7 @@ van egy `Rc<T>`-d, amely egy `RefCell<T>`-t tárol, olyan értéket kapsz,
 amelynek több ownere lehet, _és_ amelyet módosítani is tudsz!
 
 Idézzük fel például a 15-18. lista cons list példáját, ahol `Rc<T>` segítségével
-tettük lehetővé, hogy több lista osztozzon egy másik lista ownershipjén. Mivel
+tettük lehetővé, hogy több lista osztozzon egy másik lista ownership-jén. Mivel
 az `Rc<T>` csak nem módosítható értékeket tárol, a lista egyetlen értékét sem
 tudjuk megváltoztatni, miután létrehoztuk őket. Vegyük hozzá a `RefCell<T>`-t,
 amely képes a listákban lévő értékek megváltoztatására. A 15-24. lista mutatja,

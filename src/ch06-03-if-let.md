@@ -102,8 +102,8 @@ is csinálhatnál.)
 
 </Listing>
 
-Ezt viszont a maga módján kicsit bosszantó követni! Az `if let` egyik ága értéket
-állít elő, a másik pedig teljesen kilép a függvényből.
+Ezt viszont a maga módján kicsit bosszantó követni! Az `if let` egyik ága
+értéket állít elő, a másik pedig teljesen kilép a függvényből.
 
 Hogy ezt a gyakori mintát szebben lehessen kifejezni, a Rustban van
 `let...else`. A `let...else` szintaxis a bal oldalon egy mintát, a jobb oldalon

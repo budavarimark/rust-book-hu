@@ -1,120 +1,121 @@
-## What Is Ownership?
+## Mi az az ownership?
 
-_Ownership_ is a set of rules that govern how a Rust program manages memory.
-All programs have to manage the way they use a computer’s memory while running.
-Some languages have garbage collection that regularly looks for no-longer-used
-memory as the program runs; in other languages, the programmer must explicitly
-allocate and free the memory. Rust uses a third approach: Memory is managed
-through a system of ownership with a set of rules that the compiler checks. If
-any of the rules are violated, the program won’t compile. None of the features
-of ownership will slow down your program while it’s running.
+Az _ownership_ szabályok együttese, amelyek megszabják, hogyan kezeli a memóriát
+egy Rust-program. Minden programnak kezelnie kell, hogyan használja futás közben
+a számítógép memóriáját. Egyes nyelvekben garbage collection van, amely a program
+futása során rendszeresen megkeresi a már nem használt memóriát; más nyelvekben a
+programozónak kell explicit módon lefoglalnia és felszabadítania a memóriát. A
+Rust egy harmadik megközelítést használ: a memóriát az ownership rendszere kezeli,
+olyan szabályokkal, amelyeket a fordító ellenőriz. Ha bármelyik szabály sérül, a
+program nem fordul le. Az ownership egyetlen eleme sem lassítja a programodat
+futás közben.
 
-Because ownership is a new concept for many programmers, it does take some time
-to get used to. The good news is that the more experienced you become with Rust
-and the rules of the ownership system, the easier you’ll find it to naturally
-develop code that is safe and efficient. Keep at it!
+Mivel az ownership sok programozó számára új fogalom, időbe telik megszokni. A jó
+hír az, hogy minél nagyobb tapasztalatot szerzel a Rustban és az ownership
+rendszerének szabályaiban, annál könnyebben fogsz természetes módon biztonságos
+és hatékony kódot írni. Ne add fel!
 
-When you understand ownership, you’ll have a solid foundation for understanding
-the features that make Rust unique. In this chapter, you’ll learn ownership by
-working through some examples that focus on a very common data structure:
-strings.
+Ha megérted az ownershipet, szilárd alapod lesz azoknak a képességeknek a
+megértéséhez, amelyek a Rustot egyedivé teszik. Ebben a fejezetben néhány olyan
+példán keresztül ismerkedsz meg az ownershippel, amelyek egy nagyon gyakori
+adatszerkezetre összpontosítanak: a sztringekre.
 
-> ### The Stack and the Heap {#the-stack-and-the-heap}
+> ### A stack és a heap {#the-stack-and-the-heap}
 >
-> Many programming languages don’t require you to think about the stack and the
-> heap very often. But in a systems programming language like Rust, whether a
-> value is on the stack or the heap affects how the language behaves and why
-> you have to make certain decisions. Parts of ownership will be described in
-> relation to the stack and the heap later in this chapter, so here is a brief
-> explanation in preparation.
+> Sok programozási nyelvben nem kell túl gyakran a stackkel és a heappel
+> foglalkoznod. Egy olyan rendszerprogramozási nyelvben azonban, mint a Rust, az,
+> hogy egy érték a stacken vagy a heapen van-e, befolyásolja a nyelv
+> viselkedését, és azt is, miért kell bizonyos döntéseket meghoznod. Az ownership
+> egyes részeit a fejezet későbbi részében a stackhez és a heaphez viszonyítva
+> mutatjuk be, ezért itt egy rövid magyarázat következik felkészülésképpen.
 >
-> Both the stack and the heap are parts of memory available to your code to use
-> at runtime, but they are structured in different ways. The stack stores
-> values in the order it gets them and removes the values in the opposite
-> order. This is referred to as _last in, first out (LIFO)_. Think of a stack of
-> plates: When you add more plates, you put them on top of the pile, and when
-> you need a plate, you take one off the top. Adding or removing plates from
-> the middle or bottom wouldn’t work as well! Adding data is called _pushing
-> onto the stack_, and removing data is called _popping off the stack_. All
-> data stored on the stack must have a known, fixed size. Data with an unknown
-> size at compile time or a size that might change must be stored on the heap
-> instead.
+> A stack és a heap egyaránt a kódod számára futásidőben elérhető memória része,
+> de eltérő módon vannak felépítve. A stack abban a sorrendben tárolja az
+> értékeket, ahogy megkapja őket, és fordított sorrendben veszi ki őket. Ezt
+> nevezzük _utoljára be, elsőként ki (last in, first out, LIFO)_ elvnek. Gondolj
+> egy tányérhalomra: amikor újabb tányérokat teszel hozzá, a halom tetejére
+> helyezed őket, és amikor tányérra van szükséged, a tetejéről veszel el egyet. A
+> halom közepéről vagy aljáról tányért betenni vagy kivenni nem menne ilyen
+> jól! Az adat hozzáadását _a stackre helyezésnek (push)_, az adat eltávolítását
+> pedig _a stackről levételnek (pop)_ nevezzük. Minden, a stacken tárolt adatnak
+> ismert, rögzített méretűnek kell lennie. Az olyan adatot, amelynek a mérete
+> fordítási időben ismeretlen, vagy amelynek a mérete változhat, a heapen kell
+> tárolni.
 >
-> The heap is less organized: When you put data on the heap, you request a
-> certain amount of space. The memory allocator finds an empty spot in the heap
-> that is big enough, marks it as being in use, and returns a _pointer_, which
-> is the address of that location. This process is called _allocating on the
-> heap_ and is sometimes abbreviated as just _allocating_ (pushing values onto
-> the stack is not considered allocating). Because the pointer to the heap is a
-> known, fixed size, you can store the pointer on the stack, but when you want
-> the actual data, you must follow the pointer. Think of being seated at a
-> restaurant. When you enter, you state the number of people in your group, and
-> the host finds an empty table that fits everyone and leads you there. If
-> someone in your group comes late, they can ask where you’ve been seated to
-> find you.
+> A heap kevésbé rendezett: amikor adatot teszel a heapre, egy bizonyos mennyiségű
+> helyet kérsz. A memóriafoglaló (allokátor) talál egy elég nagy üres helyet a
+> heapen, megjelöli használtként, és visszaad egy _pointert_, amely az adott hely
+> címe. Ezt a folyamatot _a heapen való lefoglalásnak_ nevezzük, és néha csak
+> _lefoglalásként_ rövidítjük (az értékek stackre helyezését nem tekintjük
+> lefoglalásnak). Mivel a heapre mutató pointer ismert, rögzített méretű, a
+> pointert a stacken tárolhatod, de amikor a tényleges adatra van szükséged, a
+> pointert követned kell. Gondolj arra, amikor egy étteremben leültetnek. Amikor
+> belépsz, megmondod, hányan vagytok, a hostess pedig talál egy üres asztalt,
+> ahová mindenki elfér, és odavezet titeket. Ha valaki később érkezik a
+> társaságból, megkérdezheti, hová ültettek titeket, hogy megtaláljon.
 >
-> Pushing to the stack is faster than allocating on the heap because the
-> allocator never has to search for a place to store new data; that location is
-> always at the top of the stack. Comparatively, allocating space on the heap
-> requires more work because the allocator must first find a big enough space
-> to hold the data and then perform bookkeeping to prepare for the next
-> allocation.
+> A stackre helyezés gyorsabb, mint a heapen való lefoglalás, mert az
+> allokátornak sosem kell helyet keresnie az új adat tárolásához; az a hely mindig
+> a stack teteje. Ehhez képest a heapen való helyfoglalás több munkát igényel,
+> mert az allokátornak először találnia kell egy elég nagy helyet az adat
+> tárolásához, majd nyilvántartást kell vezetnie a következő foglalás
+> előkészítéséhez.
 >
-> Accessing data in the heap is generally slower than accessing data on the
-> stack because you have to follow a pointer to get there. Contemporary
-> processors are faster if they jump around less in memory. Continuing the
-> analogy, consider a server at a restaurant taking orders from many tables.
-> It’s most efficient to get all the orders at one table before moving on to
-> the next table. Taking an order from table A, then an order from table B,
-> then one from A again, and then one from B again would be a much slower
-> process. By the same token, a processor can usually do its job better if it
-> works on data that’s close to other data (as it is on the stack) rather than
-> farther away (as it can be on the heap).
+> A heapen lévő adat elérése általában lassabb, mint a stacken lévőé, mert oda
+> egy pointert követve jutsz el. A mai processzorok gyorsabbak, ha kevesebbet
+> ugrálnak a memóriában. Folytatva a hasonlatot, képzelj el egy pincért az
+> étteremben, aki sok asztaltól vesz fel rendelést. A leghatékonyabb, ha egy
+> asztalnál az összes rendelést felveszi, mielőtt a következő asztalhoz megy. Ha
+> felvenne egy rendelést az A asztalnál, majd egyet a B asztalnál, aztán megint
+> egyet A-nál, majd megint egyet B-nél, az sokkal lassabb folyamat lenne. Ehhez
+> hasonlóan a processzor általában jobban végzi a dolgát, ha olyan adaton
+> dolgozik, amely közel van más adatokhoz (mint a stacken), nem pedig távolabb
+> (mint ahogy az a heapen lehet).
 >
-> When your code calls a function, the values passed into the function
-> (including, potentially, pointers to data on the heap) and the function’s
-> local variables get pushed onto the stack. When the function is over, those
-> values get popped off the stack.
+> Amikor a kódod meghív egy függvényt, a függvénynek átadott értékek (beleértve
+> adott esetben a heapen lévő adatra mutató pointereket is) és a függvény lokális
+> változói a stackre kerülnek. Amikor a függvény véget ér, ezek az értékek
+> lekerülnek a stackről.
 >
-> Keeping track of what parts of code are using what data on the heap,
-> minimizing the amount of duplicate data on the heap, and cleaning up unused
-> data on the heap so that you don’t run out of space are all problems that
-> ownership addresses. Once you understand ownership, you won’t need to think
-> about the stack and the heap very often. But knowing that the main purpose of
-> ownership is to manage heap data can help explain why it works the way it
-> does.
+> Annak nyilvántartása, hogy a kód mely részei milyen adatot használnak a heapen,
+> a heapen lévő adatduplikációk minimalizálása, valamint a heapen lévő nem
+> használt adat kitakarítása, hogy ne fogyj ki a helyből – ezek mind olyan
+> problémák, amelyeket az ownership old meg. Ha egyszer megérted az ownershipet,
+> nem kell majd túl gyakran a stackkel és a heappel foglalkoznod. Az viszont, ha
+> tudod, hogy az ownership fő célja a heapen lévő adat kezelése, segíthet
+> megmagyarázni, miért éppen úgy működik, ahogy.
 
-### Ownership Rules
+### Az ownership szabályai
 
-First, let’s take a look at the ownership rules. Keep these rules in mind as we
-work through the examples that illustrate them:
+Először nézzük meg az ownership szabályait. Tartsd észben ezeket a szabályokat,
+miközben végigmegyünk az őket szemléltető példákon:
 
-- Each value in Rust has an _owner_.
-- There can only be one owner at a time.
-- When the owner goes out of scope, the value will be dropped.
+- A Rustban minden értéknek van egy _ownere_.
+- Egyszerre csak egy owner lehet.
+- Amikor az owner kilép a hatóköréből, az érték eldobásra kerül.
 
-### Variable Scope
+### Változók hatóköre
 
-Now that we’re past basic Rust syntax, we won’t include all the `fn main() {`
-code in the examples, so if you’re following along, make sure to put the
-following examples inside a `main` function manually. As a result, our examples
-will be a bit more concise, letting us focus on the actual details rather than
-boilerplate code.
+Most, hogy túl vagyunk a Rust alapvető szintaxisán, nem szerepeltetjük a
+példákban a teljes `fn main() {` kódot, így ha együtt haladsz velünk, ügyelj rá,
+hogy a következő példákat kézzel egy `main` függvénybe helyezd. Ennek
+eredményeként a példáink tömörebbek lesznek, és a sablonkód helyett a valódi
+részletekre tudunk összpontosítani.
 
-As a first example of ownership, we’ll look at the scope of some variables. A
-_scope_ is the range within a program for which an item is valid. Take the
-following variable:
+Az ownership első példájaként néhány változó hatókörét fogjuk megnézni. A
+_hatókör_ az a tartomány a programon belül, amelyen belül egy elem érvényes.
+Vegyük a következő változót:
 
 ```rust
 let s = "hello";
 ```
 
-The variable `s` refers to a string literal, where the value of the string is
-hardcoded into the text of our program. The variable is valid from the point at
-which it’s declared until the end of the current scope. Listing 4-1 shows a
-program with comments annotating where the variable `s` would be valid.
+Az `s` változó egy sztringliterálra hivatkozik, ahol a sztring értéke a
+programunk szövegébe van beégetve. A változó attól a ponttól kezdve érvényes,
+ahol deklaráljuk, egészen az aktuális hatókör végéig. A 4-1. lista egy programot
+mutat be olyan kommentekkel, amelyek jelzik, hol lenne érvényes az `s` változó.
 
-<Listing number="4-1" caption="A variable and the scope in which it is valid">
+<Listing number="4-1" caption="Egy változó és a hatókör, amelyen belül érvényes">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-01/src/main.rs:here}}
@@ -122,127 +123,131 @@ program with comments annotating where the variable `s` would be valid.
 
 </Listing>
 
-In other words, there are two important points in time here:
+Más szóval két fontos időpont van itt:
 
-- When `s` comes _into_ scope, it is valid.
-- It remains valid until it goes _out of_ scope.
+- Amikor `s` _belép_ a hatókörbe, érvényessé válik.
+- Érvényes marad, amíg _ki nem lép_ a hatóköréből.
 
-At this point, the relationship between scopes and when variables are valid is
-similar to that in other programming languages. Now we’ll build on top of this
-understanding by introducing the `String` type.
+Ezen a ponton a hatókörök és a változók érvényessége közötti kapcsolat hasonló
+ahhoz, amit más programozási nyelvekben látunk. Most erre a megértésre építve
+bevezetjük a `String` típust.
 
-### The `String` Type
+### A `String` típus
 
-To illustrate the rules of ownership, we need a data type that is more complex
-than those we covered in the [“Data Types”][data-types]<!-- ignore --> section
-of Chapter 3. The types covered previously are of a known size, can be stored
-on the stack and popped off the stack when their scope is over, and can be
-quickly and trivially copied to make a new, independent instance if another
-part of code needs to use the same value in a different scope. But we want to
-look at data that is stored on the heap and explore how Rust knows when to
-clean up that data, and the `String` type is a great example.
+Az ownership szabályainak szemléltetéséhez egy olyan adattípusra van szükségünk,
+amely bonyolultabb azoknál, amelyeket a 3. fejezet [„Adattípusok”][data-types]<!-- ignore -->
+című szakaszában tárgyaltunk. A korábban tárgyalt típusok ismert méretűek, a
+stacken tárolhatók, és lekerülnek a stackről, amikor a hatókörük véget ér,
+továbbá gyorsan és egyszerűen másolhatók egy új, független példány
+létrehozásához, ha a kód egy másik részének ugyanazt az értéket kell használnia
+egy másik hatókörben. Mi azonban olyan adatot szeretnénk megnézni, amely a heapen
+tárolódik, és fel akarjuk fedezni, honnan tudja a Rust, mikor kell kitakarítania
+ezt az adatot – a `String` típus pedig kiváló példa erre.
 
-We’ll concentrate on the parts of `String` that relate to ownership. These
-aspects also apply to other complex data types, whether they are provided by
-the standard library or created by you. We’ll discuss non-ownership aspects of
-`String` in [Chapter 8][ch8]<!-- ignore -->.
+A `String` típusnak azokra a részeire fogunk összpontosítani, amelyek az
+ownershiphez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
+érvényesek, akár a standard könyvtár biztosítja őket, akár te hozod létre őket. A
+`String` ownershiptől független szempontjait a [8. fejezetben][ch8]<!-- ignore -->
+tárgyaljuk.
 
-We’ve already seen string literals, where a string value is hardcoded into our
-program. String literals are convenient, but they aren’t suitable for every
-situation in which we may want to use text. One reason is that they’re
-immutable. Another is that not every string value can be known when we write
-our code: For example, what if we want to take user input and store it? It is
-for these situations that Rust has the `String` type. This type manages
-data allocated on the heap and as such is able to store an amount of text that
-is unknown to us at compile time. You can create a `String` from a string
-literal using the `from` function, like so:
+A sztringliterálokat már láttuk, ahol a sztring értéke bele van égetve a
+programunkba. A sztringliterálok kényelmesek, de nem minden olyan helyzetre
+alkalmasak, amelyben szöveget szeretnénk használni. Az egyik ok, hogy nem
+módosíthatók. A másik, hogy nem minden sztringérték ismerhető meg akkor, amikor a
+kódunkat írjuk: mi van például akkor, ha a felhasználó bemenetét szeretnénk venni
+és eltárolni? Ilyen helyzetekre való a Rustban a `String` típus. Ez a típus a
+heapen lefoglalt adatot kezel, és így olyan mennyiségű szöveget tud tárolni,
+amely fordítási időben ismeretlen a számunkra. Egy `String` értéket a `from`
+függvénnyel hozhatsz létre egy sztringliterálból, így:
 
 ```rust
 let s = String::from("hello");
 ```
 
-The double colon `::` operator allows us to namespace this particular `from`
-function under the `String` type rather than using some sort of name like
-`string_from`. We’ll discuss this syntax more in the [“Methods”][methods]<!--
-ignore --> section of Chapter 5, and when we talk about namespacing with
-modules in [“Paths for Referring to an Item in the Module
-Tree”][paths-module-tree]<!-- ignore --> in Chapter 7.
+A kettős kettőspont `::` operátor lehetővé teszi, hogy ezt a bizonyos `from`
+függvényt a `String` típus névterébe soroljuk ahelyett, hogy valamilyen
+`string_from`-féle nevet használnánk. Erről a szintaxisról részletesebben az 5.
+fejezet [„Metódusok”][methods]<!-- ignore --> című szakaszában lesz szó, valamint
+akkor, amikor a 7. fejezet [„Útvonalak a modulfában lévő elemekre való
+hivatkozáshoz”][paths-module-tree]<!-- ignore --> részében a modulokkal való
+névterezésről beszélünk.
 
-This kind of string _can_ be mutated:
+Ez a fajta sztring _módosítható_:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-01-can-mutate-string/src/main.rs:here}}
 ```
 
-So, what’s the difference here? Why can `String` be mutated but literals
-cannot? The difference is in how these two types deal with memory.
+Mi tehát itt a különbség? Miért módosítható a `String`, a literálok pedig miért
+nem? A különbség abban rejlik, hogyan bánik ez a két típus a memóriával.
 
-### Memory and Allocation
+### Memória és foglalás
 
-In the case of a string literal, we know the contents at compile time, so the
-text is hardcoded directly into the final executable. This is why string
-literals are fast and efficient. But these properties only come from the string
-literal’s immutability. Unfortunately, we can’t put a blob of memory into the
-binary for each piece of text whose size is unknown at compile time and whose
-size might change while running the program.
+Egy sztringliterál esetében fordítási időben ismerjük a tartalmat, így a szöveg
+közvetlenül bele van égetve a végleges futtatható állományba. Ezért gyorsak és
+hatékonyak a sztringliterálok. Ezek a tulajdonságok azonban csak a
+sztringliterálok módosíthatatlanságából fakadnak. Sajnos nem tehetünk egy
+memóriadarabot a binárisba minden olyan szövegrészlet számára, amelynek a mérete
+fordítási időben ismeretlen, és amelynek a mérete a program futása közben
+változhat.
 
-With the `String` type, in order to support a mutable, growable piece of text,
-we need to allocate an amount of memory on the heap, unknown at compile time,
-to hold the contents. This means:
+A `String` típusnál ahhoz, hogy módosítható, növelhető szövegdarabot
+támogassunk, fordítási időben ismeretlen mennyiségű memóriát kell lefoglalnunk a
+heapen a tartalom tárolására. Ez a következőket jelenti:
 
-- The memory must be requested from the memory allocator at runtime.
-- We need a way of returning this memory to the allocator when we’re done with
-  our `String`.
+- A memóriát futásidőben kell kérnünk a memóriafoglalótól.
+- Szükségünk van egy módra, amellyel ezt a memóriát visszaadjuk az allokátornak,
+  amikor végeztünk a `String` értékünkkel.
 
-That first part is done by us: When we call `String::from`, its implementation
-requests the memory it needs. This is pretty much universal in programming
-languages.
+Az első részt mi végezzük el: amikor meghívjuk a `String::from` függvényt, annak
+implementációja kikéri a szükséges memóriát. Ez nagyjából minden programozási
+nyelvben így van.
 
-However, the second part is different. In languages with a _garbage collector
-(GC)_, the GC keeps track of and cleans up memory that isn’t being used
-anymore, and we don’t need to think about it. In most languages without a GC,
-it’s our responsibility to identify when memory is no longer being used and to
-call code to explicitly free it, just as we did to request it. Doing this
-correctly has historically been a difficult programming problem. If we forget,
-we’ll waste memory. If we do it too early, we’ll have an invalid variable. If
-we do it twice, that’s a bug too. We need to pair exactly one `allocate` with
-exactly one `free`.
+A második rész azonban más. Az olyan nyelvekben, amelyekben van _garbage
+collector (GC)_, a GC tartja nyilván és takarítja ki a már nem használt
+memóriát, nekünk pedig nem kell ezzel foglalkoznunk. A legtöbb GC nélküli
+nyelvben a mi felelősségünk felismerni, mikor nem használjuk már a memóriát, és
+meghívni azt a kódot, amely explicit módon felszabadítja – ugyanúgy, ahogy a
+kérésénél is tettük. Ennek helyes elvégzése történetileg nehéz programozási
+probléma volt. Ha elfelejtjük, memóriát pazarlunk. Ha túl korán tesszük meg,
+érvénytelen változónk lesz. Ha kétszer tesszük meg, az is hiba. Pontosan egy
+`allocate` hívást kell pontosan egy `free` hívással párosítanunk.
 
-Rust takes a different path: The memory is automatically returned once the
-variable that owns it goes out of scope. Here’s a version of our scope example
-from Listing 4-1 using a `String` instead of a string literal:
+A Rust más utat választ: a memória automatikusan visszaadásra kerül, amint az azt
+birtokló változó kilép a hatóköréből. Íme a 4-1. listában szereplő hatókörpéldánk
+egy változata, amely sztringliterál helyett `String` értéket használ:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-02-string-scope/src/main.rs:here}}
 ```
 
-There is a natural point at which we can return the memory our `String` needs
-to the allocator: when `s` goes out of scope. When a variable goes out of
-scope, Rust calls a special function for us. This function is called
-`drop`, and it’s where the author of `String` can put
-the code to return the memory. Rust calls `drop` automatically at the closing
-curly bracket.
+Van egy természetes pont, ahol a `String` értékünkhöz szükséges memóriát
+visszaadhatjuk az allokátornak: amikor `s` kilép a hatóköréből. Amikor egy változó
+kilép a hatóköréből, a Rust meghív helyettünk egy speciális függvényt. Ennek a
+függvénynek a neve `drop`, és ide helyezheti a `String` szerzője a memóriát
+visszaadó kódot. A Rust automatikusan meghívja a `drop` függvényt a záró kapcsos
+zárójelnél.
 
-> Note: In C++, this pattern of deallocating resources at the end of an item’s
-> lifetime is sometimes called _Resource Acquisition Is Initialization (RAII)_.
-> The `drop` function in Rust will be familiar to you if you’ve used RAII
-> patterns.
+> Megjegyzés: a C++-ban az erőforrások felszabadításának ezt a mintáját, amely egy
+> elem élettartamának végén történik, néha _Resource Acquisition Is
+> Initialization (RAII)_ néven emlegetik. A Rust `drop` függvénye ismerős lesz
+> számodra, ha használtál már RAII-mintákat.
 
-This pattern has a profound impact on the way Rust code is written. It may seem
-simple right now, but the behavior of code can be unexpected in more
-complicated situations when we want to have multiple variables use the data
-we’ve allocated on the heap. Let’s explore some of those situations now.
+Ennek a mintának mélyreható hatása van arra, ahogyan a Rust-kódot írjuk. Most még
+egyszerűnek tűnhet, de a kód viselkedése váratlan lehet bonyolultabb
+helyzetekben, amikor azt szeretnénk, hogy több változó használja a heapen
+lefoglalt adatunkat. Nézzünk meg most néhányat ezek közül a helyzetek közül.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ways-variables-and-data-interact-move"></a>
 
-#### Variables and Data Interacting with Move {#variables-and-data-interacting-with-move}
+#### Változók és adatok kölcsönhatása: move {#variables-and-data-interacting-with-move}
 
-Multiple variables can interact with the same data in different ways in Rust.
-Listing 4-2 shows an example using an integer.
+A Rustban több változó is különböző módokon léphet kölcsönhatásba ugyanazzal az
+adattal. A 4-2. lista egy egész számot használó példát mutat be.
 
-<Listing number="4-2" caption="Assigning the integer value of variable `x` to `y`">
+<Listing number="4-2" caption="Az `x` változó egész értékének hozzárendelése `y`-hoz">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-02/src/main.rs:here}}
@@ -250,219 +255,227 @@ Listing 4-2 shows an example using an integer.
 
 </Listing>
 
-We can probably guess what this is doing: “Bind the value `5` to `x`; then, make
-a copy of the value in `x` and bind it to `y`.” We now have two variables, `x`
-and `y`, and both equal `5`. This is indeed what is happening, because integers
-are simple values with a known, fixed size, and these two `5` values are pushed
-onto the stack.
+Valószínűleg ki tudjuk találni, mit csinál ez: „Kösd az `5` értéket `x`-hez;
+aztán készíts másolatot az `x`-ben lévő értékről, és kösd azt `y`-hoz.” Most két
+változónk van, `x` és `y`, és mindkettő `5`-tel egyenlő. Valóban ez történik,
+mert az egész számok egyszerű, ismert és rögzített méretű értékek, és ez a két
+`5` érték a stackre kerül.
 
-Now let’s look at the `String` version:
+Most nézzük meg a `String` változatot:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-03-string-move/src/main.rs:here}}
 ```
 
-This looks very similar, so we might assume that the way it works would be the
-same: That is, the second line would make a copy of the value in `s1` and bind
-it to `s2`. But this isn’t quite what happens.
+Ez nagyon hasonlónak tűnik, így azt feltételezhetnénk, hogy a működése is
+ugyanaz: vagyis a második sor másolatot készít az `s1`-ben lévő értékről, és azt
+`s2`-höz köti. De nem egészen ez történik.
 
-Take a look at Figure 4-1 to see what is happening to `String` under the
-covers. A `String` is made up of three parts, shown on the left: a pointer to
-the memory that holds the contents of the string, a length, and a capacity.
-This group of data is stored on the stack. On the right is the memory on the
-heap that holds the contents.
+Nézd meg a 4-1. ábrát, hogy lásd, mi történik a `String` értékkel a színfalak
+mögött. Egy `String` három részből áll, amelyeket a bal oldal mutat: egy
+pointerből, amely a sztring tartalmát tároló memóriára mutat, egy hosszból és egy
+kapacitásból. Ez az adatcsoport a stacken tárolódik. A jobb oldalon a heapen lévő
+memória látható, amely a tartalmat tárolja.
 
-<img alt="Two tables: the first table contains the representation of s1 on the
-stack, consisting of its length (5), capacity (5), and a pointer to the first
-value in the second table. The second table contains the representation of the
-string data on the heap, byte by byte." src="img/trpl04-01.svg" class="center"
+<img alt="Két táblázat: az első táblázat az s1 stacken lévő ábrázolását
+tartalmazza, amely a hosszából (5), a kapacitásából (5) és egy pointerből áll,
+amely a második táblázat első értékére mutat. A második táblázat a sztringadat
+heapen lévő ábrázolását tartalmazza, bájtról bájtra." src="img/trpl04-01.svg" class="center"
 style="width: 50%;" />
 
-<span class="caption">Figure 4-1: The representation in memory of a `String`
-holding the value `"hello"` bound to `s1`</span>
+<span class="caption">4-1. ábra: Egy `"hello"` értéket tartalmazó, `s1`-hez
+kötött `String` memóriabeli ábrázolása</span>
 
-The length is how much memory, in bytes, the contents of the `String` are
-currently using. The capacity is the total amount of memory, in bytes, that the
-`String` has received from the allocator. The difference between length and
-capacity matters, but not in this context, so for now, it’s fine to ignore the
-capacity.
+A hossz azt mutatja meg, mennyi memóriát – bájtban – használ jelenleg a `String`
+tartalma. A kapacitás az a teljes memóriamennyiség – bájtban –, amelyet a
+`String` az allokátortól kapott. A hossz és a kapacitás közötti különbség
+számít, de nem ebben az összefüggésben, ezért egyelőre nyugodtan figyelmen kívül
+hagyhatjuk a kapacitást.
 
-When we assign `s1` to `s2`, the `String` data is copied, meaning we copy the
-pointer, the length, and the capacity that are on the stack. We do not copy the
-data on the heap that the pointer refers to. In other words, the data
-representation in memory looks like Figure 4-2.
+Amikor `s1`-et `s2`-höz rendeljük, a `String` adatai másolódnak, vagyis lemásoljuk
+a pointert, a hosszt és a kapacitást, amelyek a stacken vannak. Nem másoljuk le a
+heapen lévő adatot, amelyre a pointer hivatkozik. Más szóval a memóriabeli
+adatábrázolás a 4-2. ábrán láthatóhoz hasonlóan néz ki.
 
-<img alt="Three tables: tables s1 and s2 representing those strings on the
-stack, respectively, and both pointing to the same string data on the heap."
+<img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
+a stacken, és mindkettő ugyanarra a sztringadatra mutat a heapen."
 src="img/trpl04-02.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-2: The representation in memory of the variable
-`s2` that has a copy of the pointer, length, and capacity of `s1`</span>
+<span class="caption">4-2. ábra: Az `s2` változó memóriabeli ábrázolása, amely az
+`s1` pointerének, hosszának és kapacitásának másolatát tartalmazza</span>
 
-The representation does _not_ look like Figure 4-3, which is what memory would
-look like if Rust instead copied the heap data as well. If Rust did this, the
-operation `s2 = s1` could be very expensive in terms of runtime performance if
-the data on the heap were large.
+Az ábrázolás _nem_ úgy néz ki, mint a 4-3. ábra, amely azt mutatja, hogyan
+festene a memória, ha a Rust a heapen lévő adatot is lemásolná. Ha a Rust ezt
+tenné, az `s2 = s1` művelet futásidejű teljesítmény szempontjából nagyon
+költséges lehetne, ha a heapen lévő adat nagy méretű volna.
 
-<img alt="Four tables: two tables representing the stack data for s1 and s2,
-and each points to its own copy of string data on the heap."
+<img alt="Négy táblázat: két táblázat az s1 és s2 stacken lévő adatait
+ábrázolja, és mindegyik a heapen lévő saját sztringadat-másolatára mutat."
 src="img/trpl04-03.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-3: Another possibility for what `s2 = s1` might
-do if Rust copied the heap data as well</span>
+<span class="caption">4-3. ábra: Egy másik lehetőség arra, mit tehetne az `s2 =
+s1`, ha a Rust a heapen lévő adatot is lemásolná</span>
 
-Earlier, we said that when a variable goes out of scope, Rust automatically
-calls the `drop` function and cleans up the heap memory for that variable. But
-Figure 4-2 shows both data pointers pointing to the same location. This is a
-problem: When `s2` and `s1` go out of scope, they will both try to free the
-same memory. This is known as a _double free_ error and is one of the memory
-safety bugs we mentioned previously. Freeing memory twice can lead to memory
-corruption, which can potentially lead to security vulnerabilities.
+Korábban azt mondtuk, hogy amikor egy változó kilép a hatóköréből, a Rust
+automatikusan meghívja a `drop` függvényt, és kitakarítja az adott változóhoz
+tartozó heapmemóriát. A 4-2. ábrán viszont mindkét adatpointer ugyanarra a helyre
+mutat. Ez probléma: amikor `s2` és `s1` kilép a hatóköréből, mindkettő ugyanazt a
+memóriát próbálja majd felszabadítani. Ezt _double free_ hibának nevezzük, és ez
+az egyik korábban említett memóriabiztonsági hiba. A memória kétszeri
+felszabadítása memóriasérüléshez vezethet, ami akár biztonsági sebezhetőségeket
+is eredményezhet.
 
-To ensure memory safety, after the line `let s2 = s1;`, Rust considers `s1` as
-no longer valid. Therefore, Rust doesn’t need to free anything when `s1` goes
-out of scope. Check out what happens when you try to use `s1` after `s2` is
-created; it won’t work:
+A memóriabiztonság garantálása érdekében a Rust a `let s2 = s1;` sor után `s1`-et
+már nem tekinti érvényesnek. Ezért a Rustnak semmit nem kell felszabadítania,
+amikor `s1` kilép a hatóköréből. Nézd meg, mi történik, ha megpróbálod használni
+`s1`-et azután, hogy `s2` létrejött; nem fog működni:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/src/main.rs:here}}
 ```
 
-You’ll get an error like this because Rust prevents you from using the
-invalidated reference:
+A következőhöz hasonló hibát kapsz, mert a Rust megakadályozza, hogy az
+érvénytelenített referenciát használd:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/output.txt}}
 ```
 
-If you’ve heard the terms _shallow copy_ and _deep copy_ while working with
-other languages, the concept of copying the pointer, length, and capacity
-without copying the data probably sounds like making a shallow copy. But
-because Rust also invalidates the first variable, instead of being called a
-shallow copy, it’s known as a _move_. In this example, we would say that `s1`
-was _moved_ into `s2`. So, what actually happens is shown in Figure 4-4.
+Ha más nyelvekkel dolgozva már hallottad a _sekély másolat_ (shallow copy) és a
+_mély másolat_ (deep copy) kifejezéseket, akkor a pointer, a hossz és a kapacitás
+másolása az adat másolása nélkül valószínűleg sekély másolat készítésének hangzik.
+Mivel azonban a Rust az első változót ráadásul érvényteleníti is, ezt nem sekély
+másolatnak, hanem _move_-nak nevezzük. Ebben a példában azt mondanánk, hogy `s1`
+_move_-olva lett `s2`-be. Tehát valójában az történik, amit a 4-4. ábra mutat.
 
-<img alt="Three tables: tables s1 and s2 representing those strings on the
-stack, respectively, and both pointing to the same string data on the heap.
-Table s1 is grayed out because s1 is no longer valid; only s2 can be used to
-access the heap data." src="img/trpl04-04.svg" class="center" style="width:
+<img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
+a stacken, és mindkettő ugyanarra a sztringadatra mutat a heapen. Az s1 táblázat
+szürkített, mert s1 már nem érvényes; a heapen lévő adat csak s2-n keresztül
+érhető el." src="img/trpl04-04.svg" class="center" style="width:
 50%;" />
 
-<span class="caption">Figure 4-4: The representation in memory after `s1` has
-been invalidated</span>
+<span class="caption">4-4. ábra: A memória ábrázolása azután, hogy `s1`
+érvénytelenné vált</span>
 
-That solves our problem! With only `s2` valid, when it goes out of scope it
-alone will free the memory, and we’re done.
+Ezzel meg is oldódott a problémánk! Mivel csak `s2` érvényes, amikor kilép a
+hatóköréből, egyedül ő szabadítja fel a memóriát, és ezzel készen is vagyunk.
 
-In addition, there’s a design choice that’s implied by this: Rust will never
-automatically create “deep” copies of your data. Therefore, any _automatic_
-copying can be assumed to be inexpensive in terms of runtime performance.
+Ezenfelül van egy tervezési döntés, amely mindebből következik: a Rust soha nem
+készít automatikusan „mély” másolatot az adataidról. Ezért bármely _automatikus_
+másolásról feltételezhető, hogy futásidejű teljesítmény szempontjából nem
+költséges.
 
-#### Scope and Assignment
+#### Hatókör és értékadás
 
-The inverse of this is true for the relationship between scoping, ownership, and
-memory being freed via the `drop` function as well. When you assign a completely
-new value to an existing variable, Rust will call `drop` and free the original
-value’s memory immediately. Consider this code, for example:
+Ennek a fordítottja is igaz a hatókör, az ownership és a memória `drop`
+függvényen keresztüli felszabadítása közötti kapcsolatra. Amikor egy létező
+változóhoz teljesen új értéket rendelsz, a Rust meghívja a `drop` függvényt, és
+azonnal felszabadítja az eredeti érték memóriáját. Vedd például a következő
+kódot:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04b-replacement-drop/src/main.rs:here}}
 ```
 
-We initially declare a variable `s` and bind it to a `String` with the value
-`"hello"`. Then, we immediately create a new `String` with the value `"ahoy"`
-and assign it to `s`. At this point, nothing is referring to the original value
-on the heap at all. Figure 4-5 illustrates the stack and heap data now:
+Először deklarálunk egy `s` változót, és egy `"hello"` értékű `String` értékhez
+kötjük. Ezután azonnal létrehozunk egy új, `"ahoy"` értékű `String` értéket, és
+azt rendeljük `s`-hez. Ezen a ponton már semmi nem hivatkozik az eredeti, heapen
+lévő értékre. A 4-5. ábra a stack és a heap adatait szemlélteti ekkor:
 
-<img alt="One table representing the string value on the stack, pointing to
-the second piece of string data (ahoy) on the heap, with the original string
-data (hello) grayed out because it cannot be accessed anymore."
+<img alt="Egy táblázat, amely a stacken lévő sztringértéket ábrázolja, és a
+heapen lévő második sztringadatra (ahoy) mutat, míg az eredeti sztringadat
+(hello) szürkített, mert már nem érhető el."
 src="img/trpl04-05.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-5: The representation in memory after the initial
-value has been replaced in its entirety</span>
+<span class="caption">4-5. ábra: A memória ábrázolása azután, hogy a kezdeti
+értéket teljes egészében lecseréltük</span>
 
-The original string thus immediately goes out of scope. Rust will run the `drop`
-function on it and its memory will be freed right away. When we print the value
-at the end, it will be `"ahoy, world!"`.
+Az eredeti sztring így azonnal kilép a hatóköréből. A Rust lefuttatja rajta a
+`drop` függvényt, és a memóriája azonnal felszabadul. Amikor a végén kiírjuk az
+értéket, az `"ahoy, world!"` lesz.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ways-variables-and-data-interact-clone"></a>
 
-#### Variables and Data Interacting with Clone {#variables-and-data-interacting-with-clone}
+#### Változók és adatok kölcsönhatása: clone {#variables-and-data-interacting-with-clone}
 
-If we _do_ want to deeply copy the heap data of the `String`, not just the
-stack data, we can use a common method called `clone`. We’ll discuss method
-syntax in Chapter 5, but because methods are a common feature in many
-programming languages, you’ve probably seen them before.
+Ha _tényleg_ mélymásolatot szeretnénk készíteni a `String` heapen lévő adatáról,
+nem csak a stacken lévő adatáról, használhatunk egy elterjedt metódust, a `clone`
+metódust. A metódusszintaxist az 5. fejezetben tárgyaljuk, de mivel a metódusok
+sok programozási nyelvben megszokott elemek, valószínűleg találkoztál már velük.
 
-Here’s an example of the `clone` method in action:
+Íme egy példa a `clone` metódus működésére:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-05-clone/src/main.rs:here}}
 ```
 
-This works just fine and explicitly produces the behavior shown in Figure 4-3,
-where the heap data _does_ get copied.
+Ez remekül működik, és explicit módon azt a viselkedést eredményezi, amelyet a
+4-3. ábra mutat, ahol a heapen lévő adat _valóban_ másolódik.
 
-When you see a call to `clone`, you know that some arbitrary code is being
-executed and that code may be expensive. It’s a visual indicator that something
-different is going on.
+Amikor egy `clone` hívást látsz, tudod, hogy valamilyen tetszőleges kód fut le,
+és az a kód költséges lehet. Ez egy vizuális jelzés arról, hogy valami más
+történik.
 
-#### Stack-Only Data: Copy {#stack-only-data-copy}
+#### Csak a stacken lévő adat: `Copy` {#stack-only-data-copy}
 
-There’s another wrinkle we haven’t talked about yet. This code using
-integers—part of which was shown in Listing 4-2—works and is valid:
+Van még egy dolog, amiről eddig nem beszéltünk. Ez az egész számokat használó kód
+– amelynek egy részét a 4-2. listában láttuk – működik és érvényes:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-06-copy/src/main.rs:here}}
 ```
 
-But this code seems to contradict what we just learned: We don’t have a call to
-`clone`, but `x` is still valid and wasn’t moved into `y`.
+Ez a kód azonban ellentmondani látszik annak, amit épp most tanultunk: nincs
+`clone` hívásunk, `x` mégis érvényes, és nem lett `y`-ba move-olva.
 
-The reason is that types such as integers that have a known size at compile
-time are stored entirely on the stack, so copies of the actual values are quick
-to make. That means there’s no reason we would want to prevent `x` from being
-valid after we create the variable `y`. In other words, there’s no difference
-between deep and shallow copying here, so calling `clone` wouldn’t do anything
-different from the usual shallow copying, and we can leave it out.
+Ennek az az oka, hogy az olyan típusok, mint az egész számok, amelyeknek a mérete
+fordítási időben ismert, teljes egészében a stacken tárolódnak, így a tényleges
+értékek másolatai gyorsan elkészíthetők. Ez azt jelenti, hogy semmi okunk nem
+lenne megakadályozni, hogy `x` érvényes maradjon azután, hogy létrehoztuk az `y`
+változót. Más szóval itt nincs különbség a mély és a sekély másolás között, így a
+`clone` hívása sem tenne mást, mint a szokásos sekély másolás, ezért el is
+hagyhatjuk.
 
-Rust has a special annotation called the `Copy` trait that we can place on
-types that are stored on the stack, as integers are (we’ll talk more about
-traits in [Chapter 10][traits]<!-- ignore -->). If a type implements the `Copy`
-trait, variables that use it do not move, but rather are trivially copied,
-making them still valid after assignment to another variable.
+A Rustban van egy speciális annotáció, a `Copy` trait, amelyet olyan típusokra
+helyezhetünk, amelyek a stacken tárolódnak, ahogy az egész számok is (a
+trait-ekről bővebben a [10. fejezetben][traits]<!-- ignore --> lesz szó). Ha egy
+típus implementálja a `Copy` traitet, az azt használó változók nem move-olódnak,
+hanem egyszerűen másolódnak, így egy másik változóhoz való hozzárendelés után is
+érvényesek maradnak.
 
-Rust won’t let us annotate a type with `Copy` if the type, or any of its parts,
-has implemented the `Drop` trait. If the type needs something special to happen
-when the value goes out of scope and we add the `Copy` annotation to that type,
-we’ll get a compile-time error. To learn about how to add the `Copy` annotation
-to your type to implement the trait, see [“Derivable
-Traits”][derivable-traits]<!-- ignore --> in Appendix C.
+A Rust nem engedi, hogy egy típust `Copy` annotációval lássunk el, ha a típus
+vagy annak bármely része implementálta a `Drop` traitet. Ha a típusnak valami
+speciálisra van szüksége akkor, amikor az érték kilép a hatóköréből, és mi
+ellátjuk azt a típust a `Copy` annotációval, fordítási idejű hibát kapunk. Ha
+szeretnéd megtudni, hogyan add hozzá a `Copy` annotációt a saját típusodhoz a
+trait implementálásához, lásd a C függelék [„Származtatható
+trait-ek”][derivable-traits]<!-- ignore --> című részét.
 
-So, what types implement the `Copy` trait? You can check the documentation for
-the given type to be sure, but as a general rule, any group of simple scalar
-values can implement `Copy`, and nothing that requires allocation or is some
-form of resource can implement `Copy`. Here are some of the types that
-implement `Copy`:
+Mely típusok implementálják tehát a `Copy` traitet? A biztonság kedvéért
+megnézheted az adott típus dokumentációját, de általános szabályként bármely
+egyszerű skalárértékekből álló csoport implementálhatja a `Copy` traitet, és
+semmi olyan nem implementálhatja, ami memóriafoglalást igényel, vagy valamilyen
+erőforrás. Íme néhány olyan típus, amely implementálja a `Copy` traitet:
 
-- All the integer types, such as `u32`.
-- The Boolean type, `bool`, with values `true` and `false`.
-- All the floating-point types, such as `f64`.
-- The character type, `char`.
-- Tuples, if they only contain types that also implement `Copy`. For example,
-  `(i32, i32)` implements `Copy`, but `(i32, String)` does not.
+- Az összes egész típus, például az `u32`.
+- A logikai típus, a `bool`, `true` és `false` értékekkel.
+- Az összes lebegőpontos típus, például az `f64`.
+- A karaktertípus, a `char`.
+- A tuple-ök, ha csak olyan típusokat tartalmaznak, amelyek szintén
+  implementálják a `Copy` traitet. Például az `(i32, i32)` implementálja a
+  `Copy` traitet, az `(i32, String)` viszont nem.
 
-### Ownership and Functions
+### Az ownership és a függvények
 
-The mechanics of passing a value to a function are similar to those when
-assigning a value to a variable. Passing a variable to a function will move or
-copy, just as assignment does. Listing 4-3 has an example with some annotations
-showing where variables go into and out of scope.
+Egy érték függvénynek való átadásának mechanizmusa hasonló ahhoz, mint amikor egy
+értéket egy változóhoz rendelünk. Egy változó függvénynek való átadása
+move-olással vagy másolással jár, ugyanúgy, mint az értékadás. A 4-3. listában
+egy példa látható néhány kommenttel, amelyek megmutatják, hol lépnek be a
+változók a hatókörbe, és hol lépnek ki belőle.
 
-<Listing number="4-3" file-name="src/main.rs" caption="Functions with ownership and scope annotated">
+<Listing number="4-3" file-name="src/main.rs" caption="Függvények az ownership és a hatókör kommentekkel jelölve">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-03/src/main.rs}}
@@ -470,18 +483,19 @@ showing where variables go into and out of scope.
 
 </Listing>
 
-If we tried to use `s` after the call to `takes_ownership`, Rust would throw a
-compile-time error. These static checks protect us from mistakes. Try adding
-code to `main` that uses `s` and `x` to see where you can use them and where
-the ownership rules prevent you from doing so.
+Ha a `takes_ownership` hívása után megpróbálnánk használni `s`-et, a Rust
+fordítási idejű hibát dobna. Ezek a statikus ellenőrzések megóvnak minket a
+hibáktól. Próbálj meg olyan kódot hozzáadni a `main` függvényhez, amely `s`-et és
+`x`-et használja, hogy lásd, hol használhatod őket, és hol akadályoznak meg ebben
+az ownership szabályai.
 
-### Return Values and Scope
+### Visszatérési értékek és hatókör
 
-Returning values can also transfer ownership. Listing 4-4 shows an example of a
-function that returns some value, with similar annotations as those in Listing
-4-3.
+A visszatérési értékek szintén átadhatják az ownershipet. A 4-4. lista egy olyan
+függvényre mutat példát, amely visszaad valamilyen értéket, a 4-3. listához
+hasonló kommentekkel.
 
-<Listing number="4-4" file-name="src/main.rs" caption="Transferring ownership of return values">
+<Listing number="4-4" file-name="src/main.rs" caption="A visszatérési értékek ownershipjének átadása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-04/src/main.rs}}
@@ -489,20 +503,22 @@ function that returns some value, with similar annotations as those in Listing
 
 </Listing>
 
-The ownership of a variable follows the same pattern every time: Assigning a
-value to another variable moves it. When a variable that includes data on the
-heap goes out of scope, the value will be cleaned up by `drop` unless ownership
-of the data has been moved to another variable.
+Egy változó ownershipje minden alkalommal ugyanezt a mintát követi: ha egy
+értéket egy másik változóhoz rendelünk, az move-olódik. Amikor egy heapen lévő
+adatot tartalmazó változó kilép a hatóköréből, az értéket a `drop` takarítja ki,
+hacsak az adat ownershipje nem került át egy másik változóhoz.
 
-While this works, taking ownership and then returning ownership with every
-function is a bit tedious. What if we want to let a function use a value but
-not take ownership? It’s quite annoying that anything we pass in also needs to
-be passed back if we want to use it again, in addition to any data resulting
-from the body of the function that we might want to return as well.
+Bár ez működik, kissé fárasztó minden függvénynél átvenni, majd visszaadni az
+ownershipet. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson egy
+értéket anélkül, hogy átvenné az ownershipjét? Elég bosszantó, hogy bármit, amit
+átadunk, vissza is kell adni, ha újra használni akarjuk – azon az adaton felül,
+amely a függvény törzséből eredményként adódik, és amelyet szintén vissza
+szeretnénk kapni.
 
-Rust does let us return multiple values using a tuple, as shown in Listing 4-5.
+A Rust lehetővé teszi, hogy tuple használatával több értéket adjunk vissza, ahogy
+azt a 4-5. lista mutatja.
 
-<Listing number="4-5" file-name="src/main.rs" caption="Returning ownership of parameters">
+<Listing number="4-5" file-name="src/main.rs" caption="A paraméterek ownershipjének visszaadása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-05/src/main.rs}}
@@ -510,9 +526,10 @@ Rust does let us return multiple values using a tuple, as shown in Listing 4-5.
 
 </Listing>
 
-But this is too much ceremony and a lot of work for a concept that should be
-common. Luckily for us, Rust has a feature for using a value without
-transferring ownership: references.
+Ez azonban túl sok ceremónia és túl sok munka egy olyan fogalomhoz, amelynek
+megszokottnak kellene lennie. Szerencsénkre a Rustnak van egy olyan képessége,
+amellyel úgy használhatunk egy értéket, hogy közben nem adjuk át az ownershipjét:
+ezek a referenciák.
 
 [data-types]: ch03-02-data-types.html#data-types
 [ch8]: ch08-02-strings.html

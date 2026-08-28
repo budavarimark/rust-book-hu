@@ -1,62 +1,63 @@
-## Shared-State Concurrency
+## Osztott állapotú konkurencia
 
-Message passing is a fine way to handle concurrency, but it’s not the only way.
-Another method would be for multiple threads to access the same shared data.
-Consider this part of the slogan from the Go language documentation again: “Do
-not communicate by sharing memory.”
+Az üzenetküldés remek módja a konkurencia kezelésének, de nem az egyetlen. Egy
+másik módszer az, ha több szál ugyanahhoz az osztott adathoz fér hozzá. Nézzük
+meg újra a Go nyelv dokumentációjából származó jelmondat elejét: „Ne
+memóriamegosztással kommunikálj.”
 
-What would communicating by sharing memory look like? In addition, why would
-message-passing enthusiasts caution not to use memory sharing?
+Hogyan nézne ki a memóriamegosztással való kommunikáció? És egyáltalán miért
+óvnak az üzenetküldés hívei a memóriamegosztástól?
 
-In a way, channels in any programming language are similar to single ownership
-because once you transfer a value down a channel, you should no longer use that
-value. Shared-memory concurrency is like multiple ownership: Multiple threads
-can access the same memory location at the same time. As you saw in Chapter 15,
-where smart pointers made multiple ownership possible, multiple ownership can
-add complexity because these different owners need managing. Rust’s type system
-and ownership rules greatly assist in getting this management correct. For an
-example, let’s look at mutexes, one of the more common concurrency primitives
-for shared memory.
+Bizonyos értelemben a csatornák bármely programozási nyelvben hasonlítanak az
+egyszeres ownershipre, hiszen ha egyszer leküldtél egy értéket egy csatornán,
+utána már nem szabad használnod azt az értéket. Az osztott memóriájú konkurencia
+inkább a többszörös ownershiphez hasonlít: több szál is hozzáférhet ugyanahhoz a
+memóriaterülethez egy időben. Ahogy a 15. fejezetben láttad, ahol a smart
+pointerek tették lehetővé a többszörös ownershipet, a többszörös ownership
+bonyolultságot visz a rendszerbe, mert ezeket a különböző ownereket kezelni
+kell. A Rust típusrendszere és ownership-szabályai sokat segítenek abban, hogy
+ez a kezelés helyes legyen. Példaként nézzük meg a mutexeket, amelyek az osztott
+memória egyik legelterjedtebb konkurencia-primitívjei.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-mutexes-to-allow-access-to-data-from-one-thread-at-a-time"></a>
 
-### Controlling Access with Mutexes
+### A hozzáférés szabályozása mutexekkel
 
-_Mutex_ is an abbreviation for _mutual exclusion_, as in a mutex allows only
-one thread to access some data at any given time. To access the data in a
-mutex, a thread must first signal that it wants access by asking to acquire the
-mutex’s lock. The _lock_ is a data structure that is part of the mutex that
-keeps track of who currently has exclusive access to the data. Therefore, the
-mutex is described as _guarding_ the data it holds via the locking system.
+A _mutex_ a _mutual exclusion_ („kölcsönös kizárás”) rövidítése: a mutex
+egyszerre csak egyetlen szálnak engedi meg, hogy hozzáférjen egy adathoz. Ahhoz,
+hogy egy szál hozzáférjen a mutexben lévő adathoz, előbb jeleznie kell, hogy
+hozzáférést kér, méghozzá úgy, hogy megszerzi a mutex zárját (lock). A _lock_
+egy olyan adatszerkezet, amely a mutex része, és nyilvántartja, kinek van éppen
+kizárólagos hozzáférése az adathoz. Ezért azt mondjuk, hogy a mutex a zárolási
+rendszeren keresztül _őrzi_ az általa tárolt adatot.
 
-Mutexes have a reputation for being difficult to use because you have to
-remember two rules:
+A mutexeknek az a hírük, hogy nehéz őket használni, mert két szabályt kell
+észben tartani:
 
-1. You must attempt to acquire the lock before using the data.
-2. When you’re done with the data that the mutex guards, you must unlock the
-   data so that other threads can acquire the lock.
+1. Az adat használata előtt meg kell próbálnod megszerezni a lockot.
+2. Amikor végeztél a mutex által őrzött adattal, fel kell oldanod a zárolást,
+   hogy más szálak is megszerezhessék a lockot.
 
-For a real-world metaphor for a mutex, imagine a panel discussion at a
-conference with only one microphone. Before a panelist can speak, they have to
-ask or signal that they want to use the microphone. When they get the
-microphone, they can talk for as long as they want to and then hand the
-microphone to the next panelist who requests to speak. If a panelist forgets to
-hand the microphone off when they’re finished with it, no one else is able to
-speak. If management of the shared microphone goes wrong, the panel won’t work
-as planned!
+Valós példaként a mutexre képzelj el egy konferencián zajló kerekasztal-
+beszélgetést egyetlen mikrofonnal. Mielőtt egy résztvevő megszólalhatna, kérnie
+vagy jeleznie kell, hogy használni szeretné a mikrofont. Amikor megkapja a
+mikrofont, addig beszélhet, ameddig akar, majd továbbadja a mikrofont a
+következő résztvevőnek, aki szót kér. Ha egy résztvevő elfelejti továbbadni a
+mikrofont, amikor végzett vele, senki más nem tud megszólalni. Ha az osztott
+mikrofon kezelése félresiklik, a kerekasztal nem a tervek szerint fog működni!
 
-Management of mutexes can be incredibly tricky to get right, which is why so
-many people are enthusiastic about channels. However, thanks to Rust’s type
-system and ownership rules, you can’t get locking and unlocking wrong.
+A mutexek helyes kezelése rendkívül trükkös lehet, ezért lelkesednek olyan sokan
+a csatornákért. A Rust típusrendszerének és ownership-szabályainak hála azonban
+a zárolást és a feloldást nem tudod elrontani.
 
-#### The API of `Mutex<T>`
+#### A `Mutex<T>` API-ja
 
-As an example of how to use a mutex, let’s start by using a mutex in a
-single-threaded context, as shown in Listing 16-12.
+Példaként a mutex használatára kezdjük azzal, hogy egyszálú környezetben
+használunk egy mutexet, ahogy a 16-12. listában látható.
 
-<Listing number="16-12" file-name="src/main.rs" caption="Exploring the API of `Mutex<T>` in a single-threaded context for simplicity">
+<Listing number="16-12" file-name="src/main.rs" caption="A `Mutex<T>` API-jának megismerése egyszálú környezetben, az egyszerűség kedvéért">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-12/src/main.rs}}
@@ -64,46 +65,50 @@ single-threaded context, as shown in Listing 16-12.
 
 </Listing>
 
-As with many types, we create a `Mutex<T>` using the associated function `new`.
-To access the data inside the mutex, we use the `lock` method to acquire the
-lock. This call will block the current thread so that it can’t do any work
-until it’s our turn to have the lock.
+Sok más típushoz hasonlóan a `Mutex<T>`-t is a `new` asszociált függvénnyel
+hozzuk létre. A mutexben lévő adat eléréséhez a `lock` metódussal szerezzük meg
+a lockot. Ez a hívás blokkolja az aktuális szálat, így az nem tud dolgozni
+addig, amíg ránk nem kerül a sor a lock birtoklásában.
 
-The call to `lock` would fail if another thread holding the lock panicked. In
-that case, no one would ever be able to get the lock, so we’ve chosen to
-`unwrap` and have this thread panic if we’re in that situation.
+A `lock` hívás akkor bukna el, ha egy másik szál, amely a lockot tartja,
+panicot váltana ki. Ebben az esetben soha senki nem tudná megszerezni a lockot,
+ezért úgy döntöttünk, hogy `unwrap`-et hívunk, és ilyen helyzetben ez a szál
+panicot vált ki.
 
-After we’ve acquired the lock, we can treat the return value, named `num` in
-this case, as a mutable reference to the data inside. The type system ensures
-that we acquire a lock before using the value in `m`. The type of `m` is
-`Mutex<i32>`, not `i32`, so we _must_ call `lock` to be able to use the `i32`
-value. We can’t forget; the type system won’t let us access the inner `i32`
-otherwise.
+Miután megszereztük a lockot, a visszatérési értéket – ebben az esetben `num` a
+neve – úgy kezelhetjük, mint a benne lévő adatra mutató módosítható
+referenciát. A típusrendszer gondoskodik arról, hogy megszerezzük a lockot, még
+mielőtt használnánk az `m`-ben lévő értéket. Az `m` típusa `Mutex<i32>`, nem
+`i32`, ezért _muszáj_ meghívnunk a `lock`-ot ahhoz, hogy használhassuk az `i32`
+értéket. Nem felejthetjük el; a típusrendszer másképp nem enged hozzáférni a
+belső `i32`-höz.
 
-The call to `lock` returns a type called `MutexGuard`, wrapped in a
-`LockResult` that we handled with the call to `unwrap`. The `MutexGuard` type
-implements `Deref` to point at our inner data; the type also has a `Drop`
-implementation that releases the lock automatically when a `MutexGuard` goes
-out of scope, which happens at the end of the inner scope. As a result, we
-don’t risk forgetting to release the lock and blocking the mutex from being
-used by other threads because the lock release happens automatically.
+A `lock` hívás egy `MutexGuard` nevű típussal tér vissza, egy `LockResult`-be
+csomagolva, amelyet az `unwrap` hívással kezeltünk. A `MutexGuard` típus
+implementálja a `Deref`-et, hogy a belső adatunkra mutasson; a típusnak van
+`Drop` implementációja is, amely automatikusan elengedi a lockot, amikor a
+`MutexGuard` kikerül a hatóköréből, ami a belső hatókör végén történik meg.
+Ennek eredményeként nem kockáztatjuk, hogy elfelejtjük elengedni a lockot, és
+ezzel megakadályozzuk, hogy más szálak használhassák a mutexet, mert a lock
+elengedése automatikusan megtörténik.
 
-After dropping the lock, we can print the mutex value and see that we were able
-to change the inner `i32` to `6`.
+A lock eldobása után kiírhatjuk a mutex értékét, és láthatjuk, hogy sikerült a
+belső `i32`-t `6`-ra módosítanunk.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="sharing-a-mutext-between-multiple-threads"></a>
 
-#### Shared Access to `Mutex<T>` {#shared-access-to-mutext}
+#### Osztott hozzáférés a `Mutex<T>`-hez {#shared-access-to-mutext}
 
-Now let’s try to share a value between multiple threads using `Mutex<T>`. We’ll
-spin up 10 threads and have them each increment a counter value by 1, so the
-counter goes from 0 to 10. The example in Listing 16-13 will have a compiler
-error, and we’ll use that error to learn more about using `Mutex<T>` and how
-Rust helps us use it correctly.
+Most próbáljunk meg egy értéket megosztani több szál között `Mutex<T>`
+segítségével. Elindítunk 10 szálat, és mindegyikkel megnöveltetünk egy
+számlálóértéket 1-gyel, hogy a számláló 0-ról 10-re jusson. A 16-13. listában
+szereplő példa fordítási hibát fog adni, és ezt a hibát arra használjuk, hogy
+többet tanuljunk a `Mutex<T>` használatáról, és arról, hogyan segít a Rust
+abban, hogy helyesen használjuk.
 
-<Listing number="16-13" file-name="src/main.rs" caption="Ten threads, each incrementing a counter guarded by a `Mutex<T>`">
+<Listing number="16-13" file-name="src/main.rs" caption="Tíz szál, amelyek mindegyike növel egy `Mutex<T>` által őrzött számlálót">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-13/src/main.rs}}
@@ -111,38 +116,40 @@ Rust helps us use it correctly.
 
 </Listing>
 
-We create a `counter` variable to hold an `i32` inside a `Mutex<T>`, as we did
-in Listing 16-12. Next, we create 10 threads by iterating over a range of
-numbers. We use `thread::spawn` and give all the threads the same closure: one
-that moves the counter into the thread, acquires a lock on the `Mutex<T>` by
-calling the `lock` method, and then adds 1 to the value in the mutex. When a
-thread finishes running its closure, `num` will go out of scope and release the
-lock so that another thread can acquire it.
+Létrehozunk egy `counter` változót, amely egy `i32`-t tárol egy `Mutex<T>`-n
+belül, ahogy a 16-12. listában is tettük. Ezután 10 szálat hozunk létre úgy,
+hogy végigiterálunk egy számtartományon. A `thread::spawn`-t használjuk, és
+minden szálnak ugyanazt a closure-t adjuk: olyat, amely bemozgatja a számlálót a
+szálba, a `lock` metódus hívásával megszerzi a `Mutex<T>` lockját, majd hozzáad
+1-et a mutexben lévő értékhez. Amikor egy szál befejezi a closure futtatását, a
+`num` kikerül a hatóköréből, és elengedi a lockot, hogy egy másik szál
+megszerezhesse.
 
-In the main thread, we collect all the join handles. Then, as we did in Listing
-16-2, we call `join` on each handle to make sure all the threads finish. At
-that point, the main thread will acquire the lock and print the result of this
-program.
+A fő szálon összegyűjtjük az összes join handle-t. Ezután, ahogy a 16-2. listában
+is, meghívjuk a `join`-t mindegyik handle-ön, hogy megbizonyosodjunk arról, hogy
+minden szál befejeződött. Ezen a ponton a fő szál megszerzi a lockot, és kiírja
+a program eredményét.
 
-We hinted that this example wouldn’t compile. Now let’s find out why!
+Utaltunk rá, hogy ez a példa nem fog lefordulni. Nézzük meg, miért!
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-13/output.txt}}
 ```
 
-The error message states that the `counter` value was moved in the previous
-iteration of the loop. Rust is telling us that we can’t move the ownership of
-lock `counter` into multiple threads. Let’s fix the compiler error with the
-multiple-ownership method we discussed in Chapter 15.
+A hibaüzenet azt mondja, hogy a `counter` érték a ciklus előző iterációjában
+átmozgatásra került. A Rust azt közli velünk, hogy nem mozgathatjuk a `counter`
+lock ownershipjét több szálba. Javítsuk ki a fordítási hibát a 15. fejezetben
+tárgyalt többszörös ownership módszerével.
 
-#### Multiple Ownership with Multiple Threads
+#### Többszörös ownership több szállal
 
-In Chapter 15, we gave a value to multiple owners by using the smart pointer
-`Rc<T>` to create a reference-counted value. Let’s do the same here and see
-what happens. We’ll wrap the `Mutex<T>` in `Rc<T>` in Listing 16-14 and clone
-the `Rc<T>` before moving ownership to the thread.
+A 15. fejezetben úgy adtunk egy értéket több ownernek, hogy az `Rc<T>` smart
+pointerrel referenciaszámlált értéket hoztunk létre. Tegyük ugyanezt itt is, és
+nézzük meg, mi történik. A 16-14. listában becsomagoljuk a `Mutex<T>`-t egy
+`Rc<T>`-be, és klónozzuk az `Rc<T>`-t, mielőtt átadnánk az ownershipet a
+szálnak.
 
-<Listing number="16-14" file-name="src/main.rs" caption="Attempting to use `Rc<T>` to allow multiple threads to own the `Mutex<T>`">
+<Listing number="16-14" file-name="src/main.rs" caption="Kísérlet az `Rc<T>` használatára, hogy több szál birtokolhassa a `Mutex<T>`-t">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-14/src/main.rs}}
@@ -150,51 +157,52 @@ the `Rc<T>` before moving ownership to the thread.
 
 </Listing>
 
-Once again, we compile and get... different errors! The compiler is teaching us
-a lot:
+Fordítunk egyet, és megint... más hibákat kapunk! A fordító rengeteg mindenre
+megtanít minket:
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-14/output.txt}}
 ```
 
-Wow, that error message is very wordy! Here’s the important part to focus on:
-`` `Rc<Mutex<i32>>` cannot be sent between threads safely ``. The compiler is
-also telling us the reason why: `` the trait `Send` is not implemented for
-`Rc<Mutex<i32>>` ``. We’ll talk about `Send` in the next section: It’s one of
-the traits that ensures that the types we use with threads are meant for use in
-concurrent situations.
+Hűha, ez a hibaüzenet nagyon bőbeszédű! Íme a fontos rész, amelyre figyelnünk
+kell: `` `Rc<Mutex<i32>>` cannot be sent between threads safely ``. A fordító
+azt is elárulja, miért: `` the trait `Send` is not implemented for
+`Rc<Mutex<i32>>` ``. A `Send`-ről a következő szakaszban lesz szó: ez az egyik
+olyan trait, amely biztosítja, hogy a szálakkal használt típusaink konkurens
+helyzetekben való használatra készültek.
 
-Unfortunately, `Rc<T>` is not safe to share across threads. When `Rc<T>`
-manages the reference count, it adds to the count for each call to `clone` and
-subtracts from the count when each clone is dropped. But it doesn’t use any
-concurrency primitives to make sure that changes to the count can’t be
-interrupted by another thread. This could lead to wrong counts—subtle bugs that
-could in turn lead to memory leaks or a value being dropped before we’re done
-with it. What we need is a type that is exactly like `Rc<T>`, but that makes
-changes to the reference count in a thread-safe way.
+Sajnos az `Rc<T>` nem biztonságos szálak között megosztani. Amikor az `Rc<T>`
+kezeli a referenciaszámlálót, minden `clone` híváskor növeli a számlálót, és
+minden klón eldobásakor csökkenti. De semmilyen konkurencia-primitívet nem
+használ annak biztosítására, hogy a számláló módosításait ne szakíthassa félbe
+egy másik szál. Ez hibás számlálókhoz vezethetne – rejtett hibákhoz, amelyek
+memóriaszivárgást okozhatnak, vagy azt, hogy egy értéket eldobnak, mielőtt
+végeztünk volna vele. Olyan típusra van szükségünk, amely pontosan olyan, mint
+az `Rc<T>`, de szálbiztos módon módosítja a referenciaszámlálót.
 
-#### Atomic Reference Counting with `Arc<T>`
+#### Atomi referenciaszámlálás az `Arc<T>` típussal
 
-Fortunately, `Arc<T>` _is_ a type like `Rc<T>` that is safe to use in
-concurrent situations. The _a_ stands for _atomic_, meaning it’s an _atomically
-reference-counted_ type. Atomics are an additional kind of concurrency
-primitive that we won’t cover in detail here: See the standard library
-documentation for [`std::sync::atomic`][atomic]<!-- ignore --> for more
-details. At this point, you just need to know that atomics work like primitive
-types but are safe to share across threads.
+Szerencsére az `Arc<T>` _pont_ egy olyan típus, mint az `Rc<T>`, amelyet
+biztonságosan használhatunk konkurens helyzetekben. Az _a_ az _atomic_ szót
+jelöli, vagyis _atomi módon referenciaszámlált_ típusról van szó. Az atomi
+műveletek a konkurencia-primitívek egy további fajtáját jelentik, amelyet itt
+nem tárgyalunk részletesen: a részletekért lásd a standard könyvtár
+[`std::sync::atomic`][atomic]<!-- ignore --> dokumentációját. Ezen a ponton
+csak azt kell tudnod, hogy az atomi típusok úgy működnek, mint a primitív
+típusok, de biztonságosan megoszthatók szálak között.
 
-You might then wonder why all primitive types aren’t atomic and why standard
-library types aren’t implemented to use `Arc<T>` by default. The reason is that
-thread safety comes with a performance penalty that you only want to pay when
-you really need to. If you’re just performing operations on values within a
-single thread, your code can run faster if it doesn’t have to enforce the
-guarantees atomics provide.
+Felmerülhet benned, miért nem atomi minden primitív típus, és miért nem
+implementálják a standard könyvtár típusait alapértelmezés szerint `Arc<T>`
+használatával. A válasz az, hogy a szálbiztonságnak teljesítménybeli ára van,
+amelyet csak akkor akarunk megfizetni, amikor tényleg szükség van rá. Ha csak
+egyetlen szálon belül végzel műveleteket értékeken, a kódod gyorsabban futhat,
+ha nem kell betartatnia az atomi típusok által nyújtott garanciákat.
 
-Let’s return to our example: `Arc<T>` and `Rc<T>` have the same API, so we fix
-our program by changing the `use` line, the call to `new`, and the call to
-`clone`. The code in Listing 16-15 will finally compile and run.
+Térjünk vissza a példánkhoz: az `Arc<T>` és az `Rc<T>` API-ja azonos, így úgy
+javítjuk ki a programunkat, hogy módosítjuk a `use` sort, a `new` hívást és a
+`clone` hívást. A 16-15. lista kódja végre le fog fordulni és futni fog.
 
-<Listing number="16-15" file-name="src/main.rs" caption="Using an `Arc<T>` to wrap the `Mutex<T>` to be able to share ownership across multiple threads">
+<Listing number="16-15" file-name="src/main.rs" caption="Az `Arc<T>` használata a `Mutex<T>` becsomagolására, hogy több szál között megoszthassuk az ownershipet">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-15/src/main.rs}}
@@ -202,7 +210,7 @@ our program by changing the `use` line, the call to `new`, and the call to
 
 </Listing>
 
-This code will print the following:
+Ez a kód a következőt írja ki:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -212,44 +220,46 @@ changes in the compiler -->
 Result: 10
 ```
 
-We did it! We counted from 0 to 10, which may not seem very impressive, but it
-did teach us a lot about `Mutex<T>` and thread safety. You could also use this
-program’s structure to do more complicated operations than just incrementing a
-counter. Using this strategy, you can divide a calculation into independent
-parts, split those parts across threads, and then use a `Mutex<T>` to have each
-thread update the final result with its part.
+Sikerült! Elszámoltunk 0-tól 10-ig, ami talán nem tűnik túl lenyűgözőnek, de
+sokat tanultunk közben a `Mutex<T>`-ről és a szálbiztonságról. Ennek a
+programnak a szerkezetét bonyolultabb műveletekre is használhatnád, nem csak egy
+számláló növelésére. Ezzel a stratégiával feloszthatsz egy számítást független
+részekre, szétoszthatod ezeket a részeket a szálak között, majd egy `Mutex<T>`
+segítségével minden szállal frissíttetheted a végeredményt a saját részével.
 
-Note that if you are doing simple numerical operations, there are types simpler
-than `Mutex<T>` types provided by the [`std::sync::atomic` module of the
-standard library][atomic]<!-- ignore -->. These types provide safe, concurrent,
-atomic access to primitive types. We chose to use `Mutex<T>` with a primitive
-type for this example so that we could concentrate on how `Mutex<T>` works.
+Vedd figyelembe, hogy ha egyszerű numerikus műveleteket végzel, a `Mutex<T>`-nél
+egyszerűbb típusok is léteznek, amelyeket a [standard könyvtár
+`std::sync::atomic` modulja][atomic]<!-- ignore --> kínál. Ezek a típusok
+biztonságos, konkurens, atomi hozzáférést adnak a primitív típusokhoz. Ebben a
+példában azért választottuk a `Mutex<T>`-t primitív típussal, hogy arra tudjunk
+összpontosítani, hogyan működik a `Mutex<T>`.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="similarities-between-refcelltrct-and-mutextarct"></a>
 
-### Comparing `RefCell<T>`/`Rc<T>` and `Mutex<T>`/`Arc<T>`
+### A `RefCell<T>`/`Rc<T>` és a `Mutex<T>`/`Arc<T>` összehasonlítása
 
-You might have noticed that `counter` is immutable but that we could get a
-mutable reference to the value inside it; this means `Mutex<T>` provides
-interior mutability, as the `Cell` family does. In the same way we used
-`RefCell<T>` in Chapter 15 to allow us to mutate contents inside an `Rc<T>`, we
-use `Mutex<T>` to mutate contents inside an `Arc<T>`.
+Talán feltűnt, hogy a `counter` nem módosítható, mégis kaphattunk módosítható
+referenciát a benne lévő értékre; ez azt jelenti, hogy a `Mutex<T>` interior
+mutabilityt nyújt, ahogy a `Cell` család is. Ugyanúgy, ahogy a 15. fejezetben a
+`RefCell<T>`-t használtuk arra, hogy egy `Rc<T>` tartalmát módosíthassuk, a
+`Mutex<T>`-t használjuk egy `Arc<T>` tartalmának módosítására.
 
-Another detail to note is that Rust can’t protect you from all kinds of logic
-errors when you use `Mutex<T>`. Recall from Chapter 15 that using `Rc<T>` came
-with the risk of creating reference cycles, where two `Rc<T>` values refer to
-each other, causing memory leaks. Similarly, `Mutex<T>` comes with the risk of
-creating _deadlocks_. These occur when an operation needs to lock two resources
-and two threads have each acquired one of the locks, causing them to wait for
-each other forever. If you’re interested in deadlocks, try creating a Rust
-program that has a deadlock; then, research deadlock mitigation strategies for
-mutexes in any language and have a go at implementing them in Rust. The
-standard library API documentation for `Mutex<T>` and `MutexGuard` offers
-useful information.
+Egy másik említésre méltó részlet, hogy a Rust nem véd meg mindenféle logikai
+hibától, amikor `Mutex<T>`-t használsz. Emlékezz vissza a 15. fejezetre: az
+`Rc<T>` használata azzal a kockázattal járt, hogy referenciaciklusokat hozunk
+létre, amelyekben két `Rc<T>` érték hivatkozik egymásra, memóriaszivárgást
+okozva. Hasonlóképpen a `Mutex<T>` azzal a kockázattal jár, hogy _holtpontot_
+hozunk létre. Ezek akkor keletkeznek, amikor egy művelethez két erőforrást kell
+zárolni, és két szál egyenként megszerezte az egyik lockot, így örökké egymásra
+várnak. Ha érdekelnek a holtpontok, próbálj meg írni egy Rust programot, amely
+holtpontba fut; azután nézz utána a mutexekhez kapcsolódó holtpont-elhárítási
+stratégiáknak bármely nyelvben, és próbáld meg implementálni őket Rustban. A
+standard könyvtár API-dokumentációja a `Mutex<T>`-ről és a `MutexGuard`-ról
+hasznos információkat kínál.
 
-We’ll round out this chapter by talking about the `Send` and `Sync` traits and
-how we can use them with custom types.
+Ezt a fejezetet a `Send` és `Sync` trait-ekkel zárjuk, és azzal, hogyan
+használhatjuk őket saját típusokkal.
 
 [atomic]: ../std/sync/atomic/index.html

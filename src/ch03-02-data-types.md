@@ -1,352 +1,358 @@
-## Data Types {#data-types}
+## Adattípusok {#data-types}
 
-Every value in Rust is of a certain _data type_, which tells Rust what kind of
-data is being specified so that it knows how to work with that data. We’ll look
-at two data type subsets: scalar and compound.
+Rustban minden érték egy bizonyos _adattípusba_ tartozik, ami megmondja a
+Rustnak, milyen fajta adatról van szó, hogy tudja, hogyan kell dolgoznia vele.
+Az adattípusok két részhalmazát nézzük meg: a skalár és az összetett típusokat.
 
-Keep in mind that Rust is a _statically typed_ language, which means that it
-must know the types of all variables at compile time. The compiler can usually
-infer what type we want to use based on the value and how we use it. In cases
-when many types are possible, such as when we converted a `String` to a numeric
-type using `parse` in the [“Comparing the Guess to the Secret
-Number”][comparing-the-guess-to-the-secret-number]<!-- ignore --> section in
-Chapter 2, we must add a type annotation, like this:
+Ne feledd, hogy a Rust _statikusan típusos_ nyelv, ami azt jelenti, hogy
+fordítási időben ismernie kell minden változó típusát. A fordító általában ki
+tudja következtetni, melyik típust akarjuk használni, az érték és annak
+felhasználási módja alapján. Azokban az esetekben, amikor sokféle típus
+lehetséges – például amikor a 2. fejezet [„A tipp összehasonlítása a titkos
+számmal”][comparing-the-guess-to-the-secret-number]<!-- ignore --> című
+részében a `parse` segítségével egy `String`-et számtípussá alakítottunk –,
+típusannotációt kell hozzáadnunk, így:
 
 ```rust
 let guess: u32 = "42".parse().expect("Not a number!");
 ```
 
-If we don’t add the `: u32` type annotation shown in the preceding code, Rust
-will display the following error, which means the compiler needs more
-information from us to know which type we want to use:
+Ha nem adjuk hozzá a fenti kódban látható `: u32` típusannotációt, a Rust a
+következő hibát írja ki, ami azt jelenti, hogy a fordítónak több információra
+van szüksége tőlünk ahhoz, hogy tudja, melyik típust akarjuk használni:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/output-only-01-no-type-annotations/output.txt}}
 ```
 
-You’ll see different type annotations for other data types.
+Más adattípusoknál másféle típusannotációkat fogsz látni.
 
-### Scalar Types
+### Skalár típusok
 
-A _scalar_ type represents a single value. Rust has four primary scalar types:
-integers, floating-point numbers, Booleans, and characters. You may recognize
-these from other programming languages. Let’s jump into how they work in Rust.
+A _skalár_ típusok egyetlen értéket képviselnek. A Rustnak négy elsődleges
+skalár típusa van: egész számok, lebegőpontos számok, logikai értékek és
+karakterek. Ezeket más programozási nyelvekből is ismerheted. Nézzük meg,
+hogyan működnek Rustban.
 
-#### Integer Types {#integer-types}
+#### Egész típusok {#integer-types}
 
-An _integer_ is a number without a fractional component. We used one integer
-type in Chapter 2, the `u32` type. This type declaration indicates that the
-value it’s associated with should be an unsigned integer (signed integer types
-start with `i` instead of `u`) that takes up 32 bits of space. Table 3-1 shows
-the built-in integer types in Rust. We can use any of these variants to declare
-the type of an integer value.
+Az _egész szám_ olyan szám, amelynek nincs tört része. A 2. fejezetben már
+használtunk egy egész típust, az `u32`-t. Ez a típusdeklaráció azt jelzi, hogy
+a hozzá tartozó érték előjel nélküli egész szám (az előjeles egész típusok `u`
+helyett `i`-vel kezdődnek), amely 32 bitnyi helyet foglal el. A 3-1. táblázat a
+Rust beépített egész típusait mutatja. Bármelyik változatot használhatjuk egy
+egész érték típusának megadására.
 
-<span class="caption">Table 3-1: Integer Types in Rust</span>
+<span class="caption">3-1. táblázat: Egész típusok Rustban</span>
 
-| Length  | Signed  | Unsigned |
+| Hossz  | Előjeles  | Előjel nélküli |
 | ------- | ------- | -------- |
-| 8-bit   | `i8`    | `u8`     |
-| 16-bit  | `i16`   | `u16`    |
-| 32-bit  | `i32`   | `u32`    |
-| 64-bit  | `i64`   | `u64`    |
-| 128-bit | `i128`  | `u128`   |
-| Architecture-dependent | `isize` | `usize`  |
+| 8 bites   | `i8`    | `u8`     |
+| 16 bites  | `i16`   | `u16`    |
+| 32 bites  | `i32`   | `u32`    |
+| 64 bites  | `i64`   | `u64`    |
+| 128 bites | `i128`  | `u128`   |
+| Architektúrafüggő | `isize` | `usize`  |
 
-Each variant can be either signed or unsigned and has an explicit size.
-_Signed_ and _unsigned_ refer to whether it’s possible for the number to be
-negative—in other words, whether the number needs to have a sign with it
-(signed) or whether it will only ever be positive and can therefore be
-represented without a sign (unsigned). It’s like writing numbers on paper: When
-the sign matters, a number is shown with a plus sign or a minus sign; however,
-when it’s safe to assume the number is positive, it’s shown with no sign.
-Signed numbers are stored using [two’s complement][twos-complement]<!-- ignore
---> representation.
+Minden változat lehet előjeles vagy előjel nélküli, és explicit mérete van. Az
+_előjeles_ és az _előjel nélküli_ arra utal, hogy a szám lehet-e negatív –
+másképp fogalmazva, hogy kell-e a számhoz előjel (előjeles), vagy mindig csak
+pozitív lesz, és ezért előjel nélkül is ábrázolható (előjel nélküli). Olyan ez,
+mint amikor papírra írunk számokat: ha az előjel számít, a számot plusz- vagy
+mínuszjellel írjuk le; ha viszont nyugodtan feltételezhetjük, hogy a szám
+pozitív, előjel nélkül írjuk. Az előjeles számokat [kettes komplemens][twos-complement]<!-- ignore
+--> ábrázolással tároljuk.
 
-Each signed variant can store numbers from −(2<sup>n − 1</sup>) to 2<sup>n −
-1</sup> − 1 inclusive, where _n_ is the number of bits that variant uses. So, an
-`i8` can store numbers from −(2<sup>7</sup>) to 2<sup>7</sup> − 1, which equals
-−128 to 127. Unsigned variants can store numbers from 0 to 2<sup>n</sup> − 1,
-so a `u8` can store numbers from 0 to 2<sup>8</sup> − 1, which equals 0 to 255.
+Minden előjeles változat a −(2<sup>n − 1</sup>) és a 2<sup>n −
+1</sup> − 1 közötti számokat tudja tárolni (a határokat is beleértve), ahol _n_
+az adott változat által használt bitek száma. Egy `i8` tehát a
+−(2<sup>7</sup>) és a 2<sup>7</sup> − 1 közötti számokat tárolhatja, ami
+−128-tól 127-ig terjed. Az előjel nélküli változatok a 0 és a 2<sup>n</sup> − 1
+közötti számokat tárolhatják, így egy `u8` a 0 és a 2<sup>8</sup> − 1 közötti,
+azaz a 0 és 255 közötti számokat tudja tárolni.
 
-Additionally, the `isize` and `usize` types depend on the architecture of the
-computer your program is running on: 64 bits if you’re on a 64-bit architecture
-and 32 bits if you’re on a 32-bit architecture.
+Ezenkívül az `isize` és a `usize` típus annak a számítógépnek az
+architektúrájától függ, amelyen a programod fut: 64 bites, ha 64 bites
+architektúrán vagy, és 32 bites, ha 32 bites architektúrán.
 
-You can write integer literals in any of the forms shown in Table 3-2. Note
-that number literals that can be multiple numeric types allow a type suffix,
-such as `57u8`, to designate the type. Number literals can also use `_` as a
-visual separator to make the number easier to read, such as `1_000`, which will
-have the same value as if you had specified `1000`.
+Az egész literálokat a 3-2. táblázatban látható formák bármelyikében írhatod.
+Vedd észre, hogy azok a számliterálok, amelyek többféle számtípusúak is
+lehetnek, típusutótagot is kaphatnak – például `57u8` –, amivel megadható a
+típus. A számliterálokban a `_` is használható vizuális elválasztóként, hogy a
+szám könnyebben olvasható legyen, például `1_000`, amelynek ugyanaz az értéke,
+mintha `1000`-t írtál volna.
 
-<span class="caption">Table 3-2: Integer Literals in Rust</span>
+<span class="caption">3-2. táblázat: Egész literálok Rustban</span>
 
-| Number literals  | Example       |
+| Számliterálok  | Példa       |
 | ---------------- | ------------- |
-| Decimal          | `98_222`      |
-| Hex              | `0xff`        |
-| Octal            | `0o77`        |
-| Binary           | `0b1111_0000` |
-| Byte (`u8` only) | `b'A'`        |
+| Decimális          | `98_222`      |
+| Hexadecimális              | `0xff`        |
+| Oktális            | `0o77`        |
+| Bináris           | `0b1111_0000` |
+| Bájt (csak `u8`) | `b'A'`        |
 
-So how do you know which type of integer to use? If you’re unsure, Rust’s
-defaults are generally good places to start: Integer types default to `i32`.
-The primary situation in which you’d use `isize` or `usize` is when indexing
-some sort of collection.
+Honnan tudod hát, melyik egész típust használd? Ha bizonytalan vagy, a Rust
+alapértelmezései általában jó kiindulópontot jelentenek: az egész típusok
+alapértelmezése az `i32`. Az `isize` vagy a `usize` elsősorban akkor jön szóba,
+amikor valamilyen kollekciót indexelsz.
 
-> ##### Integer Overflow
+> ##### Egész szám túlcsordulás
 >
-> Let’s say you have a variable of type `u8` that can hold values between 0 and
-> 255. If you try to change the variable to a value outside that range, such as
-> 256, _integer overflow_ will occur, which can result in one of two behaviors.
-> When you’re compiling in debug mode, Rust includes checks for integer overflow
-> that cause your program to _panic_ at runtime if this behavior occurs. Rust
-> uses the term _panicking_ when a program exits with an error; we’ll discuss
-> panics in more depth in the [“Unrecoverable Errors with
-> `panic!`”][unrecoverable-errors-with-panic]<!-- ignore --> section in Chapter
-> 9.
+> Tegyük fel, hogy van egy `u8` típusú változód, amely a 0 és 255 közötti
+> értékeket tudja tárolni. Ha a változót ezen a tartományon kívüli értékre –
+> például 256-ra – próbálod állítani, _egész szám túlcsordulás_ történik, aminek
+> kétféle következménye lehet. Ha debug módban fordítasz, a Rust beépít egész
+> szám túlcsordulás elleni ellenőrzéseket, amelyek hatására a programod
+> futásidőben _panicot vált ki_, ha ez a helyzet előáll. A Rust a _panicking_
+> kifejezést használja arra, amikor egy program hibával lép ki; a panicokról
+> részletesebben a 9. fejezet [„Helyrehozhatatlan hibák a
+> `panic!`-kal”][unrecoverable-errors-with-panic]<!-- ignore --> című részében
+> lesz szó.
 >
-> When you’re compiling in release mode with the `--release` flag, Rust does
-> _not_ include checks for integer overflow that cause panics. Instead, if
-> overflow occurs, Rust performs _two’s complement wrapping_. In short, values
-> greater than the maximum value the type can hold “wrap around” to the minimum
-> of the values the type can hold. In the case of a `u8`, the value 256 becomes
-> 0, the value 257 becomes 1, and so on. The program won’t panic, but the
-> variable will have a value that probably isn’t what you were expecting it to
-> have. Relying on integer overflow’s wrapping behavior is considered an error.
+> Ha release módban, a `--release` kapcsolóval fordítasz, a Rust _nem_ épít be
+> olyan túlcsordulás-ellenőrzéseket, amelyek panicot okoznának. Ehelyett, ha
+> túlcsordulás történik, a Rust _kettes komplemens körbefordulást_ végez.
+> Röviden: a típus által tárolható legnagyobb értéknél nagyobb értékek
+> „körbefordulnak” a típus által tárolható legkisebb értékre. Egy `u8` esetén a
+> 256-ból 0 lesz, a 257-ből 1, és így tovább. A program nem vált ki panicot, de
+> a változóban valószínűleg nem az az érték lesz, amit vártál. Az egész szám
+> túlcsordulás körbefordulós viselkedésére támaszkodni hibának számít.
 >
-> To explicitly handle the possibility of overflow, you can use these families
-> of methods provided by the standard library for primitive numeric types:
+> Ha explicit módon akarod kezelni a túlcsordulás lehetőségét, a standard
+> könyvtár által a primitív számtípusokhoz biztosított alábbi metóduscsaládokat
+> használhatod:
 >
-> - Wrap in all compilation modes with the `wrapping_*` methods, such as 
->   `wrapping_add`.
-> - Return the `None` value if there is overflow with the `checked_*` methods.
-> - Return the value and a Boolean indicating whether there was overflow with
->   the `overflowing_*` methods.
-> - Saturate at the value’s minimum or maximum values with the `saturating_*`
->   methods.
+> - Körbefordulás minden fordítási módban a `wrapping_*` metódusokkal, például a
+>   `wrapping_add`-del.
+> - A `None` érték visszaadása túlcsordulás esetén a `checked_*` metódusokkal.
+> - Az érték és egy logikai érték visszaadása, amely jelzi, volt-e túlcsordulás,
+>   az `overflowing_*` metódusokkal.
+> - Telítődés a típus minimum- vagy maximumértékénél a `saturating_*`
+>   metódusokkal.
 
-#### Floating-Point Types
+#### Lebegőpontos típusok
 
-Rust also has two primitive types for _floating-point numbers_, which are
-numbers with decimal points. Rust’s floating-point types are `f32` and `f64`,
-which are 32 bits and 64 bits in size, respectively. The default type is `f64`
-because on modern CPUs, it’s roughly the same speed as `f32` but is capable of
-more precision. All floating-point types are signed.
+A Rustnak két primitív típusa is van a _lebegőpontos számokhoz_, vagyis a
+tizedes törtekhez. A Rust lebegőpontos típusai az `f32` és az `f64`, amelyek 32,
+illetve 64 bit méretűek. Az alapértelmezett típus az `f64`, mert a modern CPU-kon
+nagyjából ugyanolyan gyors, mint az `f32`, de nagyobb pontosságra képes. Minden
+lebegőpontos típus előjeles.
 
-Here’s an example that shows floating-point numbers in action:
+Íme egy példa, amely lebegőpontos számokat mutat működés közben:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-06-floating-point/src/main.rs}}
 ```
 
-Floating-point numbers are represented according to the IEEE-754 standard.
+A lebegőpontos számok ábrázolása az IEEE-754 szabvány szerint történik.
 
-#### Numeric Operations
+#### Számműveletek
 
-Rust supports the basic mathematical operations you’d expect for all the number
-types: addition, subtraction, multiplication, division, and remainder. Integer
-division truncates toward zero to the nearest integer. The following code shows
-how you’d use each numeric operation in a `let` statement:
+A Rust minden számtípushoz támogatja az elvárt alapvető matematikai
+műveleteket: összeadás, kivonás, szorzás, osztás és maradékképzés. Az
+egészosztás nulla felé csonkol a legközelebbi egész számra. Az alábbi kód
+megmutatja, hogyan használnád az egyes számműveleteket egy `let` utasításban:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-07-numeric-operations/src/main.rs}}
 ```
 
-Each expression in these statements uses a mathematical operator and evaluates
-to a single value, which is then bound to a variable. [Appendix
-B][appendix_b]<!-- ignore --> contains a list of all operators that Rust
-provides.
+Ezekben az utasításokban minden kifejezés egy matematikai operátort használ, és
+egyetlen értékké értékelődik ki, amely aztán egy változóhoz kötődik. A [B
+függelék][appendix_b]<!-- ignore --> tartalmazza a Rust összes operátorának
+listáját.
 
-#### The Boolean Type
+#### A logikai típus
 
-As in most other programming languages, a Boolean type in Rust has two possible
-values: `true` and `false`. Booleans are one byte in size. The Boolean type in
-Rust is specified using `bool`. For example:
+Ahogy a legtöbb más programozási nyelvben, Rustban is két lehetséges értéke van
+a logikai típusnak: `true` és `false`. A logikai értékek mérete egy bájt. A
+logikai típust Rustban a `bool` szóval adjuk meg. Például:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-08-boolean/src/main.rs}}
 ```
 
-The main way to use Boolean values is through conditionals, such as an `if`
-expression. We’ll cover how `if` expressions work in Rust in the [“Control
-Flow”][control-flow]<!-- ignore --> section.
+A logikai értékeket leginkább feltételes szerkezetekben használjuk, például egy
+`if` kifejezésben. Azt, hogy az `if` kifejezések hogyan működnek Rustban, a
+[„Vezérlési szerkezetek”][control-flow]<!-- ignore --> című részben tárgyaljuk.
 
-#### The Character Type
+#### A karakter típus
 
-Rust’s `char` type is the language’s most primitive alphabetic type. Here are
-some examples of declaring `char` values:
+A Rust `char` típusa a nyelv legalapvetőbb betűtípusa. Íme néhány példa `char`
+értékek deklarálására:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-09-char/src/main.rs}}
 ```
 
-Note that we specify `char` literals with single quotation marks, as opposed to
-string literals, which use double quotation marks. Rust’s `char` type is 4
-bytes in size and represents a Unicode scalar value, which means it can
-represent a lot more than just ASCII. Accented letters; Chinese, Japanese, and
-Korean characters; emojis; and zero-width spaces are all valid `char` values in
-Rust. Unicode scalar values range from `U+0000` to `U+D7FF` and `U+E000` to
-`U+10FFFF` inclusive. However, a “character” isn’t really a concept in Unicode,
-so your human intuition for what a “character” is may not match up with what a
-`char` is in Rust. We’ll discuss this topic in detail in [“Storing UTF-8
-Encoded Text with Strings”][strings]<!-- ignore --> in Chapter 8.
+Vedd észre, hogy a `char` literálokat egyszeres idézőjellel adjuk meg,
+szemben a string literálokkal, amelyek kettős idézőjelet használnak. A Rust
+`char` típusa 4 bájt méretű, és egy Unicode skalárértéket képvisel, ami azt
+jelenti, hogy sokkal többet tud ábrázolni, mint pusztán az ASCII. Az ékezetes
+betűk; a kínai, japán és koreai karakterek; az emojik; és a nulla szélességű
+szóközök mind érvényes `char` értékek Rustban. A Unicode skalárértékek az
+`U+0000`–`U+D7FF` és az `U+E000`–`U+10FFFF` tartományba esnek (a határokat is
+beleértve). A „karakter” azonban valójában nem is fogalom a Unicode-ban, így
+az, amit emberként „karakternek” gondolsz, nem feltétlenül esik egybe azzal,
+ami Rustban egy `char`. Erről a témáról részletesen a 8. fejezet [„UTF-8
+kódolású szöveg tárolása stringekben”][strings]<!-- ignore --> című részében
+lesz szó.
 
-### Compound Types
+### Összetett típusok
 
-_Compound types_ can group multiple values into one type. Rust has two
-primitive compound types: tuples and arrays.
+Az _összetett típusok_ több értéket foghatnak össze egyetlen típusba. A Rustnak
+két primitív összetett típusa van: a tuple és a tömb.
 
-#### The Tuple Type {#the-tuple-type}
+#### A tuple típus {#the-tuple-type}
 
-A _tuple_ is a general way of grouping together a number of values with a
-variety of types into one compound type. Tuples have a fixed length: Once
-declared, they cannot grow or shrink in size.
+A _tuple_ általános módja annak, hogy több, különböző típusú értéket
+csoportosítsunk egyetlen összetett típusba. A tuple-öknek rögzített a hosszuk:
+ha egyszer deklaráltuk őket, a méretük nem nőhet és nem csökkenhet.
 
-We create a tuple by writing a comma-separated list of values inside
-parentheses. Each position in the tuple has a type, and the types of the
-different values in the tuple don’t have to be the same. We’ve added optional
-type annotations in this example:
+Tuple-t úgy hozunk létre, hogy zárójelek között vesszővel elválasztott
+értéklistát írunk. A tuple minden pozíciójának van típusa, és a tuple-ben lévő
+különböző értékek típusának nem kell megegyeznie. Ebben a példában opcionális
+típusannotációkat is hozzáadtunk:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-10-tuples/src/main.rs}}
 ```
 
-The variable `tup` binds to the entire tuple because a tuple is considered a
-single compound element. To get the individual values out of a tuple, we can
-use pattern matching to destructure a tuple value, like this:
+A `tup` változó az egész tuple-höz kötődik, mert a tuple egyetlen összetett
+elemnek számít. Ahhoz, hogy kinyerjük az egyes értékeket egy tuple-ből,
+mintaillesztéssel destrukturálhatunk egy tuple-értéket, így:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-11-destructuring-tuples/src/main.rs}}
 ```
 
-This program first creates a tuple and binds it to the variable `tup`. It then
-uses a pattern with `let` to take `tup` and turn it into three separate
-variables, `x`, `y`, and `z`. This is called _destructuring_ because it breaks
-the single tuple into three parts. Finally, the program prints the value of
-`y`, which is `6.4`.
+Ez a program először létrehoz egy tuple-t, és hozzáköti a `tup` változóhoz.
+Ezután egy mintát használ a `let`-tel, hogy a `tup`-ot három külön változóra –
+`x`, `y` és `z` – bontsa. Ezt _destrukturálásnak_ nevezzük, mert az egyetlen
+tuple-t három részre bontja. Végül a program kiírja az `y` értékét, ami `6.4`.
 
-We can also access a tuple element directly by using a period (`.`) followed by
-the index of the value we want to access. For example:
+Egy tuple elemét közvetlenül is elérhetjük: egy pontot (`.`) írunk, majd utána
+annak az értéknek az indexét, amelyet el akarunk érni. Például:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-12-tuple-indexing/src/main.rs}}
 ```
 
-This program creates the tuple `x` and then accesses each element of the tuple
-using their respective indices. As with most programming languages, the first
-index in a tuple is 0.
+Ez a program létrehozza az `x` tuple-t, majd a megfelelő indexek segítségével
+eléri a tuple minden elemét. Ahogy a legtöbb programozási nyelvben, a tuple
+első indexe a 0.
 
-The tuple without any values has a special name, _unit_. This value and its
-corresponding type are both written `()` and represent an empty value or an
-empty return type. Expressions implicitly return the unit value if they don’t
-return any other value.
+Az érték nélküli tuple-nek külön neve van: _unit_. Ezt az értéket és a hozzá
+tartozó típust is `()`-ként írjuk, és üres értéket vagy üres visszatérési
+típust jelöl. A kifejezések implicit módon a unit értékkel térnek vissza, ha
+nem adnak vissza semmilyen más értéket.
 
-#### The Array Type
+#### A tömb típus
 
-Another way to have a collection of multiple values is with an _array_. Unlike
-a tuple, every element of an array must have the same type. Unlike arrays in
-some other languages, arrays in Rust have a fixed length.
+Több érték kollekcióját másképp is megkaphatjuk: _tömbbel_. A tuple-lel
+ellentétben egy tömb minden elemének azonos típusúnak kell lennie. Néhány más
+nyelv tömbjeivel ellentétben a Rust tömbjeinek rögzített a hosszuk.
 
-We write the values in an array as a comma-separated list inside square
-brackets:
+Egy tömb értékeit szögletes zárójelek között, vesszővel elválasztott listaként
+írjuk:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-13-arrays/src/main.rs}}
 ```
 
-Arrays are useful when you want your data allocated on the stack, the same as
-the other types we have seen so far, rather than the heap (we will discuss the
-stack and the heap more in [Chapter 4][stack-and-heap]<!-- ignore -->) or when
-you want to ensure that you always have a fixed number of elements. An array
-isn’t as flexible as the vector type, though. A vector is a similar collection
-type provided by the standard library that _is_ allowed to grow or shrink in
-size because its contents live on the heap. If you’re unsure whether to use an
-array or a vector, chances are you should use a vector. [Chapter
-8][vectors]<!-- ignore --> discusses vectors in more detail.
+A tömbök akkor hasznosak, ha azt szeretnéd, hogy az adataid a stacken
+foglalódjanak le – ahogy az eddig látott többi típus esetében is –, ne pedig a
+heapen (a stackről és a heapről bővebben a [4. fejezetben][stack-and-heap]<!--
+ignore --> lesz szó), vagy amikor biztosítani akarod, hogy mindig rögzített
+számú elemed legyen. A tömb azonban nem olyan rugalmas, mint a vektor típus. A
+vektor a standard könyvtár által biztosított hasonló kollekciótípus, amelynek a
+mérete _viszont_ nőhet és csökkenhet, mert a tartalma a heapen él. Ha nem vagy
+biztos benne, hogy tömböt vagy vektort használj, jó eséllyel vektort érdemes. A
+[8. fejezet][vectors]<!-- ignore --> részletesebben tárgyalja a vektorokat.
 
-However, arrays are more useful when you know the number of elements will not
-need to change. For example, if you were using the names of the month in a
-program, you would probably use an array rather than a vector because you know
-it will always contain 12 elements:
+A tömbök viszont hasznosabbak, ha tudod, hogy az elemek számának nem kell majd
+változnia. Ha például a hónapok neveit használnád egy programban,
+valószínűleg tömböt választanál vektor helyett, mert tudod, hogy mindig 12
+elemet fog tartalmazni:
 
 ```rust
 let months = ["January", "February", "March", "April", "May", "June", "July",
               "August", "September", "October", "November", "December"];
 ```
 
-You write an array’s type using square brackets with the type of each element,
-a semicolon, and then the number of elements in the array, like so:
+Egy tömb típusát szögletes zárójelekkel írod le: benne az egyes elemek típusa,
+egy pontosvessző, majd a tömb elemeinek száma, így:
 
 ```rust
 let a: [i32; 5] = [1, 2, 3, 4, 5];
 ```
 
-Here, `i32` is the type of each element. After the semicolon, the number `5`
-indicates the array contains five elements.
+Itt az `i32` az egyes elemek típusa. A pontosvessző után az `5` szám azt
+jelzi, hogy a tömb öt elemet tartalmaz.
 
-You can also initialize an array to contain the same value for each element by
-specifying the initial value, followed by a semicolon, and then the length of
-the array in square brackets, as shown here:
+Egy tömböt úgy is inicializálhatsz, hogy minden eleme ugyanazt az értéket
+tartalmazza: megadod a kezdőértéket, utána egy pontosvesszőt, majd szögletes
+zárójelben a tömb hosszát, ahogy itt látható:
 
 ```rust
 let a = [3; 5];
 ```
 
-The array named `a` will contain `5` elements that will all be set to the value
-`3` initially. This is the same as writing `let a = [3, 3, 3, 3, 3];` but in a
-more concise way.
+Az `a` nevű tömb `5` elemet fog tartalmazni, amelyek kezdetben mind a `3`
+értékre lesznek beállítva. Ez ugyanaz, mintha a `let a = [3, 3, 3, 3, 3];`
+sort írnád, csak tömörebb módon.
 
 <!-- Old headings. Do not remove or links may break. -->
 <a id="accessing-array-elements"></a>
 
-#### Array Element Access
+#### Tömbelemek elérése
 
-An array is a single chunk of memory of a known, fixed size that can be
-allocated on the stack. You can access elements of an array using indexing,
-like this:
+A tömb egyetlen, ismert és rögzített méretű memóriadarab, amely a stacken
+foglalható le. A tömb elemeit indexeléssel érheted el, így:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-14-array-indexing/src/main.rs}}
 ```
 
-In this example, the variable named `first` will get the value `1` because that
-is the value at index `[0]` in the array. The variable named `second` will get
-the value `2` from index `[1]` in the array.
+Ebben a példában a `first` nevű változó az `1` értéket kapja, mert ez az érték
+található a tömb `[0]` indexén. A `second` nevű változó a `2` értéket kapja a
+tömb `[1]` indexéről.
 
-#### Invalid Array Element Access
+#### Érvénytelen tömbelem elérése
 
-Let’s see what happens if you try to access an element of an array that is past
-the end of the array. Say you run this code, similar to the guessing game in
-Chapter 2, to get an array index from the user:
+Nézzük meg, mi történik, ha a tömb végén túli elemet próbálsz elérni. Tegyük
+fel, hogy lefuttatod ezt a – a 2. fejezet kitalálós játékához hasonló – kódot,
+hogy egy tömbindexet kérj be a felhasználótól:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore,panics
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-15-invalid-array-access/src/main.rs}}
 ```
 
-This code compiles successfully. If you run this code using `cargo run` and
-enter `0`, `1`, `2`, `3`, or `4`, the program will print out the corresponding
-value at that index in the array. If you instead enter a number past the end of
-the array, such as `10`, you’ll see output like this:
+Ez a kód sikeresen lefordul. Ha a `cargo run` paranccsal futtatod, és `0`-t,
+`1`-et, `2`-t, `3`-at vagy `4`-et adsz meg, a program kiírja a tömb megfelelő
+indexén található értéket. Ha viszont a tömb végén túli számot adsz meg,
+például `10`-et, ehhez hasonló kimenetet fogsz látni:
 
 <!-- manual-regeneration
 cd listings/ch03-common-programming-concepts/no-listing-15-invalid-array-access
@@ -360,21 +366,22 @@ index out of bounds: the len is 5 but the index is 10
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-The program resulted in a runtime error at the point of using an invalid
-value in the indexing operation. The program exited with an error message and
-didn’t execute the final `println!` statement. When you attempt to access an
-element using indexing, Rust will check that the index you’ve specified is less
-than the array length. If the index is greater than or equal to the length,
-Rust will panic. This check has to happen at runtime, especially in this case,
-because the compiler can’t possibly know what value a user will enter when they
-run the code later.
+A program futásidejű hibát eredményezett azon a ponton, ahol érvénytelen
+értéket használt az indexelési műveletben. A program hibaüzenettel lépett ki, és
+nem hajtotta végre az utolsó `println!` utasítást. Amikor indexeléssel próbálsz
+elérni egy elemet, a Rust ellenőrzi, hogy a megadott index kisebb-e a tömb
+hosszánál. Ha az index nagyobb vagy egyenlő a hossznál, a Rust panicot vált ki.
+Ennek az ellenőrzésnek futásidőben kell megtörténnie, különösen ebben az
+esetben, mert a fordító sehogy sem tudhatja, milyen értéket ad majd meg a
+felhasználó, amikor később futtatja a kódot.
 
-This is an example of Rust’s memory safety principles in action. In many
-low-level languages, this kind of check is not done, and when you provide an
-incorrect index, invalid memory can be accessed. Rust protects you against this
-kind of error by immediately exiting instead of allowing the memory access and
-continuing. Chapter 9 discusses more of Rust’s error handling and how you can
-write readable, safe code that neither panics nor allows invalid memory access.
+Ez egy példa a Rust memóriabiztonsági elveinek működésére. Sok alacsony szintű
+nyelvben nem történik meg ez az ellenőrzés, és ha hibás indexet adsz meg,
+érvénytelen memóriaterület válik elérhetővé. A Rust úgy véd meg az ilyen
+hibáktól, hogy azonnal kilép, ahelyett hogy engedélyezné a memóriahozzáférést és
+folytatná a futást. A 9. fejezet többet foglalkozik a Rust hibakezelésével, és
+azzal, hogyan írhatsz olvasható, biztonságos kódot, amely sem panicot nem vált
+ki, sem érvénytelen memóriahozzáférést nem enged meg.
 
 [comparing-the-guess-to-the-secret-number]: ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number
 [twos-complement]: https://en.wikipedia.org/wiki/Two%27s_complement

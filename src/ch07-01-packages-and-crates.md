@@ -31,8 +31,8 @@ láthatóság szabályozása modulokkal”][modules]<!-- ignore --> szakaszban
 mutatjuk be).
 
 A _csomag_ egy vagy több crate-ből álló köteg, amely funkcionalitások egy
-halmazát nyújtja. Egy csomag tartalmaz egy _Cargo.toml_ fájlt, amely leírja, hogyan kell
-felépíteni ezeket a crate-eket. A Cargo valójában maga is egy csomag, amely
+halmazát nyújtja. Egy csomag tartalmaz egy _Cargo.toml_ fájlt, amely leírja,
+hogyan kell felépíteni ezeket a crate-eket. A Cargo valójában maga is egy csomag, amely
 annak a parancssori eszköznek a binary crate-jét tartalmazza, amelyet a kódod
 építéséhez használsz. A Cargo csomag egy library crate-et is tartalmaz, amelytől
 a binary crate függ. Más projektek is függhetnek a Cargo library crate-jétől,
@@ -65,8 +65,8 @@ fájlról. A Cargo azt a konvenciót követi, hogy az _src/main.rs_ annak a bina
 crate-nek a crate rootja, amelynek neve megegyezik a csomagéval. Hasonlóképpen
 a Cargo tudja, hogy ha a csomag könyvtára tartalmaz _src/lib.rs_ fájlt, akkor a
 csomag tartalmaz egy, a csomaggal azonos nevű library crate-et, és az
-_src/lib.rs_ annak a crate rootja. A Cargo átadja a crate root fájlokat a `rustc`-nek, hogy felépítse a
-könyvtárat vagy a binary állományt.
+_src/lib.rs_ annak a crate rootja. A Cargo átadja a crate root fájlokat a
+`rustc`-nek, hogy felépítse a könyvtárat vagy a binary állományt.
 
 Itt egy olyan csomagunk van, amely csak az _src/main.rs_ fájlt tartalmazza,
 vagyis csak egy `my-project` nevű binary crate-et. Ha egy csomag tartalmaz

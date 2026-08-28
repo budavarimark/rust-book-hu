@@ -176,8 +176,8 @@ crate
 </Listing>
 
 Ez a fa megmutatja, hogyan ágyazódnak egyes modulok más modulokba; például a
-`hosting` a `front_of_house` modulba ágyazódik. A fából az is látszik, hogy egyes
-modulok _testvérek_, vagyis ugyanabban a modulban vannak definiálva; a
+`hosting` a `front_of_house` modulba ágyazódik. A fából az is látszik, hogy
+egyes modulok _testvérek_, vagyis ugyanabban a modulban vannak definiálva; a
 `hosting` és a `serving` testvérek, amelyeket a `front_of_house` modulon belül
 definiáltunk. Ha az A modul a B modulon belül van, azt mondjuk, hogy az A modul
 a B modul _gyereke_, a B modul pedig az A modul _szülője_. Vedd észre, hogy az
