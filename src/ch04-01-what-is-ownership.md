@@ -2,16 +2,16 @@
 
 Az _ownership_ szabályok együttese, amelyek megszabják, hogyan kezeli a memóriát
 egy Rust-program. Minden programnak kezelnie kell, hogyan használja futás közben
-a számítógép memóriáját. Egyes nyelvekben garbage collection van, amely a program
-futása során rendszeresen megkeresi a már nem használt memóriát; más nyelvekben a
-programozónak kell explicit módon lefoglalnia és felszabadítania a memóriát. A
-Rust egy harmadik megközelítést használ: a memóriát az ownership rendszere kezeli,
-olyan szabályokkal, amelyeket a fordító ellenőriz. Ha bármelyik szabály sérül, a
-program nem fordul le. Az ownership egyetlen eleme sem lassítja a programodat
-futás közben.
+a számítógép memóriáját. Egyes nyelvekben garbage collection van, amely a
+program futása során rendszeresen megkeresi a már nem használt memóriát; más
+nyelvekben a programozónak kell explicit módon lefoglalnia és felszabadítania a
+memóriát. A Rust egy harmadik megközelítést használ: a memóriát az ownership
+rendszere kezeli, olyan szabályokkal, amelyeket a fordító ellenőriz. Ha
+bármelyik szabály sérül, a program nem fordul le. Az ownership egyetlen eleme
+sem lassítja a programodat futás közben.
 
-Mivel az ownership sok programozó számára új fogalom, időbe telik megszokni. A jó
-hír az, hogy minél nagyobb tapasztalatot szerzel a Rustban és az ownership
+Mivel az ownership sok programozó számára új fogalom, időbe telik megszokni. A
+jó hír az, hogy minél nagyobb tapasztalatot szerzel a Rustban és az ownership
 rendszerének szabályaiban, annál könnyebben fogsz természetes módon biztonságos
 és hatékony kódot írni. Ne add fel!
 
@@ -23,42 +23,43 @@ adatszerkezetre összpontosítanak: a sztringekre.
 > ### A stack és a heap {#the-stack-and-the-heap}
 >
 > Sok programozási nyelvben nem kell túl gyakran a stack-kel és a heap-pel
-> foglalkoznod. Egy olyan rendszerprogramozási nyelvben azonban, mint a Rust, az,
-> hogy egy érték a stack-en vagy a heap-en van-e, befolyásolja a nyelv
-> viselkedését, és azt is, miért kell bizonyos döntéseket meghoznod. Az ownership
-> egyes részeit a fejezet későbbi részében a stack-hez és a heap-hez viszonyítva
-> mutatjuk be, ezért itt egy rövid magyarázat következik felkészülésképpen.
+> foglalkoznod. Egy olyan rendszerprogramozási nyelvben azonban, mint a Rust,
+> az, hogy egy érték a stack-en vagy a heap-en van-e, befolyásolja a nyelv
+> viselkedését, és azt is, miért kell bizonyos döntéseket meghoznod. Az
+> ownership egyes részeit a fejezet későbbi részében a stack-hez és a heap-hez
+> viszonyítva mutatjuk be, ezért itt egy rövid magyarázat következik
+> felkészülésképpen.
 >
 > A stack és a heap egyaránt a kódod számára futásidőben elérhető memória része,
 > de eltérő módon vannak felépítve. A stack abban a sorrendben tárolja az
 > értékeket, ahogy megkapja őket, és fordított sorrendben veszi ki őket. Ezt
 > nevezzük _utoljára be, elsőként ki (last in, first out, LIFO)_ elvnek. Gondolj
 > egy tányérhalomra: amikor újabb tányérokat teszel hozzá, a halom tetejére
-> helyezed őket, és amikor tányérra van szükséged, a tetejéről veszel el egyet. A
-> halom közepéről vagy aljáról tányért betenni vagy kivenni nem menne ilyen
-> jól! Az adat hozzáadását _a stack-re helyezésnek (push)_, az adat eltávolítását
-> pedig _a stack-ről levételnek (pop)_ nevezzük. Minden, a stack-en tárolt adatnak
-> ismert, rögzített méretűnek kell lennie. Az olyan adatot, amelynek a mérete
-> fordítási időben ismeretlen, vagy amelynek a mérete változhat, a heap-en kell
-> tárolni.
+> helyezed őket, és amikor tányérra van szükséged, a tetejéről veszel el egyet.
+> A halom közepéről vagy aljáról tányért betenni vagy kivenni nem menne ilyen
+> jól! Az adat hozzáadását _a stack-re helyezésnek (push)_, az adat
+> eltávolítását pedig _a stack-ről levételnek (pop)_ nevezzük. Minden, a
+> stack-en tárolt adatnak ismert, rögzített méretűnek kell lennie. Az olyan
+> adatot, amelynek a mérete fordítási időben ismeretlen, vagy amelynek a mérete
+> változhat, a heap-en kell tárolni.
 >
-> A heap kevésbé rendezett: amikor adatot teszel a heap-re, egy bizonyos mennyiségű
-> helyet kérsz. A memóriafoglaló (allokátor) talál egy elég nagy üres helyet a
-> heap-en, megjelöli használtként, és visszaad egy _pointert_, amely az adott hely
-> címe. Ezt a folyamatot _a heap-en való lefoglalásnak_ nevezzük, és néha csak
-> _lefoglalásként_ rövidítjük (az értékek stack-re helyezését nem tekintjük
-> lefoglalásnak). Mivel a heap-re mutató pointer ismert, rögzített méretű, a
-> pointert a stack-en tárolhatod, de amikor a tényleges adatra van szükséged, a
-> pointert követned kell. Gondolj arra, amikor egy étteremben leültetnek. Amikor
-> belépsz, megmondod, hányan vagytok, a hostess pedig talál egy üres asztalt,
-> ahová mindenki elfér, és odavezet titeket. Ha valaki később érkezik a
-> társaságból, megkérdezheti, hová ültettek titeket, hogy megtaláljon.
+> A heap kevésbé rendezett: amikor adatot teszel a heap-re, egy bizonyos
+> mennyiségű helyet kérsz. A memóriafoglaló (allokátor) talál egy elég nagy üres
+> helyet a heap-en, megjelöli használtként, és visszaad egy _pointert_, amely az
+> adott hely címe. Ezt a folyamatot _a heap-en való lefoglalásnak_ nevezzük, és
+> néha csak _lefoglalásként_ rövidítjük (az értékek stack-re helyezését nem
+> tekintjük lefoglalásnak). Mivel a heap-re mutató pointer ismert, rögzített
+> méretű, a pointert a stack-en tárolhatod, de amikor a tényleges adatra van
+> szükséged, a pointert követned kell. Gondolj arra, amikor egy étteremben
+> leültetnek. Amikor belépsz, megmondod, hányan vagytok, a hostess pedig talál
+> egy üres asztalt, ahová mindenki elfér, és odavezet titeket. Ha valaki később
+> érkezik a társaságból, megkérdezheti, hová ültettek titeket, hogy megtaláljon.
 >
 > A stack-re helyezés gyorsabb, mint a heap-en való lefoglalás, mert az
-> allokátornak sosem kell helyet keresnie az új adat tárolásához; az a hely mindig
-> a stack teteje. Ehhez képest a heap-en való helyfoglalás több munkát igényel,
-> mert az allokátornak először találnia kell egy elég nagy helyet az adat
-> tárolásához, majd nyilvántartást kell vezetnie a következő foglalás
+> allokátornak sosem kell helyet keresnie az új adat tárolásához; az a hely
+> mindig a stack teteje. Ehhez képest a heap-en való helyfoglalás több munkát
+> igényel, mert az allokátornak először találnia kell egy elég nagy helyet az
+> adat tárolásához, majd nyilvántartást kell vezetnie a következő foglalás
 > előkészítéséhez.
 >
 > A heap-en lévő adat elérése általában lassabb, mint a stack-en lévőé, mert oda
@@ -73,17 +74,17 @@ adatszerkezetre összpontosítanak: a sztringekre.
 > (mint ahogy az a heap-en lehet).
 >
 > Amikor a kódod meghív egy függvényt, a függvénynek átadott értékek (beleértve
-> adott esetben a heap-en lévő adatra mutató pointereket is) és a függvény lokális
-> változói a stack-re kerülnek. Amikor a függvény véget ér, ezek az értékek
-> lekerülnek a stack-ről.
+> adott esetben a heap-en lévő adatra mutató pointereket is) és a függvény
+> lokális változói a stack-re kerülnek. Amikor a függvény véget ér, ezek az
+> értékek lekerülnek a stack-ről.
 >
-> Annak nyilvántartása, hogy a kód mely részei milyen adatot használnak a heap-en,
-> a heap-en lévő adatduplikációk minimalizálása, valamint a heap-en lévő nem
-> használt adat kitakarítása, hogy ne fogyj ki a helyből – ezek mind olyan
-> problémák, amelyeket az ownership old meg. Ha egyszer megérted az ownership-et,
-> nem kell majd túl gyakran a stack-kel és a heap-pel foglalkoznod. Az viszont, ha
-> tudod, hogy az ownership fő célja a heap-en lévő adat kezelése, segíthet
-> megmagyarázni, miért éppen úgy működik, ahogy.
+> Annak nyilvántartása, hogy a kód mely részei milyen adatot használnak a
+> heap-en, a heap-en lévő adatduplikációk minimalizálása, valamint a heap-en
+> lévő nem használt adat kitakarítása, hogy ne fogyj ki a helyből – ezek mind
+> olyan problémák, amelyeket az ownership old meg. Ha egyszer megérted az
+> ownership-et, nem kell majd túl gyakran a stack-kel és a heap-pel
+> foglalkoznod. Az viszont, ha tudod, hogy az ownership fő célja a heap-en lévő
+> adat kezelése, segíthet megmagyarázni, miért éppen úgy működik, ahogy.
 
 ### Az ownership szabályai
 
@@ -153,12 +154,12 @@ tárgyaljuk.
 A sztringliterálokat már láttuk, ahol a sztring értéke bele van égetve a
 programunkba. A sztringliterálok kényelmesek, de nem minden olyan helyzetre
 alkalmasak, amelyben szöveget szeretnénk használni. Az egyik ok, hogy nem
-módosíthatók. A másik, hogy nem minden sztringérték ismerhető meg akkor, amikor a
-kódunkat írjuk: mi van például akkor, ha a felhasználó bemenetét szeretnénk venni
-és eltárolni? Ilyen helyzetekre való a Rustban a `String` típus. Ez a típus a
-heap-en lefoglalt adatot kezel, és így olyan mennyiségű szöveget tud tárolni,
-amely fordítási időben ismeretlen a számunkra. Egy `String` értéket a `from`
-függvénnyel hozhatsz létre egy sztringliterálból, így:
+módosíthatók. A másik, hogy nem minden sztringérték ismerhető meg akkor, amikor
+a kódunkat írjuk: mi van például akkor, ha a felhasználó bemenetét szeretnénk
+venni és eltárolni? Ilyen helyzetekre való a Rustban a `String` típus. Ez a
+típus a heap-en lefoglalt adatot kezel, és így olyan mennyiségű szöveget tud
+tárolni, amely fordítási időben ismeretlen a számunkra. Egy `String` értéket a
+`from` függvénnyel hozhatsz létre egy sztringliterálból, így:
 
 ```rust
 let s = String::from("hello");
@@ -213,28 +214,29 @@ probléma volt. Ha elfelejtjük, memóriát pazarlunk. Ha túl korán tesszük m
 érvénytelen változónk lesz. Ha kétszer tesszük meg, az is hiba. Pontosan egy
 `allocate` hívást kell pontosan egy `free` hívással párosítanunk.
 
-A Rust más utat választ: a memória automatikusan visszaadásra kerül, amint az azt
-birtokló változó kilép a hatóköréből. Íme a 4-1. listában szereplő hatókörpéldánk
-egy változata, amely sztringliterál helyett `String` értéket használ:
+A Rust más utat választ: a memória automatikusan visszaadásra kerül, amint az
+azt birtokló változó kilép a hatóköréből. Íme a 4-1. listában szereplő
+hatókörpéldánk egy változata, amely sztringliterál helyett `String` értéket
+használ:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-02-string-scope/src/main.rs:here}}
 ```
 
 Van egy természetes pont, ahol a `String` értékünkhöz szükséges memóriát
-visszaadhatjuk az allokátornak: amikor `s` kilép a hatóköréből. Amikor egy változó
-kilép a hatóköréből, a Rust meghív helyettünk egy speciális függvényt. Ennek a
-függvénynek a neve `drop`, és ide helyezheti a `String` szerzője a memóriát
-visszaadó kódot. A Rust automatikusan meghívja a `drop` függvényt a záró kapcsos
-zárójelnél.
+visszaadhatjuk az allokátornak: amikor `s` kilép a hatóköréből. Amikor egy
+változó kilép a hatóköréből, a Rust meghív helyettünk egy speciális függvényt.
+Ennek a függvénynek a neve `drop`, és ide helyezheti a `String` szerzője a
+memóriát visszaadó kódot. A Rust automatikusan meghívja a `drop` függvényt a
+záró kapcsos zárójelnél.
 
-> Megjegyzés: a C++-ban az erőforrások felszabadításának ezt a mintáját, amely egy
-> elem élettartamának végén történik, néha _Resource Acquisition Is
+> Megjegyzés: a C++-ban az erőforrások felszabadításának ezt a mintáját, amely
+> egy elem élettartamának végén történik, néha _Resource Acquisition Is
 > Initialization (RAII)_ néven emlegetik. A Rust `drop` függvénye ismerős lesz
 > számodra, ha használtál már RAII-mintákat.
 
-Ennek a mintának mélyreható hatása van arra, ahogyan a Rust-kódot írjuk. Most még
-egyszerűnek tűnhet, de a kód viselkedése váratlan lehet bonyolultabb
+Ennek a mintának mélyreható hatása van arra, ahogyan a Rust-kódot írjuk. Most
+még egyszerűnek tűnhet, de a kód viselkedése váratlan lehet bonyolultabb
 helyzetekben, amikor azt szeretnénk, hogy több változó használja a heap-en
 lefoglalt adatunkat. Nézzünk meg most néhányat ezek közül a helyzetek közül.
 
@@ -273,9 +275,9 @@ ugyanaz: vagyis a második sor másolatot készít az `s1`-ben lévő értékrő
 
 Nézd meg a 4-1. ábrát, hogy lásd, mi történik a `String` értékkel a színfalak
 mögött. Egy `String` három részből áll, amelyeket a bal oldal mutat: egy
-pointerből, amely a sztring tartalmát tároló memóriára mutat, egy hosszból és egy
-kapacitásból. Ez az adatcsoport a stack-en tárolódik. A jobb oldalon a heap-en lévő
-memória látható, amely a tartalmat tárolja.
+pointerből, amely a sztring tartalmát tároló memóriára mutat, egy hosszból és
+egy kapacitásból. Ez az adatcsoport a stack-en tárolódik. A jobb oldalon a
+heap-en lévő memória látható, amely a tartalmat tárolja.
 
 <img alt="Két táblázat: az első táblázat az s1 stack-en lévő ábrázolását
 tartalmazza, amely a hosszából (5), a kapacitásából (5) és egy pointerből áll,
@@ -292,10 +294,10 @@ tartalma. A kapacitás az a teljes memóriamennyiség – bájtban –, amelyet 
 számít, de nem ebben az összefüggésben, ezért egyelőre nyugodtan figyelmen kívül
 hagyhatjuk a kapacitást.
 
-Amikor `s1`-et `s2`-höz rendeljük, a `String` adatai másolódnak, vagyis lemásoljuk
-a pointert, a hosszt és a kapacitást, amelyek a stack-en vannak. Nem másoljuk le a
-heap-en lévő adatot, amelyre a pointer hivatkozik. Más szóval a memóriabeli
-adatábrázolás a 4-2. ábrán láthatóhoz hasonlóan néz ki.
+Amikor `s1`-et `s2`-höz rendeljük, a `String` adatai másolódnak, vagyis
+lemásoljuk a pointert, a hosszt és a kapacitást, amelyek a stack-en vannak. Nem
+másoljuk le a heap-en lévő adatot, amelyre a pointer hivatkozik. Más szóval a
+memóriabeli adatábrázolás a 4-2. ábrán láthatóhoz hasonlóan néz ki.
 
 <img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
 a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en."
@@ -318,17 +320,17 @@ s1`, ha a Rust a heap-en lévő adatot is lemásolná</span>
 
 Korábban azt mondtuk, hogy amikor egy változó kilép a hatóköréből, a Rust
 automatikusan meghívja a `drop` függvényt, és kitakarítja az adott változóhoz
-tartozó heap-en lévő memóriát. A 4-2. ábrán viszont mindkét adatpointer ugyanarra a helyre
-mutat. Ez probléma: amikor `s2` és `s1` kilép a hatóköréből, mindkettő ugyanazt a
-memóriát próbálja majd felszabadítani. Ezt _double free_ hibának nevezzük, és ez
-az egyik korábban említett memóriabiztonsági hiba. A memória kétszeri
-felszabadítása memóriasérüléshez vezethet, ami akár biztonsági sebezhetőségeket
-is eredményezhet.
+tartozó heap-en lévő memóriát. A 4-2. ábrán viszont mindkét adatpointer
+ugyanarra a helyre mutat. Ez probléma: amikor `s2` és `s1` kilép a hatóköréből,
+mindkettő ugyanazt a memóriát próbálja majd felszabadítani. Ezt _double free_
+hibának nevezzük, és ez az egyik korábban említett memóriabiztonsági hiba. A
+memória kétszeri felszabadítása memóriasérüléshez vezethet, ami akár biztonsági
+sebezhetőségeket is eredményezhet.
 
-A memóriabiztonság garantálása érdekében a Rust a `let s2 = s1;` sor után `s1`-et
-már nem tekinti érvényesnek. Ezért a Rustnak semmit nem kell felszabadítania,
-amikor `s1` kilép a hatóköréből. Nézd meg, mi történik, ha megpróbálod használni
-`s1`-et azután, hogy `s2` létrejött; nem fog működni:
+A memóriabiztonság garantálása érdekében a Rust a `let s2 = s1;` sor után
+`s1`-et már nem tekinti érvényesnek. Ezért a Rustnak semmit nem kell
+felszabadítania, amikor `s1` kilép a hatóköréből. Nézd meg, mi történik, ha
+megpróbálod használni `s1`-et azután, hogy `s2` létrejött; nem fog működni:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/src/main.rs:here}}
@@ -342,11 +344,12 @@ A következőhöz hasonló hibát kapsz, mert a Rust megakadályozza, hogy az
 ```
 
 Ha más nyelvekkel dolgozva már hallottad a _sekély másolat_ (shallow copy) és a
-_mély másolat_ (deep copy) kifejezéseket, akkor a pointer, a hossz és a kapacitás
-másolása az adat másolása nélkül valószínűleg sekély másolat készítésének hangzik.
-Mivel azonban a Rust az első változót ráadásul érvényteleníti is, ezt nem sekély
-másolatnak, hanem _move_-nak nevezzük. Ebben a példában azt mondanánk, hogy `s1`
-_move_-olva lett `s2`-be. Tehát valójában az történik, amit a 4-4. ábra mutat.
+_mély másolat_ (deep copy) kifejezéseket, akkor a pointer, a hossz és a
+kapacitás másolása az adat másolása nélkül valószínűleg sekély másolat
+készítésének hangzik. Mivel azonban a Rust az első változót ráadásul
+érvényteleníti is, ezt nem sekély másolatnak, hanem _move_-nak nevezzük. Ebben a
+példában azt mondanánk, hogy `s1` _move_-olva lett `s2`-be. Tehát valójában az
+történik, amit a 4-4. ábra mutat.
 
 <img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
 a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en. Az s1 táblázat
@@ -379,8 +382,8 @@ kódot:
 
 Először deklarálunk egy `s` változót, és egy `"hello"` értékű `String` értékhez
 kötjük. Ezután azonnal létrehozunk egy új, `"ahoy"` értékű `String` értéket, és
-azt rendeljük `s`-hez. Ezen a ponton már semmi nem hivatkozik az eredeti, heap-en
-lévő értékre. A 4-5. ábra a stack és a heap adatait szemlélteti ekkor:
+azt rendeljük `s`-hez. Ezen a ponton már semmi nem hivatkozik az eredeti,
+heap-en lévő értékre. A 4-5. ábra a stack és a heap adatait szemlélteti ekkor:
 
 <img alt="Egy táblázat, amely a stack-en lévő sztringértéket ábrázolja, és a
 heap-en lévő második sztringadatra (ahoy) mutat, míg az eredeti sztringadat
@@ -400,10 +403,11 @@ Az eredeti sztring így azonnal kilép a hatóköréből. A Rust lefuttatja rajt
 
 #### Változók és adatok kölcsönhatása: clone {#variables-and-data-interacting-with-clone}
 
-Ha _tényleg_ mélymásolatot szeretnénk készíteni a `String` heap-en lévő adatáról,
-nem csak a stack-en lévő adatáról, használhatunk egy elterjedt metódust, a `clone`
-metódust. A metódusszintaxist az 5. fejezetben tárgyaljuk, de mivel a metódusok
-sok programozási nyelvben megszokott elemek, valószínűleg találkoztál már velük.
+Ha _tényleg_ mélymásolatot szeretnénk készíteni a `String` heap-en lévő
+adatáról, nem csak a stack-en lévő adatáról, használhatunk egy elterjedt
+metódust, a `clone` metódust. A metódusszintaxist az 5. fejezetben tárgyaljuk,
+de mivel a metódusok sok programozási nyelvben megszokott elemek, valószínűleg
+találkoztál már velük.
 
 Íme egy példa a `clone` metódus működésére:
 
@@ -420,8 +424,8 @@ történik.
 
 #### Csak a stack-en lévő adat: `Copy` {#stack-only-data-copy}
 
-Van még egy dolog, amiről eddig nem beszéltünk. Ez az egész számokat használó kód
-– amelynek egy részét a 4-2. listában láttuk – működik és érvényes:
+Van még egy dolog, amiről eddig nem beszéltünk. Ez az egész számokat használó
+kód – amelynek egy részét a 4-2. listában láttuk – működik és érvényes:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-06-copy/src/main.rs:here}}
@@ -430,13 +434,13 @@ Van még egy dolog, amiről eddig nem beszéltünk. Ez az egész számokat haszn
 Ez a kód azonban ellentmondani látszik annak, amit épp most tanultunk: nincs
 `clone` hívásunk, `x` mégis érvényes, és nem lett `y`-ba move-olva.
 
-Ennek az az oka, hogy az olyan típusok, mint az egész számok, amelyeknek a mérete
-fordítási időben ismert, teljes egészében a stack-en tárolódnak, így a tényleges
-értékek másolatai gyorsan elkészíthetők. Ez azt jelenti, hogy semmi okunk nem
-lenne megakadályozni, hogy `x` érvényes maradjon azután, hogy létrehoztuk az `y`
-változót. Más szóval itt nincs különbség a mély és a sekély másolás között, így a
-`clone` hívása sem tenne mást, mint a szokásos sekély másolás, ezért el is
-hagyhatjuk.
+Ennek az az oka, hogy az olyan típusok, mint az egész számok, amelyeknek a
+mérete fordítási időben ismert, teljes egészében a stack-en tárolódnak, így a
+tényleges értékek másolatai gyorsan elkészíthetők. Ez azt jelenti, hogy semmi
+okunk nem lenne megakadályozni, hogy `x` érvényes maradjon azután, hogy
+létrehoztuk az `y` változót. Más szóval itt nincs különbség a mély és a sekély
+másolás között, így a `clone` hívása sem tenne mást, mint a szokásos sekély
+másolás, ezért el is hagyhatjuk.
 
 A Rustban van egy speciális annotáció, a `Copy` trait, amelyet olyan típusokra
 helyezhetünk, amelyek a stack-en tárolódnak, ahogy az egész számok is (a
@@ -469,8 +473,8 @@ erőforrás. Íme néhány olyan típus, amely implementálja a `Copy` trait-et:
 
 ### Az ownership és a függvények
 
-Egy érték függvénynek való átadásának mechanizmusa hasonló ahhoz, mint amikor egy
-értéket egy változóhoz rendelünk. Egy változó függvénynek való átadása
+Egy érték függvénynek való átadásának mechanizmusa hasonló ahhoz, mint amikor
+egy értéket egy változóhoz rendelünk. Egy változó függvénynek való átadása
 move-olással vagy másolással jár, ugyanúgy, mint az értékadás. A 4-3. listában
 egy példa látható néhány kommenttel, amelyek megmutatják, hol lépnek be a
 változók a hatókörbe, és hol lépnek ki belőle.
@@ -485,15 +489,15 @@ változók a hatókörbe, és hol lépnek ki belőle.
 
 Ha a `takes_ownership` hívása után megpróbálnánk használni `s`-et, a Rust
 fordítási idejű hibát dobna. Ezek a statikus ellenőrzések megóvnak minket a
-hibáktól. Próbálj meg olyan kódot hozzáadni a `main` függvényhez, amely `s`-et és
-`x`-et használja, hogy lásd, hol használhatod őket, és hol akadályoznak meg ebben
-az ownership szabályai.
+hibáktól. Próbálj meg olyan kódot hozzáadni a `main` függvényhez, amely `s`-et
+és `x`-et használja, hogy lásd, hol használhatod őket, és hol akadályoznak meg
+ebben az ownership szabályai.
 
 ### Visszatérési értékek és hatókör
 
-A visszatérési értékek szintén átadhatják az ownership-et. A 4-4. lista egy olyan
-függvényre mutat példát, amely visszaad valamilyen értéket, a 4-3. listához
-hasonló kommentekkel.
+A visszatérési értékek szintén átadhatják az ownership-et. A 4-4. lista egy
+olyan függvényre mutat példát, amely visszaad valamilyen értéket, a 4-3.
+listához hasonló kommentekkel.
 
 <Listing number="4-4" file-name="src/main.rs" caption="A visszatérési értékek ownership-jének átadása">
 
@@ -509,14 +513,14 @@ adatot tartalmazó változó kilép a hatóköréből, az értéket a `drop` tak
 hacsak az adat ownership-je nem került át egy másik változóhoz.
 
 Bár ez működik, kissé fárasztó minden függvénynél átvenni, majd visszaadni az
-ownership-et. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson egy
-értéket anélkül, hogy átvenné az ownership-jét? Elég bosszantó, hogy bármit, amit
-átadunk, vissza is kell adni, ha újra használni akarjuk – azon az adaton felül,
-amely a függvény törzséből eredményként adódik, és amelyet szintén vissza
+ownership-et. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson
+egy értéket anélkül, hogy átvenné az ownership-jét? Elég bosszantó, hogy bármit,
+amit átadunk, vissza is kell adni, ha újra használni akarjuk – azon az adaton
+felül, amely a függvény törzséből eredményként adódik, és amelyet szintén vissza
 szeretnénk kapni.
 
-A Rust lehetővé teszi, hogy tuple használatával több értéket adjunk vissza, ahogy
-azt a 4-5. lista mutatja.
+A Rust lehetővé teszi, hogy tuple használatával több értéket adjunk vissza,
+ahogy azt a 4-5. lista mutatja.
 
 <Listing number="4-5" file-name="src/main.rs" caption="A paraméterek ownership-jének visszaadása">
 
@@ -528,8 +532,8 @@ azt a 4-5. lista mutatja.
 
 Ez azonban túl sok ceremónia és túl sok munka egy olyan fogalomhoz, amelynek
 megszokottnak kellene lennie. Szerencsénkre a Rustnak van egy olyan képessége,
-amellyel úgy használhatunk egy értéket, hogy közben nem adjuk át az ownership-jét:
-ezek a referenciák.
+amellyel úgy használhatunk egy értéket, hogy közben nem adjuk át az
+ownership-jét: ezek a referenciák.
 
 [data-types]: ch03-02-data-types.html#data-types
 [ch8]: ch08-02-strings.html

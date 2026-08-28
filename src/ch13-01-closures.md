@@ -10,7 +10,8 @@ argumentumként átadhatsz más függvényeknek. A closure-t létrehozhatod az e
 helyen, majd máshol meghívhatod, hogy egy másik kontextusban értékelődjön ki. A
 függvényekkel ellentétben a closure-ök képesek értékeket elkapni abból a
 hatókörből, amelyben definiálva vannak. Bemutatjuk, hogyan teszik lehetővé a
-closure-ök ezen képességei a kód újrafelhasználását és a viselkedés testreszabását.
+closure-ök ezen képességei a kód újrafelhasználását és a viselkedés
+testreszabását.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -57,11 +58,12 @@ Ismét: ezt a kódot sokféleképpen meg lehetne írni, és itt, hogy a closure-
 összpontosítsunk, olyan fogalmakhoz ragaszkodtunk, amelyeket már megtanultál,
 kivéve a `giveaway` metódus törzsét, amely closure-t használ. A `giveaway`
 metódusban `Option<ShirtColor>` típusú paraméterként kapjuk meg a felhasználó
-preferenciáját, és meghívjuk az `unwrap_or_else` metódust a `user_preference`-en.
-Az [`Option<T>` `unwrap_or_else` metódusát][unwrap-or-else]<!-- ignore --> a
-standard könyvtár definiálja. Egyetlen argumentumot vár: egy argumentum nélküli
-closure-t, amely `T` típusú értéket ad vissza (ugyanazt a típust, amelyet az
-`Option<T>` `Some` variánsa tárol, ebben az esetben `ShirtColor`-t). Ha az
+preferenciáját, és meghívjuk az `unwrap_or_else` metódust a
+`user_preference`-en. Az [`Option<T>` `unwrap_or_else`
+metódusát][unwrap-or-else]<!-- ignore --> a standard könyvtár definiálja.
+Egyetlen argumentumot vár: egy argumentum nélküli closure-t, amely `T` típusú
+értéket ad vissza (ugyanazt a típust, amelyet az `Option<T>`
+`Some` variánsa tárol, ebben az esetben `ShirtColor`-t). Ha az
 `Option<T>` a `Some` variáns, az `unwrap_or_else` a `Some`-on belüli értéket
 adja vissza. Ha az `Option<T>` a `None` variáns, az `unwrap_or_else` meghívja a
 closure-t, és a closure által visszaadott értéket adja vissza.
@@ -107,9 +109,10 @@ könyvtárunk felhasználói felé.
 
 A closure-ök jellemzően rövidek, és csak egy szűk kontextusban relevánsak, nem
 pedig tetszőleges helyzetekben. Ezekben a korlátozott kontextusokban a fordító
-ki tudja következtetni a paraméterek típusait és a visszatérési típust, hasonlóan
-ahhoz, ahogy a legtöbb változó típusát is ki tudja következtetni (ritkán
-előfordul, hogy a fordítónak closure-típusannotációkra is szüksége van).
+ki tudja következtetni a paraméterek típusait és a visszatérési típust,
+hasonlóan ahhoz, ahogy a legtöbb változó típusát is ki tudja következtetni
+(ritkán előfordul, hogy a fordítónak closure-típusannotációkra is szüksége
+van).
 
 A változókhoz hasonlóan hozzáadhatunk típusannotációkat, ha növelni akarjuk az
 explicitséget és az érthetőséget, cserébe azért, hogy a szükségesnél
@@ -248,9 +251,9 @@ szüksége az ownershipre, a `move` kulcsszót használhatod a paraméterlista e
 Ez a technika elsősorban akkor hasznos, amikor egy closure-t adunk át egy új
 szálnak, hogy az adatokat átmozgassuk, és így az új szál birtokolja őket. A
 szálakról és arról, miért érdemes használni őket, a 16. fejezetben, a
-konkurencia tárgyalásakor lesz részletesen szó, de most nézzük meg röviden, hogyan
-indíthatunk új szálat egy olyan closure-rel, amelynek szüksége van a `move`
-kulcsszóra. A 13-6. lista a 13-4. listát mutatja úgy módosítva, hogy a vektort
+konkurencia tárgyalásakor lesz részletesen szó, de most nézzük meg röviden,
+hogyan indíthatunk új szálat egy olyan closure-rel, amelynek szüksége van a
+`move` kulcsszóra. A 13-6. lista a 13-4. listát mutatja úgy módosítva, hogy a vektort
 egy új szálban írja ki, ne pedig a fő szálban.
 
 <Listing number="13-6" file-name="src/main.rs" caption="A `move` használata arra, hogy a szálhoz tartozó closure átvegye a `list` ownershipjét">

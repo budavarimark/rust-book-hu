@@ -74,7 +74,7 @@ edition = "2024"
 
 </Listing>
 
-Ez a fájl [_TOML_][toml]<!-- ignore --> (_Tom's Obvious, Minimal Language_)
+Ez a fájl [_TOML_][toml]<!-- ignore --> (_Tom’s Obvious, Minimal Language_)
 formátumú, ez a Cargo konfigurációs formátuma.
 
 Az első sor, a `[package]`, szakaszcímsor, amely azt jelzi, hogy az utána
@@ -83,7 +83,8 @@ hozzá ehhez a fájlhoz, további szakaszokat is felveszünk majd.
 
 A következő három sor azokat a konfigurációs adatokat állítja be, amelyekre a
 Cargónak a programod lefordításához szüksége van: a nevet, a verziót és a
-használandó Rust editiont. Az `edition` kulcsról az [E függelékben][appendix-e]<!-- ignore --> lesz szó.
+használandó Rust editiont. Az `edition` kulcsról az [E
+függelékben][appendix-e]<!-- ignore --> lesz szó.
 
 Az utolsó sor, a `[dependencies]`, egy olyan szakasz kezdete, amelyben a
 projekted függőségeit sorolhatod fel. A Rustban a kódcsomagokat _crate_-eknek

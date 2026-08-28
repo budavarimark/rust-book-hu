@@ -1,124 +1,125 @@
-## Functions
+## Függvények
 
-Functions are prevalent in Rust code. You’ve already seen one of the most
-important functions in the language: the `main` function, which is the entry
-point of many programs. You’ve also seen the `fn` keyword, which allows you to
-declare new functions.
+A függvények mindenütt jelen vannak a Rust kódban. A nyelv egyik legfontosabb
+függvényét már láttad: a `main` függvényt, amely sok program belépési pontja.
+Találkoztál már az `fn` kulcsszóval is, amellyel új függvényeket deklarálhatsz.
 
-Rust code uses _snake case_ as the conventional style for function and variable
-names, in which all letters are lowercase and underscores separate words.
-Here’s a program that contains an example function definition:
+A Rust kód a _snake case_ stílust használja konvencióként a függvény- és
+változónevekhez, amelyben minden betű kisbetű, a szavakat pedig alulvonás
+választja el. Íme egy program, amely egy példa függvénydefiníciót tartalmaz:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-16-functions/src/main.rs}}
 ```
 
-We define a function in Rust by entering `fn` followed by a function name and a
-set of parentheses. The curly brackets tell the compiler where the function
-body begins and ends.
+Rustban úgy definiálunk függvényt, hogy beírjuk az `fn`-t, majd a függvény
+nevét és egy zárójelpárt. A kapcsos zárójelek megmondják a fordítónak, hol
+kezdődik és hol ér véget a függvény törzse.
 
-We can call any function we’ve defined by entering its name followed by a set
-of parentheses. Because `another_function` is defined in the program, it can be
-called from inside the `main` function. Note that we defined `another_function`
-_after_ the `main` function in the source code; we could have defined it before
-as well. Rust doesn’t care where you define your functions, only that they’re
-defined somewhere in a scope that can be seen by the caller.
+Bármelyik általunk definiált függvényt meghívhatjuk úgy, hogy beírjuk a nevét,
+majd egy zárójelpárt. Mivel az `another_function` definiálva van a programban,
+meghívható a `main` függvényen belülről. Vedd észre, hogy az
+`another_function`-t a forráskódban a `main` függvény _után_ definiáltuk;
+definiálhattuk volna előtte is. A Rustot nem érdekli, hol definiálod a
+függvényeidet, csak az, hogy valahol egy olyan hatókörben legyenek
+definiálva, amelyet a hívó lát.
 
-Let’s start a new binary project named _functions_ to explore functions
-further. Place the `another_function` example in _src/main.rs_ and run it. You
-should see the following output:
+Kezdjünk el egy _functions_ nevű új binary projektet, hogy tovább vizsgáljuk a
+függvényeket. Tedd az `another_function` példát a _src/main.rs_ fájlba, és
+futtasd. A következő kimenetet kell látnod:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-16-functions/output.txt}}
 ```
 
-The lines execute in the order in which they appear in the `main` function.
-First the “Hello, world!” message prints, and then `another_function` is called
-and its message is printed.
+A sorok abban a sorrendben hajtódnak végre, ahogyan a `main` függvényben
+szerepelnek. Először a „Hello, world!” üzenet íródik ki, majd meghívódik az
+`another_function`, és kiíródik az ő üzenete.
 
-### Parameters
+### Paraméterek
 
-We can define functions to have _parameters_, which are special variables that
-are part of a function’s signature. When a function has parameters, you can
-provide it with concrete values for those parameters. Technically, the concrete
-values are called _arguments_, but in casual conversation, people tend to use
-the words _parameter_ and _argument_ interchangeably for either the variables
-in a function’s definition or the concrete values passed in when you call a
-function.
+A függvényeket úgy is definiálhatjuk, hogy _paramétereik_ legyenek; ezek
+speciális változók, amelyek a függvény szignatúrájának részei. Ha egy
+függvénynek vannak paraméterei, konkrét értékeket adhatsz meg hozzájuk.
+Technikailag ezeket a konkrét értékeket _argumentumoknak_ nevezzük, de a
+hétköznapi beszédben az emberek hajlamosak a _paraméter_ és az _argumentum_
+szót felcserélhetően használni akár a függvény definíciójában szereplő
+változókra, akár a függvény hívásakor átadott konkrét értékekre.
 
-In this version of `another_function` we add a parameter:
+Az `another_function` ebben a változatában hozzáadunk egy paramétert:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-17-functions-with-parameters/src/main.rs}}
 ```
 
-Try running this program; you should get the following output:
+Próbáld ki ezt a programot; a következő kimenetet kell kapnod:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-17-functions-with-parameters/output.txt}}
 ```
 
-The declaration of `another_function` has one parameter named `x`. The type of
-`x` is specified as `i32`. When we pass `5` in to `another_function`, the
-`println!` macro puts `5` where the pair of curly brackets containing `x` was
-in the format string.
+Az `another_function` deklarációjában egy `x` nevű paraméter szerepel. Az `x`
+típusa `i32`-ként van megadva. Amikor `5`-öt adunk át az `another_function`-nek,
+a `println!` makró `5`-öt tesz oda, ahol a formátumstringben az `x`-et
+tartalmazó kapcsoszárójel-pár állt.
 
-In function signatures, you _must_ declare the type of each parameter. This is
-a deliberate decision in Rust’s design: Requiring type annotations in function
-definitions means the compiler almost never needs you to use them elsewhere in
-the code to figure out what type you mean. The compiler is also able to give
-more-helpful error messages if it knows what types the function expects.
+A függvényszignatúrákban _kötelező_ deklarálnod minden paraméter típusát. Ez
+tudatos döntés a Rust tervezésében: a függvénydefiníciókban megkövetelt
+típusannotációk miatt a fordítónak szinte sosem kell máshol is használnod őket
+a kódban ahhoz, hogy kiderüljön, melyik típusra gondolsz. A fordító
+hasznosabb hibaüzeneteket is tud adni, ha tudja, milyen típusokat vár a
+függvény.
 
-When defining multiple parameters, separate the parameter declarations with
-commas, like this:
+Ha több paramétert definiálsz, vesszővel válaszd el a paraméterdeklarációkat,
+így:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-18-functions-with-multiple-parameters/src/main.rs}}
 ```
 
-This example creates a function named `print_labeled_measurement` with two
-parameters. The first parameter is named `value` and is an `i32`. The second is
-named `unit_label` and is type `char`. The function then prints text containing
-both the `value` and the `unit_label`.
+Ez a példa létrehoz egy `print_labeled_measurement` nevű függvényt két
+paraméterrel. Az első paraméter neve `value`, típusa `i32`. A második neve
+`unit_label`, típusa `char`. A függvény ezután olyan szöveget ír ki, amely
+tartalmazza a `value`-t és a `unit_label`-t is.
 
-Let’s try running this code. Replace the program currently in your _functions_
-project’s _src/main.rs_ file with the preceding example and run it using `cargo
-run`:
+Próbáljuk ki ezt a kódot. Cseréld le a _functions_ projekted _src/main.rs_
+fájljában jelenleg lévő programot a fenti példára, és futtasd a `cargo run`
+paranccsal:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-18-functions-with-multiple-parameters/output.txt}}
 ```
 
-Because we called the function with `5` as the value for `value` and `'h'` as
-the value for `unit_label`, the program output contains those values.
+Mivel a függvényt `5`-tel hívtuk meg a `value` értékeként és `'h'`-val a
+`unit_label` értékeként, a program kimenete ezeket az értékeket tartalmazza.
 
-### Statements and Expressions
+### Utasítások és kifejezések
 
-Function bodies are made up of a series of statements optionally ending in an
-expression. So far, the functions we’ve covered haven’t included an ending
-expression, but you have seen an expression as part of a statement. Because
-Rust is an expression-based language, this is an important distinction to
-understand. Other languages don’t have the same distinctions, so let’s look at
-what statements and expressions are and how their differences affect the bodies
-of functions.
+A függvénytörzsek utasítások sorozatából állnak, amelyet opcionálisan egy
+kifejezés zár le. Az eddig tárgyalt függvényekben nem szerepelt lezáró
+kifejezés, de kifejezést már láttál egy utasítás részeként. Mivel a Rust
+kifejezésalapú nyelv, ezt a különbséget fontos megérteni. Más nyelvek nem
+tesznek hasonló megkülönböztetéseket, úgyhogy nézzük meg, mik az utasítások és
+a kifejezések, és a köztük lévő különbségek hogyan hatnak a függvények
+törzsére.
 
-- _Statements_ are instructions that perform some action and do not return
-  a value.
-- _Expressions_ evaluate to a resultant value.
+- Az _utasítások_ olyan instrukciók, amelyek végrehajtanak valamilyen műveletet,
+  és nem adnak vissza értéket.
+- A _kifejezések_ egy eredményértékké értékelődnek ki.
 
-Let’s look at some examples.
+Nézzünk néhány példát.
 
-We’ve actually already used statements and expressions. Creating a variable and
-assigning a value to it with the `let` keyword is a statement. In Listing 3-1,
-`let y = 6;` is a statement.
+Valójában már használtunk utasításokat és kifejezéseket is. Egy változó
+létrehozása és érték hozzárendelése a `let` kulcsszóval utasítás. A 3-1.
+listában a `let y = 6;` egy utasítás.
 
-<Listing number="3-1" file-name="src/main.rs" caption="A `main` function declaration containing one statement">
+<Listing number="3-1" file-name="src/main.rs" caption="Egy `main` függvénydeklaráció, amely egyetlen utasítást tartalmaz">
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/listing-03-01/src/main.rs}}
@@ -126,46 +127,47 @@ assigning a value to it with the `let` keyword is a statement. In Listing 3-1,
 
 </Listing>
 
-Function definitions are also statements; the entire preceding example is a
-statement in itself. (As we’ll see shortly, calling a function is not a
-statement, though.)
+A függvénydefiníciók szintén utasítások; a teljes fenti példa önmagában egy
+utasítás. (Ahogy hamarosan látni fogjuk, egy függvény meghívása viszont nem
+utasítás.)
 
-Statements do not return values. Therefore, you can’t assign a `let` statement
-to another variable, as the following code tries to do; you’ll get an error:
+Az utasítások nem adnak vissza értéket. Ezért nem rendelhetsz egy `let`
+utasítást egy másik változóhoz, ahogy azt az alábbi kód megpróbálja; hibát
+fogsz kapni:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-19-statements-vs-expressions/src/main.rs}}
 ```
 
-When you run this program, the error you’ll get looks like this:
+Amikor futtatod ezt a programot, a kapott hiba így néz ki:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-19-statements-vs-expressions/output.txt}}
 ```
 
-The `let y = 6` statement does not return a value, so there isn’t anything for
-`x` to bind to. This is different from what happens in other languages, such as
-C and Ruby, where the assignment returns the value of the assignment. In those
-languages, you can write `x = y = 6` and have both `x` and `y` have the value
-`6`; that is not the case in Rust.
+A `let y = 6` utasítás nem ad vissza értéket, így nincs semmi, amihez az `x`
+kötődhetne. Ez különbözik attól, ami más nyelvekben – például a C-ben és a
+Rubyban – történik, ahol az értékadás visszaadja az értékadás értékét. Azokban
+a nyelvekben leírhatod, hogy `x = y = 6`, és mind az `x`, mind az `y` értéke
+`6` lesz; Rustban ez nincs így.
 
-Expressions evaluate to a value and make up most of the rest of the code that
-you’ll write in Rust. Consider a math operation, such as `5 + 6`, which is an
-expression that evaluates to the value `11`. Expressions can be part of
-statements: In Listing 3-1, the `6` in the statement `let y = 6;` is an
-expression that evaluates to the value `6`. Calling a function is an
-expression. Calling a macro is an expression. A new scope block created with
-curly brackets is an expression, for example:
+A kifejezések egy értékké értékelődnek ki, és a Rustban írt kódod nagy részét
+ők teszik ki. Vegyünk egy matematikai műveletet, például az `5 + 6`-ot: ez egy
+kifejezés, amely a `11` értékké értékelődik ki. A kifejezések lehetnek
+utasítások részei: a 3-1. listában a `let y = 6;` utasításban lévő `6` egy
+kifejezés, amely a `6` értékké értékelődik ki. Egy függvény meghívása
+kifejezés. Egy makró meghívása kifejezés. A kapcsos zárójelekkel létrehozott új
+hatókörblokk is kifejezés, például:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-20-blocks-are-expressions/src/main.rs}}
 ```
 
-This expression:
+Ez a kifejezés:
 
 ```rust,ignore
 {
@@ -174,80 +176,82 @@ This expression:
 }
 ```
 
-is a block that, in this case, evaluates to `4`. That value gets bound to `y`
-as part of the `let` statement. Note the `x + 1` line without a semicolon at
-the end, which is unlike most of the lines you’ve seen so far. Expressions do
-not include ending semicolons. If you add a semicolon to the end of an
-expression, you turn it into a statement, and it will then not return a value.
-Keep this in mind as you explore function return values and expressions next.
+egy blokk, amely ebben az esetben `4`-gyé értékelődik ki. Ez az érték a `let`
+utasítás részeként az `y`-hoz kötődik. Figyeld meg, hogy az `x + 1` sor végén
+nincs pontosvessző, ellentétben a legtöbb eddig látott sorral. A kifejezések
+nem tartalmaznak lezáró pontosvesszőt. Ha pontosvesszőt teszel egy kifejezés
+végére, utasítássá alakítod, és akkor már nem ad vissza értéket. Tartsd ezt
+észben, ahogy a következőkben a függvények visszatérési értékeit és a
+kifejezéseket vizsgáljuk.
 
-### Functions with Return Values
+### Visszatérési értékkel rendelkező függvények
 
-Functions can return values to the code that calls them. We don’t name return
-values, but we must declare their type after an arrow (`->`). In Rust, the
-return value of the function is synonymous with the value of the final
-expression in the block of the body of a function. You can return early from a
-function by using the `return` keyword and specifying a value, but most
-functions return the last expression implicitly. Here’s an example of a
-function that returns a value:
+A függvények értéket adhatnak vissza az őket hívó kódnak. A visszatérési
+értékeket nem nevezzük el, de a típusukat egy nyíl (`->`) után deklarálnunk
+kell. Rustban a függvény visszatérési értéke azonos a függvénytörzs blokkjában
+lévő utolsó kifejezés értékével. A `return` kulcsszóval és egy érték
+megadásával korábban is kiléphetsz egy függvényből, de a legtöbb függvény
+implicit módon az utolsó kifejezést adja vissza. Íme egy példa egy értéket
+visszaadó függvényre:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-21-function-return-values/src/main.rs}}
 ```
 
-There are no function calls, macros, or even `let` statements in the `five`
-function—just the number `5` by itself. That’s a perfectly valid function in
-Rust. Note that the function’s return type is specified too, as `-> i32`. Try
-running this code; the output should look like this:
+A `five` függvényben nincsenek függvényhívások, makrók, de még `let` utasítások
+sem – csupán maga az `5` szám. Ez Rustban tökéletesen érvényes függvény. Vedd
+észre, hogy a függvény visszatérési típusa is meg van adva: `-> i32`. Próbáld
+ki ezt a kódot; a kimenetnek így kell kinéznie:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-21-function-return-values/output.txt}}
 ```
 
-The `5` in `five` is the function’s return value, which is why the return type
-is `i32`. Let’s examine this in more detail. There are two important bits:
-First, the line `let x = five();` shows that we’re using the return value of a
-function to initialize a variable. Because the function `five` returns a `5`,
-that line is the same as the following:
+A `five`-ban lévő `5` a függvény visszatérési értéke, ezért a visszatérési
+típus `i32`. Nézzük meg ezt részletesebben. Két fontos dolog van: Először is, a
+`let x = five();` sor azt mutatja, hogy egy függvény visszatérési értékét
+használjuk egy változó inicializálására. Mivel a `five` függvény `5`-öt ad
+vissza, ez a sor ugyanaz, mint a következő:
 
 ```rust
 let x = 5;
 ```
 
-Second, the `five` function has no parameters and defines the type of the
-return value, but the body of the function is a lonely `5` with no semicolon
-because it’s an expression whose value we want to return.
+Másodszor, a `five` függvénynek nincsenek paraméterei, és definiálja a
+visszatérési érték típusát, a függvény törzse viszont egy magányos `5`
+pontosvessző nélkül, mert ez egy kifejezés, amelynek az értékét vissza akarjuk
+adni.
 
-Let’s look at another example:
+Nézzünk egy másik példát:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-22-function-parameter-and-return/src/main.rs}}
 ```
 
-Running this code will print `The value of x is: 6`. But what happens if we
-place a semicolon at the end of the line containing `x + 1`, changing it from
-an expression to a statement?
+Ha lefuttatod ezt a kódot, a `The value of x is: 6` szöveget írja ki. De mi
+történik, ha pontosvesszőt teszünk az `x + 1`-et tartalmazó sor végére, és így
+kifejezésből utasítássá alakítjuk?
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-23-statements-dont-return-values/src/main.rs}}
 ```
 
-Compiling this code will produce an error, as follows:
+Ennek a kódnak a fordítása hibát eredményez, az alábbiak szerint:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-23-statements-dont-return-values/output.txt}}
 ```
 
-The main error message, `mismatched types`, reveals the core issue with this
-code. The definition of the function `plus_one` says that it will return an
-`i32`, but statements don’t evaluate to a value, which is expressed by `()`,
-the unit type. Therefore, nothing is returned, which contradicts the function
-definition and results in an error. In this output, Rust provides a message to
-possibly help rectify this issue: It suggests removing the semicolon, which
-would fix the error.
+A fő hibaüzenet, a `mismatched types`, felfedi a kód alapvető problémáját. A
+`plus_one` függvény definíciója azt mondja, hogy `i32`-t fog visszaadni, de az
+utasítások nem értékelődnek ki értékké, amit a `()`, vagyis a unit típus fejez
+ki. Ezért semmi sem kerül visszaadásra, ami ellentmond a függvénydefiníciónak,
+és hibát eredményez. Ebben a kimenetben a Rust ad egy üzenetet, amely
+segíthet a probléma orvoslásában: azt javasolja, hogy távolítsd el a
+pontosvesszőt, ami megszüntetné a hibát.

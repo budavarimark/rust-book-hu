@@ -189,15 +189,16 @@ A Rust tanulási folyamatának fontos része megtanulni elolvasni a fordító á
 megjelenített hibaüzeneteket: ezek elvezetnek a működő kódhoz. Ezért sok olyan
 példát is mutatunk, amely nem fordul le, és mellé azt a hibaüzenetet, amelyet a
 fordító az adott helyzetben mutat. Tudd hát, hogy ha csak úgy találomra beírsz
-és lefuttatsz egy példát, lehet, hogy nem fordul le! Mindig olvasd el a körülötte
-lévő szöveget, hogy kiderüljön, a futtatni kívánt példának hibát kell-e adnia. A
-legtöbb esetben elvezetünk a le nem forduló kód helyes változatához. Ferris is
-segít megkülönböztetni azt a kódot, amelynek nem is kell működnie:
+és lefuttatsz egy példát, lehet, hogy nem fordul le! Mindig olvasd el a
+körülötte lévő szöveget, hogy kiderüljön, a futtatni kívánt példának hibát
+kell-e adnia. A legtöbb esetben elvezetünk a le nem forduló kód helyes
+változatához. Ferris is segít megkülönböztetni azt a kódot, amelynek nem is kell
+működnie:
 
-| Ferris                                                                                                           | Jelentés                                          |
-| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| <img src="img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris kérdőjellel"/>            | Ez a kód nem fordul le!                      |
-| <img src="img/ferris/panics.svg" class="ferris-explain" alt="Ferris égnek emelt kezekkel"/>                   | Ez a kód panicot vált ki!                                |
+| Ferris                                                                                                              | Jelentés                                      |
+| ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| <img src="img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris kérdőjellel"/>                        | Ez a kód nem fordul le!                       |
+| <img src="img/ferris/panics.svg" class="ferris-explain" alt="Ferris égnek emelt kezekkel"/>                         | Ez a kód panicot vált ki!                     |
 | <img src="img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="Ferris felemelt ollóval, vállat vonva"/> | Ez a kód nem a kívánt viselkedést produkálja. |
 
 A legtöbb esetben elvezetünk a le nem forduló kód helyes változatához.

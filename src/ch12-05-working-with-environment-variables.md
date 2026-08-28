@@ -52,10 +52,11 @@ elbukását.
 ### A `search_case_insensitive` függvény implementálása
 
 A 12-21. listában látható `search_case_insensitive` függvény szinte teljesen
-ugyanaz lesz, mint a `search` függvény. Az egyetlen különbség az, hogy kisbetűssé
-alakítjuk a `query`-t és minden `line`-t, hogy a bemeneti argumentumok kis- és
-nagybetűzésétől függetlenül ugyanolyan betűalakúak legyenek, amikor
-ellenőrizzük, hogy a sor tartalmazza-e a lekérdezést.
+ugyanaz lesz, mint a `search` függvény. Az egyetlen különbség az, hogy
+kisbetűssé alakítjuk a `query`-t és minden `line`-t, hogy a bemeneti
+argumentumok kis- és nagybetűzésétől függetlenül ugyanolyan
+betűalakúak legyenek, amikor ellenőrizzük, hogy a sor tartalmazza-e a
+lekérdezést.
 
 <Listing number="12-21" file-name="src/lib.rs" caption="A `search_case_insensitive` függvény definiálása úgy, hogy összehasonlítás előtt kisbetűssé alakítja a lekérdezést és a sort">
 

@@ -153,11 +153,11 @@ adatok kölcsönhatása: move”][move]<!-- ignore --> szakaszban láttuk. Ebben
 példában a `user2` létrehozása után már nem használhatjuk a `user1`-et, mert a
 `user1` `username` mezőjében lévő `String` bemozgott a `user2`-be. Ha az
 `email`-hez és a `username`-hez is új `String` értékeket adtunk volna a
-`user2`-nek, és így csak az `active` és a `sign_in_count` értékeket vettük volna
-át a `user1`-től, akkor a `user1` a `user2` létrehozása után is érvényes maradna.
-Az `active` és a `sign_in_count` egyaránt olyan típusú, amely implementálja a
-`Copy` traitet, tehát a [„Csak a stacken lévő adatok: Copy”][copy]<!-- ignore -->
-szakaszban tárgyalt viselkedés érvényesülne. A `user1.email` értéket egyébként
+`user2`-nek, és így csak az `active` és a `sign_in_count` értékeket vettük
+volna át a `user1`-től, akkor a `user1` a `user2` létrehozása után is érvényes
+maradna. Az `active` és a `sign_in_count` egyaránt olyan típusú, amely
+implementálja a `Copy` traitet, tehát a [„Csak a stacken lévő adatok:
+Copy”][copy]<!-- ignore --> szakaszban tárgyalt viselkedés érvényesülne. A `user1.email` értéket egyébként
 ebben a példában is használhatjuk továbbra is, mert az értéke nem mozgott ki a
 `user1`-ből.
 
@@ -193,8 +193,8 @@ típus, még akkor is, ha a structon belüli mezők típusai megegyeznek. Egy ol
 függvény például, amely `Color` típusú paramétert vár, nem fogadhat el `Point`
 típusú argumentumot, pedig mindkét típus három `i32` értékből áll. Ettől
 eltekintve a tuple struct példányok hasonlítanak a tuple-ökre: szét lehet
-bontani őket az egyes darabjaikra, és egy `.` jellel, majd az indexszel elérheted
-az egyes értékeket. A tuple-öktől eltérően a tuple structok szétbontásakor meg
+bontani őket az egyes darabjaikra, és egy `.` jellel, majd az indexszel
+elérheted az egyes értékeket. A tuple-öktől eltérően a tuple structok szétbontásakor meg
 kell nevezned a struct típusát. Például a `let Point(x, y, z) = origin;`
 kifejezést írnánk ahhoz, hogy az `origin` pont értékeit `x`, `y` és `z` nevű
 változókba bontsuk szét.

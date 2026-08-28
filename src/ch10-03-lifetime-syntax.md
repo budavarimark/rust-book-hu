@@ -66,8 +66,8 @@ hatókör a 7. sorban véget ér. Az `r` viszont a külső hatókörben még ér
 mivel a hatóköre nagyobb, azt mondjuk, hogy „tovább él”. Ha a Rust megengedné,
 hogy ez a kód működjön, az `r` olyan memóriára hivatkozna, amelyet
 felszabadított a rendszer, amikor az `x` kikerült a hatóköréből, és semmi sem
-működne rendesen, amit az `r`-rel próbálnánk csinálni. Hogyan állapítja meg tehát a Rust, hogy ez
-a kód érvénytelen? A borrow checkert használja hozzá.
+működne rendesen, amit az `r`-rel próbálnánk csinálni. Hogyan állapítja meg
+tehát a Rust, hogy ez a kód érvénytelen? A borrow checkert használja hozzá.
 
 ### A borrow checker
 
