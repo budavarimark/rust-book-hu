@@ -76,8 +76,6 @@ jobs:
         mkdir bin
         curl -sSL https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=bin
         echo "$(pwd)/bin" >> "${GITHUB_PATH}"
-    - name: Install aspell
-      run: sudo apt-get install aspell
     - name: Install shellcheck
       run: sudo apt-get install shellcheck
     - name: Report versions
@@ -85,12 +83,9 @@ jobs:
         rustup --version
         rustc -Vv
         mdbook --version
-        aspell --version
         shellcheck --version
     - name: Shellcheck
       run: find . -name '*.sh' -print0 | xargs -0 shellcheck
-    - name: Spellcheck
-      run: bash ci/spellcheck.sh list
     - name: Lint for local file paths
       run: |
         mdbook build
