@@ -1,28 +1,28 @@
-## Advanced Functions and Closures
+## Haladó függvények és closure-ök
 
-This section explores some advanced features related to functions and closures,
-including function pointers and returning closures.
+Ez a szakasz néhány haladó, függvényekhez és closure-ökhöz kapcsolódó képességet
+mutat be, köztük a függvénypointereket és a closure-ök visszaadását.
 
-### Function Pointers
+### Függvénypointerek
 
-We’ve talked about how to pass closures to functions; you can also pass regular
-functions to functions! This technique is useful when you want to pass a
-function you’ve already defined rather than defining a new closure. Functions
-coerce to the type `fn` (with a lowercase _f_), not to be confused with the
-`Fn` closure trait. The `fn` type is called a _function pointer_. Passing
-functions with function pointers will allow you to use functions as arguments
-to other functions.
+Már beszéltünk arról, hogyan adhatunk át closure-öket függvényeknek; hasonlóan
+átadhatsz közönséges függvényeket is függvényeknek! Ez a technika akkor
+hasznos, ha egy már definiált függvényt szeretnél átadni, ahelyett hogy új
+closure-t írnál. A függvények az `fn` típussá kényszerülnek (kisbetűs _f_-fel),
+amit nem szabad összekeverni az `Fn` closure trait-tel. Az `fn` típus neve
+_függvénypointer_. Ha függvénypointerekkel adsz át függvényeket, azzal más
+függvények argumentumaként használhatod a függvényeket.
 
-The syntax for specifying that a parameter is a function pointer is similar to
-that of closures, as shown in Listing 20-28, where we’ve defined a function
-`add_one` that adds 1 to its parameter. The function `do_twice` takes two
-parameters: a function pointer to any function that takes an `i32` parameter
-and returns an `i32`, and one `i32` value. The `do_twice` function calls the
-function `f` twice, passing it the `arg` value, then adds the two function call
-results together. The `main` function calls `do_twice` with the arguments
-`add_one` and `5`.
+Annak jelölése, hogy egy paraméter függvénypointer, a closure-ökéhez hasonló
+szintaxissal történik, ahogy azt a 20-28. lista mutatja: itt definiáltunk egy
+`add_one` függvényt, amely 1-et ad a paraméteréhez. A `do_twice` függvény két
+paramétert vár: egy függvénypointert bármely olyan függvényre, amely `i32`
+paramétert kap és `i32` értéket ad vissza, valamint egy `i32` értéket. A
+`do_twice` függvény kétszer meghívja az `f` függvényt az `arg` értékkel, majd
+összeadja a két függvényhívás eredményét. A `main` függvény az `add_one` és az
+`5` argumentumokkal hívja meg a `do_twice`-t.
 
-<Listing number="20-28" file-name="src/main.rs" caption="Using the `fn` type to accept a function pointer as an argument">
+<Listing number="20-28" file-name="src/main.rs" caption="Az `fn` típus használata függvénypointer argumentumként való fogadásához">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-28/src/main.rs}}
@@ -30,31 +30,34 @@ results together. The `main` function calls `do_twice` with the arguments
 
 </Listing>
 
-This code prints `The answer is: 12`. We specify that the parameter `f` in
-`do_twice` is an `fn` that takes one parameter of type `i32` and returns an
-`i32`. We can then call `f` in the body of `do_twice`. In `main`, we can pass
-the function name `add_one` as the first argument to `do_twice`.
+Ez a kód a `The answer is: 12` szöveget írja ki. Megadjuk, hogy a `do_twice`
+`f` paramétere olyan `fn`, amely egy `i32` típusú paramétert vár és `i32`
+értéket ad vissza. Ezután a `do_twice` törzsében meghívhatjuk az `f`-et. A
+`main`-ben az `add_one` függvénynevet adhatjuk át a `do_twice` első
+argumentumaként.
 
-Unlike closures, `fn` is a type rather than a trait, so we specify `fn` as the
-parameter type directly rather than declaring a generic type parameter with one
-of the `Fn` traits as a trait bound.
+A closure-ökkel ellentétben az `fn` típus, nem trait, ezért közvetlenül az
+`fn`-t adjuk meg paramétertípusként, ahelyett hogy generikus típusparamétert
+deklarálnánk valamelyik `Fn` trait-tel mint trait bound-dal.
 
-Function pointers implement all three of the closure traits (`Fn`, `FnMut`, and
-`FnOnce`), meaning you can always pass a function pointer as an argument for a
-function that expects a closure. It’s best to write functions using a generic
-type and one of the closure traits so that your functions can accept either
-functions or closures.
+A függvénypointerek mindhárom closure trait-et implementálják (`Fn`, `FnMut` és
+`FnOnce`), ami azt jelenti, hogy mindig átadhatsz függvénypointert
+argumentumként egy closure-t váró függvénynek. A legjobb, ha a függvényeidet
+generikus típussal és valamelyik closure trait-tel írod meg, hogy függvényeket
+és closure-öket egyaránt fogadhassanak.
 
-That said, one example of where you would want to only accept `fn` and not
-closures is when interfacing with external code that doesn’t have closures: C
-functions can accept functions as arguments, but C doesn’t have closures.
+Ennek ellenére van olyan eset, amikor kizárólag `fn`-t akarsz elfogadni,
+closure-t nem: amikor olyan külső kóddal érintkezel, amely nem ismeri a
+closure-öket. A C függvények képesek függvényeket fogadni argumentumként, de a
+C-ben nincsenek closure-ök.
 
-As an example of where you could use either a closure defined inline or a named
-function, let’s look at a use of the `map` method provided by the `Iterator`
-trait in the standard library. To use the `map` method to turn a vector of
-numbers into a vector of strings, we could use a closure, as in Listing 20-29.
+Példaként arra, hogy hol használhatnál akár helyben definiált closure-t, akár
+elnevezett függvényt, nézzük meg a standard könyvtár `Iterator` trait-je által
+biztosított `map` metódus egy alkalmazását. Ha a `map` metódussal számok
+vektorát akarjuk sztringek vektorává alakítani, használhatunk closure-t, ahogy
+a 20-29. listában látható.
 
-<Listing number="20-29" caption="Using a closure with the `map` method to convert numbers to strings">
+<Listing number="20-29" caption="Closure használata a `map` metódussal számok sztringgé alakítására">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-29/src/main.rs:here}}
@@ -62,10 +65,10 @@ numbers into a vector of strings, we could use a closure, as in Listing 20-29.
 
 </Listing>
 
-Or we could name a function as the argument to `map` instead of the closure.
-Listing 20-30 shows what this would look like.
+De a closure helyett meg is nevezhetünk egy függvényt a `map` argumentumaként.
+A 20-30. lista mutatja, hogy ez hogyan nézne ki.
 
-<Listing number="20-30" caption="Using the `String::to_string` function with the `map` method to convert numbers to strings">
+<Listing number="20-30" caption="A `String::to_string` függvény használata a `map` metódussal számok sztringgé alakítására">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-30/src/main.rs:here}}
@@ -73,21 +76,22 @@ Listing 20-30 shows what this would look like.
 
 </Listing>
 
-Note that we must use the fully qualified syntax that we talked about in the
-[“Advanced Traits”][advanced-traits]<!-- ignore --> section because there are
-multiple functions available named `to_string`.
+Vedd észre, hogy a [„Haladó trait-ek”][advanced-traits]<!-- ignore --> című
+szakaszban tárgyalt teljesen minősített szintaxist kell használnunk, mert több
+`to_string` nevű függvény is elérhető.
 
-Here, we’re using the `to_string` function defined in the `ToString` trait,
-which the standard library has implemented for any type that implements
-`Display`.
+Itt a `ToString` trait-ben definiált `to_string` függvényt használjuk, amelyet
+a standard könyvtár minden olyan típusra implementált, amely implementálja a
+`Display` trait-et.
 
-Recall from the [“Enum Values”][enum-values]<!-- ignore --> section in Chapter
-6 that the name of each enum variant that we define also becomes an initializer
-function. We can use these initializer functions as function pointers that
-implement the closure traits, which means we can specify the initializer
-functions as arguments for methods that take closures, as seen in Listing 20-31.
+A 6. fejezet [„Enum-értékek”][enum-values]<!-- ignore --> című szakaszából
+emlékezhetsz rá, hogy minden általunk definiált enum-változat neve
+inicializáló függvénnyé is válik. Ezeket az inicializáló függvényeket
+használhatjuk olyan függvénypointerekként, amelyek implementálják a closure
+trait-eket, ami azt jelenti, hogy megadhatjuk őket argumentumként closure-t
+váró metódusoknak, ahogy a 20-31. listában látható.
 
-<Listing number="20-31" caption="Using an enum initializer with the `map` method to create a `Status` instance from numbers">
+<Listing number="20-31" caption="Enum-inicializáló használata a `map` metódussal `Status` példányok létrehozására számokból">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-31/src/main.rs:here}}
@@ -95,26 +99,27 @@ functions as arguments for methods that take closures, as seen in Listing 20-31.
 
 </Listing>
 
-Here, we create `Status::Value` instances using each `u32` value in the range
-that `map` is called on by using the initializer function of `Status::Value`.
-Some people prefer this style and some people prefer to use closures. They
-compile to the same code, so use whichever style is clearer to you.
+Itt `Status::Value` példányokat hozunk létre annak a tartománynak minden `u32`
+értékéből, amelyen a `map`-et meghívjuk, mégpedig a `Status::Value`
+inicializáló függvényével. Egyesek ezt a stílust kedvelik, mások a closure-öket
+használják szívesebben. Ugyanarra a kódra fordulnak, úgyhogy azt a stílust
+válaszd, amelyik számodra érthetőbb.
 
-### Returning Closures
+### Closure-ök visszaadása
 
-Closures are represented by traits, which means you can’t return closures
-directly. In most cases where you might want to return a trait, you can instead
-use the concrete type that implements the trait as the return value of the
-function. However, you can’t usually do that with closures because they don’t
-have a concrete type that is returnable; you’re not allowed to use the function
-pointer `fn` as a return type if the closure captures any values from its
-scope, for example.
+A closure-öket trait-ek reprezentálják, ami azt jelenti, hogy közvetlenül nem
+adhatsz vissza closure-t. A legtöbb olyan esetben, amikor trait-et adnál
+vissza, helyette a trait-et implementáló konkrét típust használhatod a függvény
+visszatérési értékeként. A closure-öknél viszont ezt általában nem teheted meg,
+mert nincs visszaadható konkrét típusuk; például az `fn` függvénypointert sem
+használhatod visszatérési típusként, ha a closure bármilyen értéket befog a
+hatóköréből.
 
-Instead, you will normally use the `impl Trait` syntax we learned about in
-Chapter 10. You can return any function type, using `Fn`, `FnOnce`, and `FnMut`.
-For example, the code in Listing 20-32 will compile just fine.
+Helyette rendszerint a 10. fejezetben megismert `impl Trait` szintaxist fogod
+használni. Bármilyen függvénytípust visszaadhatsz az `Fn`, `FnOnce` és `FnMut`
+trait-ekkel. Például a 20-32. lista kódja gond nélkül lefordul.
 
-<Listing number="20-32" caption="Returning a closure from a function using the `impl Trait` syntax">
+<Listing number="20-32" caption="Closure visszaadása függvényből az `impl Trait` szintaxissal">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-32/src/lib.rs}}
@@ -122,14 +127,14 @@ For example, the code in Listing 20-32 will compile just fine.
 
 </Listing>
 
-However, as we noted in the [“Inferring and Annotating Closure
-Types”][closure-types]<!-- ignore --> section in Chapter 13, each closure is
-also its own distinct type. If you need to work with multiple functions that
-have the same signature but different implementations, you will need to use a
-trait object for them. Consider what happens if you write code like that shown
-in Listing 20-33.
+Ahogy azonban a 13. fejezet [„Closure-típusok kikövetkeztetése és
+annotálása”][closure-types]<!-- ignore --> című szakaszában megjegyeztük,
+minden closure önálló, saját típus is egyben. Ha több olyan függvénnyel kell
+dolgoznod, amelyeknek azonos a szignatúrájuk, de eltérő az implementációjuk,
+trait objectet kell használnod hozzájuk. Nézzük meg, mi történik, ha a 20-33.
+listában látható kódot írod.
 
-<Listing file-name="src/main.rs" number="20-33" caption="Creating a `Vec<T>` of closures defined by functions that return `impl Fn` types">
+<Listing file-name="src/main.rs" number="20-33" caption="Closure-ök `Vec<T>` gyűjteményének létrehozása `impl Fn` típust visszaadó függvényekkel">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-33/src/main.rs}}
@@ -137,27 +142,30 @@ in Listing 20-33.
 
 </Listing>
 
-Here we have two functions, `returns_closure` and `returns_initialized_closure`,
-which both return `impl Fn(i32) -> i32`. Notice that the closures that they
-return are different, even though they implement the same type. If we try to
-compile this, Rust lets us know that it won’t work:
+Itt két függvényünk van, a `returns_closure` és a
+`returns_initialized_closure`, amelyek mindketten `impl Fn(i32) -> i32` értéket
+adnak vissza. Vedd észre, hogy az általuk visszaadott closure-ök különbözőek,
+noha ugyanazt a típust implementálják. Ha megpróbáljuk lefordítani, a Rust
+tudatja velünk, hogy ez nem fog működni:
 
 ```text
 {{#include ../listings/ch20-advanced-features/listing-20-33/output.txt}}
 ```
 
-The error message tells us that whenever we return an `impl Trait`, Rust
-creates a unique _opaque type_, a type where we cannot see into the details of
-what Rust constructs for us, nor can we guess the type Rust will generate to
-write ourselves. So, even though these functions return closures that implement
-the same trait, `Fn(i32) -> i32`, the opaque types Rust generates for each are
-distinct. (This is similar to how Rust produces different concrete types for
-distinct async blocks even when they have the same output type, as we saw in
-[“The `Pin` Type and the `Unpin` Trait”][future-types]<!-- ignore --> in
-Chapter 17.) We have seen a solution to this problem a few times now: We can
-use a trait object, as in Listing 20-34.
+A hibaüzenet elárulja, hogy valahányszor `impl Trait` értéket adunk vissza, a
+Rust egyedi _átlátszatlan típust_ (opaque type) hoz létre: olyan típust,
+amelynek nem látunk bele a részleteibe — sem abba, amit a Rust felépít
+nekünk, sem abba, hogy milyen típust fog generálni, hogy azt magunk írhassuk
+le. Így hiába adnak vissza ezek a függvények ugyanazt a trait-et, az
+`Fn(i32) -> i32`-t implementáló closure-öket, a Rust által mindegyikhez
+generált átlátszatlan típus más és más. (Ez hasonlít ahhoz, ahogyan a Rust
+különböző konkrét típusokat állít elő a különböző async blokkokhoz még akkor
+is, ha azonos a kimeneti típusuk, ahogy azt a 17. fejezet [„A `Pin` típus és az
+`Unpin` trait”][future-types]<!-- ignore --> című szakaszában láttuk.) A
+megoldást erre a problémára már többször láttuk: használhatunk trait objectet,
+ahogy a 20-34. listában.
 
-<Listing number="20-34" caption="Creating a `Vec<T>` of closures defined by functions that return `Box<dyn Fn>` so that they have the same type">
+<Listing number="20-34" caption="Closure-ök `Vec<T>` gyűjteményének létrehozása `Box<dyn Fn>` értéket visszaadó függvényekkel, hogy azonos típusúak legyenek">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-34/src/main.rs:here}}
@@ -165,11 +173,11 @@ use a trait object, as in Listing 20-34.
 
 </Listing>
 
-This code will compile just fine. For more about trait objects, refer to the
-section [“Using Trait Objects To Abstract over Shared
-Behavior”][trait-objects]<!-- ignore --> in Chapter 18.
+Ez a kód gond nélkül lefordul. A trait objectekről bővebben a 18. fejezet
+[„Trait objectek használata a közös viselkedés
+absztrahálására”][trait-objects]<!-- ignore --> című szakaszában olvashatsz.
 
-Next, let’s look at macros!
+Következőnek nézzük meg a makrókat!
 
 [advanced-traits]: ch20-02-advanced-traits.html#advanced-traits
 [enum-values]: ch06-01-defining-an-enum.html#enum-values

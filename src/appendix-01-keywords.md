@@ -1,70 +1,75 @@
-## Appendix A: Keywords
+## A függelék: Kulcsszavak
 
-The following lists contain keywords that are reserved for current or future
-use by the Rust language. As such, they cannot be used as identifiers (except
-as raw identifiers, as we discuss in the [“Raw
-Identifiers”][raw-identifiers]<!-- ignore --> section). _Identifiers_ are names
-of functions, variables, parameters, struct fields, modules, crates, constants,
-macros, static values, attributes, types, traits, or lifetimes.
+Az alábbi listák azokat a kulcsszavakat tartalmazzák, amelyeket a Rust nyelv
+jelenlegi vagy jövőbeli használatra fenntart. Ezért nem használhatók
+azonosítóként (kivéve nyers azonosítóként, ahogy azt a [„Nyers
+azonosítók”][raw-identifiers]<!-- ignore --> szakaszban tárgyaljuk). Az
+_azonosítók_ függvények, változók, paraméterek, struct-mezők, modulok, crate-ek,
+konstansok, makrók, statikus értékek, attribútumok, típusok, trait-ek vagy
+lifetime-ok nevei.
 
 [raw-identifiers]: #raw-identifiers
 
-### Keywords Currently in Use
+### Jelenleg használatban lévő kulcsszavak
 
-The following is a list of keywords currently in use, with their functionality
-described.
+Az alábbi lista a jelenleg használatban lévő kulcsszavakat sorolja fel, a
+funkciójuk leírásával együtt.
 
-- **`as`**: Perform primitive casting, disambiguate the specific trait
-  containing an item, or rename items in `use` statements.
-- **`async`**: Return a `Future` instead of blocking the current thread.
-- **`await`**: Suspend execution until the result of a `Future` is ready.
-- **`break`**: Exit a loop immediately.
-- **`const`**: Define constant items or constant raw pointers.
-- **`continue`**: Continue to the next loop iteration.
-- **`crate`**: In a module path, refers to the crate root.
-- **`dyn`**: Dynamic dispatch to a trait object.
-- **`else`**: Fallback for `if` and `if let` control flow constructs.
-- **`enum`**: Define an enumeration.
-- **`extern`**: Link an external function or variable.
-- **`false`**: Boolean false literal.
-- **`fn`**: Define a function or the function pointer type.
-- **`for`**: Loop over items from an iterator, implement a trait, or specify a
-  higher ranked lifetime.
-- **`if`**: Branch based on the result of a conditional expression.
-- **`impl`**: Implement inherent or trait functionality.
-- **`in`**: Part of `for` loop syntax.
-- **`let`**: Bind a variable.
-- **`loop`**: Loop unconditionally.
-- **`match`**: Match a value to patterns.
-- **`mod`**: Define a module.
-- **`move`**: Make a closure take ownership of all its captures.
-- **`mut`**: Denote mutability in references, raw pointers, or pattern bindings.
-- **`pub`**: Denote public visibility in struct fields, `impl` blocks, or
-  modules.
-- **`ref`**: Bind by reference.
-- **`return`**: Return from function.
-- **`Self`**: A type alias for the type we are defining or implementing.
-- **`self`**: Method subject or current module.
-- **`static`**: Global variable or lifetime lasting the entire program
-  execution.
-- **`struct`**: Define a structure.
-- **`super`**: Parent module of the current module.
-- **`trait`**: Define a trait.
-- **`true`**: Boolean true literal.
-- **`type`**: Define a type alias or associated type.
-- **`union`**: Define a [union][union]<!-- ignore -->; is a keyword only when
-  used in a union declaration.
-- **`unsafe`**: Denote unsafe code, functions, traits, or implementations.
-- **`use`**: Bring symbols into scope.
-- **`where`**: Denote clauses that constrain a type.
-- **`while`**: Loop conditionally based on the result of an expression.
+- **`as`**: Primitív típuskonverzió végrehajtása, az adott elemet tartalmazó
+  konkrét trait egyértelműsítése, vagy elemek átnevezése `use` utasításokban.
+- **`async`**: `Future`-t ad vissza ahelyett, hogy blokkolná az aktuális szálat.
+- **`await`**: Felfüggeszti a végrehajtást, amíg egy `Future` eredménye el nem
+  készül.
+- **`break`**: Azonnali kilépés egy ciklusból.
+- **`const`**: Konstans elemek vagy konstans nyers pointerek definiálása.
+- **`continue`**: Továbblépés a következő ciklusiterációra.
+- **`crate`**: Modulútvonalban a crate gyökerére hivatkozik.
+- **`dyn`**: Dinamikus dispatch egy trait objecthez.
+- **`else`**: Tartalék ág az `if` és az `if let` vezérlési szerkezetekhez.
+- **`enum`**: Felsorolás definiálása.
+- **`extern`**: Külső függvény vagy változó linkelése.
+- **`false`**: Logikai hamis literál.
+- **`fn`**: Függvény vagy függvénypointer-típus definiálása.
+- **`for`**: Iteráció egy iterátor elemein, trait implementálása, vagy magasabb
+  rendű lifetime megadása.
+- **`if`**: Elágazás egy feltételes kifejezés eredménye alapján.
+- **`impl`**: Inherens vagy trait-funkcionalitás implementálása.
+- **`in`**: A `for` ciklus szintaxisának része.
+- **`let`**: Változó kötése.
+- **`loop`**: Feltétel nélküli ciklus.
+- **`match`**: Egy érték illesztése mintákra.
+- **`mod`**: Modul definiálása.
+- **`move`**: Ráveszi a closure-t, hogy vegye át az összes elkapott érték
+  ownership-jét.
+- **`mut`**: Módosíthatóságot jelöl referenciákban, nyers pointerekben vagy
+  mintakötésekben.
+- **`pub`**: Publikus láthatóságot jelöl struct-mezőkben, `impl` blokkokban vagy
+  modulokban.
+- **`ref`**: Kötés referencia szerint.
+- **`return`**: Visszatérés függvényből.
+- **`Self`**: Típusalias az éppen definiált vagy implementált típusra.
+- **`self`**: A metódus alanya vagy az aktuális modul.
+- **`static`**: Globális változó vagy a teljes programfutás alatt tartó
+  lifetime.
+- **`struct`**: Struktúra definiálása.
+- **`super`**: Az aktuális modul szülőmodulja.
+- **`trait`**: Trait definiálása.
+- **`true`**: Logikai igaz literál.
+- **`type`**: Típusalias vagy asszociált típus definiálása.
+- **`union`**: [Union][union]<!-- ignore --> definiálása; csak union-deklarációban
+  használva kulcsszó.
+- **`unsafe`**: Unsafe kódot, függvényeket, trait-eket vagy implementációkat
+  jelöl.
+- **`use`**: Szimbólumok behozatala a hatókörbe.
+- **`where`**: Egy típust megszorító kikötéseket jelöl.
+- **`while`**: Feltételes ciklus egy kifejezés eredménye alapján.
 
 [union]: ../reference/items/unions.html
 
-### Keywords Reserved for Future Use
+### Jövőbeli használatra fenntartott kulcsszavak
 
-The following keywords do not yet have any functionality but are reserved by
-Rust for potential future use:
+Az alábbi kulcsszavaknak még nincs semmilyen funkciójuk, de a Rust fenntartja
+őket lehetséges jövőbeli használatra:
 
 - `abstract`
 - `become`
@@ -81,15 +86,17 @@ Rust for potential future use:
 - `virtual`
 - `yield`
 
-### Raw Identifiers {#raw-identifiers}
+### Nyers azonosítók {#raw-identifiers}
 
-_Raw identifiers_ are the syntax that lets you use keywords where they wouldn’t
-normally be allowed. You use a raw identifier by prefixing a keyword with `r#`.
+A _nyers azonosítók_ (raw identifiers) azt a szintaxist jelentik, amellyel olyan
+helyeken is használhatsz kulcsszavakat, ahol azok általában nem lennének
+megengedettek. Nyers azonosítót úgy használsz, hogy a kulcsszó elé `r#`-t
+írsz.
 
-For example, `match` is a keyword. If you try to compile the following function
-that uses `match` as its name:
+Például a `match` kulcsszó. Ha megpróbálod lefordítani az alábbi függvényt,
+amely a `match`-et használja névként:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 fn match(needle: &str, haystack: &str) -> bool {
@@ -97,7 +104,7 @@ fn match(needle: &str, haystack: &str) -> bool {
 }
 ```
 
-you’ll get this error:
+ezt a hibát kapod:
 
 ```text
 error: expected identifier, found keyword `match`
@@ -107,11 +114,11 @@ error: expected identifier, found keyword `match`
   |    ^^^^^ expected identifier, found keyword
 ```
 
-The error shows that you can’t use the keyword `match` as the function
-identifier. To use `match` as a function name, you need to use the raw
-identifier syntax, like this:
+A hiba azt mutatja, hogy a `match` kulcsszót nem használhatod
+függvényazonosítóként. Ahhoz, hogy a `match`-et függvénynévként használd, a nyers
+azonosító szintaxisára van szükséged, így:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 fn r#match(needle: &str, haystack: &str) -> bool {
@@ -123,18 +130,20 @@ fn main() {
 }
 ```
 
-This code will compile without any errors. Note the `r#` prefix on the function
-name in its definition as well as where the function is called in `main`.
+Ez a kód hibák nélkül lefordul. Figyeld meg az `r#` előtagot a függvény nevén
+mind a definíciójában, mind ott, ahol a `main`-ben meghívjuk a függvényt.
 
-Raw identifiers allow you to use any word you choose as an identifier, even if
-that word happens to be a reserved keyword. This gives us more freedom to choose
-identifier names, as well as lets us integrate with programs written in a
-language where these words aren’t keywords. In addition, raw identifiers allow
-you to use libraries written in a different Rust edition than your crate uses.
-For example, `try` isn’t a keyword in the 2015 edition but is in the 2018, 2021,
-and 2024 editions. If you depend on a library that is written using the 2015
-edition and has a `try` function, you’ll need to use the raw identifier syntax,
-`r#try` in this case, to call that function from your code on later editions.
-See [Appendix E][appendix-e]<!-- ignore --> for more information on editions.
+A nyers azonosítók lehetővé teszik, hogy bármely általad választott szót
+azonosítóként használj, még akkor is, ha az a szó éppen egy fenntartott
+kulcsszó. Ez nagyobb szabadságot ad az azonosítónevek megválasztásában, és
+lehetővé teszi olyan nyelveken írt programokkal való integrációt is, ahol ezek a
+szavak nem kulcsszavak. Ráadásul a nyers azonosítókkal olyan könyvtárakat is
+használhatsz, amelyek más Rust editionben íródtak, mint amit a te crate-ed
+használ. Például a `try` nem kulcsszó a 2015-ös editionben, viszont az a 2018-as,
+a 2021-es és a 2024-es editionben. Ha egy olyan könyvtártól függsz, amely a
+2015-ös editionnel készült, és van benne egy `try` függvény, a nyers azonosító
+szintaxisát – ebben az esetben az `r#try`-t – kell használnod ahhoz, hogy a
+későbbi editionöket használó kódodból meghívd azt a függvényt. Az editionökről
+bővebben az [E függelékben][appendix-e]<!-- ignore --> olvashatsz.
 
 [appendix-e]: appendix-05-editions.html

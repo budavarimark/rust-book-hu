@@ -11,8 +11,15 @@ STOP = r"\b(the|and|of|to|that|with|this|you|your|we|our|for|from|which|when|the
 
 
 def prose_lines(text):
-    out, inb, fence = [], False, ""
+    out, inb, fence, incomment = [], False, "", False
     for i, line in enumerate(text.split("\n"), 1):
+        if incomment:
+            if "-->" in line:
+                incomment = False
+            continue
+        if "<!--" in line and "-->" not in line:
+            incomment = True
+            continue
         m = re.match(r"^[ \t]*(`{3,}|~{3,})", line)
         if m:
             if not inb:
@@ -42,6 +49,10 @@ def main():
         for ln, line in prose_lines(text):
             stripped = re.sub(r"`[^`]*`", "", line)
             stripped = re.sub(r"\[[^\]]*\]\([^)]*\)", "", stripped)
+            stripped = re.sub(r"\{#[A-Za-z0-9\-_]+\}", "", stripped)
+            stripped = re.sub(r"\]\[[A-Za-z0-9\-_]+\]", "]", stripped)
+            stripped = re.sub(r"https?://\S+", "", stripped)
+            stripped = re.sub(r"[\w./-]+\.(md|rs|toml|txt|html)\b", "", stripped)
             if len(re.findall(STOP, stripped, re.I)) >= 2:
                 hits.append((ln, line.strip()[:110]))
         if hits:
