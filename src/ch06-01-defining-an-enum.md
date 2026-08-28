@@ -78,6 +78,34 @@ az `IpAddrKind` másik változata, a `V6`, a hozzá tartozó cím pedig `::1`. A
 struct-tal fogtuk össze a `kind` és az `address` értéket, így a változat most
 már az értékhez tartozik.
 
+Az alábbi ábra megmutatja, hogyan néz ki ez a memóriában. Mindkét példány a
+stack-en tárolja a `kind` mező változatát és az `address` mező `String`
+fejét, a cím szövege pedig a heap-en van:
+
+```aquascope,interpreter
+#fn main() {
+enum IpAddrKind {
+    V4,
+    V6,
+}
+
+struct IpAddr {
+    kind: IpAddrKind,
+    address: String,
+}
+
+let home = IpAddr {
+    kind: IpAddrKind::V4,
+    address: String::from("127.0.0.1"),
+};
+
+let loopback = IpAddr {
+    kind: IpAddrKind::V6,
+    address: String::from("::1"),
+};`[]`
+#}
+```
+
 Ugyanezt a fogalmat azonban tömörebben fejezhetjük ki pusztán egy enummal: a
 struct-ba ágyazott enum helyett az adatokat közvetlenül az egyes enum
 változatokba tehetjük. Az `IpAddr` enum új definíciója azt mondja ki, hogy a
@@ -95,6 +123,23 @@ függvényhívás, amely egy `String` argumentumot vesz át, és az `IpAddr` tí
 egy példányát adja vissza. Ezt a konstruktorfüggvényt automatikusan megkapjuk
 az enum definiálásának eredményeként.
 
+Vesd össze a memóriaképet az előzővel: a külön struct eltűnt, a `String`
+közvetlenül az enum változatában ül, a heap-en lévő adat viszont ugyanaz
+maradt:
+
+```aquascope,interpreter
+#fn main() {
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+let home = IpAddr::V4(String::from("127.0.0.1"));
+
+let loopback = IpAddr::V6(String::from("::1"));`[]`
+#}
+```
+
 Az enum struct helyetti használatának van még egy előnye: minden változathoz
 eltérő típusú és mennyiségű adat tartozhat. A négyes verziójú IP-címek mindig
 négy számkomponensből állnak, amelyek értéke 0 és 255 közötti. Ha a `V4`
@@ -104,6 +149,23 @@ könnyedén kezelik ezt az esetet:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-03-variants-with-different-data/src/main.rs:here}}
+```
+
+Az ábrán jól látszik, hogy a két változat egészen mást tárol: a `V4` négy `u8`
+értéket tart közvetlenül magában, a `V6` pedig egy `String`-et, amelynek a
+tartalma a heap-re kerül:
+
+```aquascope,interpreter
+#fn main() {
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+
+let home = IpAddr::V4(127, 0, 0, 1);
+
+let loopback = IpAddr::V6(String::from("::1"));`[]`
+#}
 ```
 
 Többféle módot is bemutattunk arra, hogyan definiálhatunk adatszerkezeteket a
@@ -158,6 +220,26 @@ Ennek az enumnak négy változata van, különböző típusokkal:
 - `Move`: névvel ellátott mezői vannak, akárcsak egy struct-nak
 - `Write`: egyetlen `String`-et tartalmaz
 - `ChangeColor`: három `i32` értéket tartalmaz
+
+Az alábbi ábrán mind a négy változatból létrehozunk egy-egy értéket. Mindegyik
+`Message` típusú, a memóriában viszont más és más adatot hordoznak: csak a
+`Write` változat sztringjének tartalma kerül a heap-re:
+
+```aquascope,interpreter
+#fn main() {
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+let quit = Message::Quit;
+let movement = Message::Move { x: 1, y: 2 };
+let write = Message::Write(String::from("hello"));
+let color = Message::ChangeColor(0, 160, 255);`[]`
+#}
+```
 
 Egy olyan enum definiálása, amelynek a 6-2. listában láthatókhoz hasonló
 változatai vannak, hasonlít különféle struct-definíciók megadásához, azzal a
@@ -260,6 +342,19 @@ más `Option<T>` típust eredményez. Íme néhány példa arra, hogyan tárolha
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-06-option-examples/src/main.rs:here}}
+```
+
+Az ábra megmutatja, mi kerül ilyenkor a memóriába: a `Some` változat magában
+hordozza a benne tárolt értéket, az `absent_number` `None` változatához pedig
+egyáltalán nem tartozik adat:
+
+```aquascope,interpreter
+#fn main() {
+let some_number = Some(5);
+let some_char = Some('e');
+
+let absent_number: Option<i32> = None;`[]`
+#}
 ```
 
 A `some_number` típusa `Option<i32>`. A `some_char` típusa `Option<char>`, ami

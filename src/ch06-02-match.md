@@ -114,6 +114,39 @@ Ha meghívnánk a `value_in_cents(Coin::Quarter(UsState::Alaska))` függvényt, 
 `println!` kifejezésben, így kinyerve a belső állam értékét a `Coin` enum
 `Quarter` variánsából.
 
+A jogosultsági ábra megmutatja, mit tesz ez a `match` a `coin` értékkel. A
+`coin`-t tulajdonba kapjuk, ezért a `Coin::Quarter(state)` ág egyszerűen
+kimozgatja belőle az `UsState` értéket: a `state` megkapja az **R** és az **O**
+jogosultságot, a `coin` pedig elveszíti mindkettőt:
+
+```aquascope,permissions,stepper,boundaries
+##[derive(Debug)]
+#enum UsState {
+#    Alabama,
+#    Alaska,
+#}
+#enum Coin {
+#    Penny,
+#    Nickel,
+#    Dime,
+#    Quarter(UsState),
+#}
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {state:?}!");
+            25
+        }
+    }
+}
+#fn main() {
+#    value_in_cents(Coin::Quarter(UsState::Alaska));
+#}
+```
+
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="matching-with-optiont"></a>
@@ -178,6 +211,62 @@ gyakran fogod látni Rust-kódban: `match`-elünk egy enumra, hozzákötünk egy
 változót a benne lévő adathoz, majd ez alapján futtatunk kódot. Elsőre kicsit
 trükkös, de ha egyszer megszokod, azt fogod kívánni, bárcsak minden nyelvben
 lenne ilyen. Rendre a felhasználók egyik kedvence.
+
+Ha az enumban nem másolható adat van – például egy `String` –, érdemes
+megfigyelni, hogy a `match` mozgatja-e vagy csak kölcsönveszi ezt az adatot. Az
+alábbi programban a `Some(_)` minta nem köt hozzá változót a `String`-hez, ezért
+semmi nem mozdul: az `opt` a `match` után is megtartja az **R** és az **O**
+jogosultságát, így a `println!` olvashatja:
+
+```aquascope,permissions,stepper,boundaries
+#fn main() {
+let opt: Option<String> = Some(String::from("Hello world"));
+
+match opt {
+    Some(_) => println!("Some!"),
+    None => println!("None!"),
+}
+
+println!("{opt:?}");
+#}
+```
+
+Ha a helykitöltő `_` helyére változónevet írunk, megváltozik a kép. Az `opt`
+típusa `Option<String>`, nem pedig `&Option<String>`, ezért a `Some(s)` minta
+kimozgatja belőle a `String`-et: az `opt` már az illesztésnél elveszíti az **R**
+és az **O** jogosultságát, a `println!` pedig nem fordul le:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+#fn main() {
+let opt: Option<String> = Some(String::from("Hello world"));
+
+match opt {
+    Some(s) => println!("Some: {s}"),
+    None => println!("None!"),
+}
+
+println!("{opt:?}");`{}`
+#}
+```
+
+Ha csak bele akarunk nézni az `opt`-ba anélkül, hogy a tartalmát elmozgatnánk,
+referenciára illesztünk. Ilyenkor a Rust „lefelé tolja” a referenciát a külső
+enumról a benne lévő mezőre – az `s` típusa `&String` lesz –, ezért az `opt`
+csak az **O** jogosultságát adja kölcsön a `match` idejére, az **R**-t végig
+megtartja, és az illesztés után is használható:
+
+```aquascope,permissions,stepper,boundaries
+#fn main() {
+let opt: Option<String> = Some(String::from("Hello world"));
+
+match &opt {
+    Some(s) => println!("Some: {s}"),
+    None => println!("None!"),
+}
+
+println!("{opt:?}");
+#}
+```
 
 ### A `match`-ek kimerítőek
 
