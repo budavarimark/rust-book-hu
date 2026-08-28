@@ -95,6 +95,28 @@ tartalmazza. Ezt az `5` értéket felhasználhatnánk az `s` változóval együt
 hogy kinyerjük az első szót, ez azonban hiba lenne, mert az `s` tartalma
 megváltozott azóta, hogy elmentettük az `5`-öt a `word`-be.
 
+Az alábbi ábra megmutatja, miért hallgat a fordító: a `first_word(&s)` hívás
+csak a hívás idejére kölcsönzi az `s`-t, a visszaadott `usize` pedig már
+semmilyen módon nem hivatkozik a `String` tartalmára. Ezért `s` a hívás után
+visszakapja a **W** és **O** jogosultságát, és az `s.clear()` megengedett:
+
+```aquascope,permissions,stepper,boundaries
+#fn first_word(s: &String) -> usize {
+#    let bytes = s.as_bytes();
+#    for (i, &item) in bytes.iter().enumerate() {
+#        if item == b' ' {
+#            return i;
+#        }
+#    }
+#    s.len()
+#}
+fn main() {
+    let mut s = String::from("hello world");
+    let word = first_word(&s);
+    s.clear();
+}
+```
+
 Fárasztó és hibára hajlamos, ha folyton azon kell aggódnunk, hogy a `word`-ben
 tárolt index kicsúszik az `s`-ben lévő adattal való szinkronból! Ezeknek az
 indexeknek a kezelése még törékenyebb, ha írunk egy `second_word` függvényt is.
@@ -141,6 +163,38 @@ src="img/trpl04-07.svg" class="center" style="width: 50%;" />
 <span class="caption">4-7. ábra: Egy string slice, amely egy `String` egy
 részére hivatkozik</span>
 
+Ugyanez futás közben: az alábbi ábrán a nyilak mutatják, hova mutatnak az egyes
+referenciák. A `hello` és a `world` a heap-en lévő sztringadat egy-egy
+szakaszára hivatkozik, míg az összehasonlításként felvett `s2` – amely nem
+slice – magára a `String`-re:
+
+```aquascope,interpreter
+#fn main() {
+let s = String::from("hello world");
+
+let hello: &str = &s[0..5];
+let world: &str = &s[6..11];
+let s2: &String = &s;`[]`
+#}
+```
+
+A slice-ok azért különleges referenciák, mert „kövér” pointerek: a címen kívül
+metaadatot, jelen esetben a hosszt is tárolják. Ha a Rust adatszerkezeteinek a
+belsejébe nézünk, ez láthatóvá válik – figyeld meg, hogy a `hello` és a `world`
+is egy `ptr` és egy `len` mezőből áll, és hogy a `String` valójában egy
+bájtvektor (`Vec<u8>`), amely egy `len` hosszt és egy `buf` puffert tartalmaz:
+
+```aquascope,interpreter,concreteTypes,hideCode
+fn main() {
+    let s = String::from("hello world");
+
+    let hello: &str = &s[0..5];
+    let world: &str = &s[6..11];
+    let s2: &String = &s;
+    `[]`
+}
+```
+
 A Rust `..` tartomány-szintaxisában, ha a 0-s indexnél akarsz kezdeni,
 elhagyhatod a két pont előtti értéket. Más szóval ezek egyenértékűek:
 
@@ -178,6 +232,20 @@ let slice = &s[..];
 > Megjegyzés: A string slice tartományindexeinek érvényes UTF-8
 > karakterhatárokra kell esniük. Ha egy többbájtos karakter közepén próbálsz
 > string slice-ot létrehozni, a programod hibával fog kilépni.
+
+Mivel a slice referencia, a jogosultságokra is ugyanúgy hat, mint bármelyik
+másik referencia. Az alábbi ábrán jól látszik: amint a `hello` slice létrejön,
+`s` elveszíti a **W** és **O** jogosultságát, és csak a `hello` utolsó
+használata után kapja vissza őket – ezért engedélyezett az `s.push_str` hívás:
+
+```aquascope,permissions,stepper,boundaries
+fn main() {
+    let mut s = String::from("hello");
+    let hello: &str = &s[0..5];
+    println!("{hello}");
+    s.push_str(" world");
+}
+```
 
 Mindezek ismeretében írjuk át a `first_word` függvényt úgy, hogy slice-ot adjon
 vissza. A „string slice” típust `&str` alakban írjuk:
@@ -223,6 +291,29 @@ idejű hibát vált ki:
 ```
 
 </Listing>
+
+Az ábrán most az látszik, ami a 4-8. listában még nem: a `first_word(&s)` hívás
+után `s` **nem** kapja vissza a **W** jogosultságát, mert a visszaadott slice
+továbbra is az `s`-re hivatkozik. Az `s.clear()` sorhoz így hiányzik a szükséges
+jogosultság, amit az ábra pirossal jelez:
+
+```aquascope,permissions,boundaries,stepper,shouldFail
+#fn first_word(s: &String) -> &str {
+#    let bytes = s.as_bytes();
+#    for (i, &item) in bytes.iter().enumerate() {
+#        if item == b' ' {
+#            return &s[0..i];
+#        }
+#    }
+#    &s[..]
+#}
+fn main() {
+    let mut s = String::from("hello world");
+    let word = first_word(&s);
+    s.clear();
+    println!("the first word is: {word}");
+}
+```
 
 Íme a fordítói hiba:
 
@@ -321,6 +412,29 @@ Ennek a slice-nak a típusa `&[i32]`. Ugyanúgy működik, mint a string slice-o
 az első elemre mutató referenciát és egy hosszt tárol. Ezt a fajta slice-ot
 mindenféle más kollekcióhoz is használni fogod. Ezekről a kollekciókról
 részletesen a 8. fejezetben, a vektorok kapcsán lesz szó.
+
+Ez a slice is kölcsönveszi a tömböt: amíg él, `a` elveszíti a **W** és **O**
+jogosultságát, ahogy az alábbi ábrán látható:
+
+```aquascope,permissions,stepper,boundaries
+fn main() {
+    let mut a = [1, 2, 3, 4, 5];
+    let slice = &a[1..3];
+    println!("{slice:?}");
+    a[0] = 10;
+}
+```
+
+A felépítése is ugyanaz, mint a string slice-oké. Egy vektor szeletének a
+belsejébe nézve látszik, hogy a `slice` itt is egy `ptr` és egy `len` mezőből
+áll, és a `ptr` a kollekció második elemére mutat:
+
+```aquascope,interpreter,concreteTypes
+#fn main() {
+let a = vec![1, 2, 3, 4, 5];
+let slice = &a[1..3];`[]`
+#}
+```
 
 ## Összefoglalás
 
