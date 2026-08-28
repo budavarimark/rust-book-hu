@@ -1,61 +1,66 @@
-## Implementing an Object-Oriented Design Pattern
+## Egy objektumorientált tervezési minta megvalósítása
 
-The _state pattern_ is an object-oriented design pattern. The crux of the
-pattern is that we define a set of states a value can have internally. The
-states are represented by a set of _state objects_, and the value’s behavior
-changes based on its state. We’re going to work through an example of a blog
-post struct that has a field to hold its state, which will be a state object
-from the set “draft,” “review,” or “published.”
+A _state pattern_ egy objektumorientált tervezési minta. A minta lényege, hogy
+definiáljuk azoknak az állapotoknak a halmazát, amelyekben egy érték belsőleg
+lehet. Az állapotokat _állapotobjektumok_ egy halmaza képviseli, és az érték
+viselkedése az állapotától függően változik. Végig fogunk dolgozni egy
+példát: egy blogbejegyzés-structot, amelynek van egy mezője az állapota
+tárolására, ez pedig a „piszkozat”, „lektorálás alatt” vagy „publikált”
+halmazból származó állapotobjektum lesz.
 
-The state objects share functionality: In Rust, of course, we use structs and
-traits rather than objects and inheritance. Each state object is responsible
-for its own behavior and for governing when it should change into another
-state. The value that holds a state object knows nothing about the different
-behavior of the states or when to transition between states.
+Az állapotobjektumok közös funkcionalitáson osztoznak: a Rustban természetesen
+structokat és traiteket használunk objektumok és öröklődés helyett. Minden
+állapotobjektum a saját viselkedéséért felel, és azért, hogy megszabja, mikor
+kell másik állapotba váltania. Az az érték, amely az állapotobjektumot tartja,
+semmit nem tud az egyes állapotok eltérő viselkedéséről, sem arról, mikor kell
+állapotot váltani.
 
-The advantage of using the state pattern is that, when the business
-requirements of the program change, we won’t need to change the code of the
-value holding the state or the code that uses the value. We’ll only need to
-update the code inside one of the state objects to change its rules or perhaps
-add more state objects.
+A state pattern használatának előnye, hogy amikor a program üzleti
+követelményei megváltoznak, nem kell megváltoztatnunk sem az állapotot tartó
+érték kódját, sem az értéket használó kódot. Csak az egyik állapotobjektumon
+belüli kódot kell frissítenünk, hogy megváltoztassuk a szabályait, vagy esetleg
+további állapotobjektumokat kell felvennünk.
 
-First, we’re going to implement the state pattern in a more traditional
-object-oriented way. Then, we’ll use an approach that’s a bit more natural in
-Rust. Let’s dig in to incrementally implement a blog post workflow using the
-state pattern.
+Először hagyományosabb, objektumorientált módon valósítjuk meg a state
+patternt. Ezután olyan megközelítést használunk, amely a Rustban valamivel
+természetesebb. Vágjunk bele, és lépésről lépésre valósítsunk meg egy
+blogbejegyzés-munkafolyamatot a state pattern segítségével.
 
-The final functionality will look like this:
+A végleges működés így fog kinézni:
 
-1. A blog post starts as an empty draft.
-1. When the draft is done, a review of the post is requested.
-1. When the post is approved, it gets published.
-1. Only published blog posts return content to print so that unapproved posts
-   can’t accidentally be published.
+1. Egy blogbejegyzés üres piszkozatként indul.
+1. Amikor a piszkozat elkészül, kérünk rá egy lektorálást.
+1. Amikor a bejegyzést jóváhagyják, publikálásra kerül.
+1. Csak a publikált blogbejegyzések adnak vissza kinyomtatandó tartalmat, hogy
+   a jóvá nem hagyott bejegyzések ne kerülhessenek véletlenül publikálásra.
 
-Any other changes attempted on a post should have no effect. For example, if we
-try to approve a draft blog post before we’ve requested a review, the post
-should remain an unpublished draft.
+Minden más, egy bejegyzésen megkísérelt változtatásnak hatástalannak kell
+lennie. Ha például megpróbálunk jóváhagyni egy piszkozat állapotú
+blogbejegyzést, mielőtt lektorálást kértünk volna rá, a bejegyzésnek
+publikálatlan piszkozatnak kell maradnia.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="a-traditional-object-oriented-attempt"></a>
 
-### Attempting Traditional Object-Oriented Style
+### Kísérlet a hagyományos objektumorientált stílusra
 
-There are infinite ways to structure code to solve the same problem, each with
-different trade-offs. This section’s implementation is more of a traditional
-object-oriented style, which is possible to write in Rust, but doesn’t take
-advantage of some of Rust’s strengths. Later, we’ll demonstrate a different
-solution that still uses the object-oriented design pattern but is structured
-in a way that might look less familiar to programmers with object-oriented
-experience. We’ll compare the two solutions to experience the trade-offs of
-designing Rust code differently than code in other languages.
+Végtelen sokféleképpen strukturálhatjuk a kódot ugyanannak a problémának a
+megoldására, és mindegyik mód más kompromisszumokkal jár. Ennek a szakasznak az
+implementációja inkább hagyományos objektumorientált stílusú; Rustban is meg
+lehet így írni, de nem használja ki a Rust néhány erősségét. Később egy másik
+megoldást is bemutatunk, amely szintén az objektumorientált tervezési mintát
+használja, de úgy van felépítve, hogy az objektumorientált tapasztalattal
+rendelkező programozók számára talán kevésbé ismerősnek tűnik. Összehasonlítjuk
+majd a két megoldást, hogy megtapasztaljuk, milyen kompromisszumokkal jár, ha a
+Rust-kódot másképp tervezzük meg, mint a más nyelveken írt kódot.
 
-Listing 18-11 shows this workflow in code form: This is an example usage of the
-API we’ll implement in a library crate named `blog`. This won’t compile yet
-because we haven’t implemented the `blog` crate.
+A 18-11. lista kód formájában mutatja be ezt a munkafolyamatot: ez egy
+példahasználata annak az API-nak, amelyet egy `blog` nevű library crate-ben
+fogunk megvalósítani. Ez egyelőre nem fordul le, mert még nem implementáltuk a
+`blog` crate-et.
 
-<Listing number="18-11" file-name="src/main.rs" caption="Code that demonstrates the desired behavior we want our `blog` crate to have">
+<Listing number="18-11" file-name="src/main.rs" caption="Kód, amely bemutatja, milyen viselkedést szeretnénk a `blog` crate-ünktől">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch18-oop/listing-18-11/src/main.rs:all}}
@@ -63,46 +68,50 @@ because we haven’t implemented the `blog` crate.
 
 </Listing>
 
-We want to allow the user to create a new draft blog post with `Post::new`. We
-want to allow text to be added to the blog post. If we try to get the post’s
-content immediately, before approval, we shouldn’t get any text because the
-post is still a draft. We’ve added `assert_eq!` in the code for demonstration
-purposes. An excellent unit test for this would be to assert that a draft blog
-post returns an empty string from the `content` method, but we’re not going to
-write tests for this example.
+Azt szeretnénk, hogy a felhasználó a `Post::new` segítségével új, piszkozat
+állapotú blogbejegyzést hozhasson létre. Azt is szeretnénk, hogy szöveget
+lehessen hozzáadni a blogbejegyzéshez. Ha azonnal, még a jóváhagyás előtt
+próbáljuk lekérdezni a bejegyzés tartalmát, nem kaphatunk szöveget, mert a
+bejegyzés még piszkozat. Bemutatási céllal `assert_eq!` hívásokat tettünk a
+kódba. Kiváló egységteszt lenne ehhez az az állítás, hogy egy piszkozat
+állapotú blogbejegyzés `content` metódusa üres sztringet ad vissza, de ehhez a
+példához nem írunk teszteket.
 
-Next, we want to enable a request for a review of the post, and we want
-`content` to return an empty string while waiting for the review. When the post
-receives approval, it should get published, meaning the text of the post will
-be returned when `content` is called.
+Ezután azt szeretnénk lehetővé tenni, hogy lektorálást lehessen kérni a
+bejegyzésre, és azt szeretnénk, hogy a `content` üres sztringet adjon vissza,
+amíg a lektorálásra várunk. Amikor a bejegyzés megkapja a jóváhagyást,
+publikálásra kell kerülnie, vagyis a `content` hívásakor a bejegyzés szövegét
+kell visszakapnunk.
 
-Notice that the only type we’re interacting with from the crate is the `Post`
-type. This type will use the state pattern and will hold a value that will be
-one of three state objects representing the various states a post can be
-in—draft, review, or published. Changing from one state to another will be
-managed internally within the `Post` type. The states change in response to the
-methods called by our library’s users on the `Post` instance, but they don’t
-have to manage the state changes directly. Also, users can’t make a mistake
-with the states, such as publishing a post before it’s reviewed.
+Vedd észre, hogy a crate-ből egyedül a `Post` típussal lépünk kapcsolatba. Ez a
+típus fogja használni a state patternt, és olyan értéket tart majd, amely a
+három állapotobjektum egyike lesz, ezek pedig a bejegyzés lehetséges
+állapotait – piszkozat, lektorálás alatt vagy publikált – képviselik. Az egyik
+állapotból a másikba való átmenetet a `Post` típus belsőleg kezeli. Az
+állapotok azokra a metódushívásokra válaszul változnak, amelyeket a
+könyvtárunk használói a `Post` példányon hívnak meg, de nekik nem kell
+közvetlenül kezelniük az állapotváltásokat. Ráadásul a felhasználók nem is
+hibázhatnak az állapotokkal, például nem publikálhatnak egy bejegyzést, mielőtt
+azt lektorálták volna.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="defining-post-and-creating-a-new-instance-in-the-draft-state"></a>
 
-#### Defining `Post` and Creating a New Instance
+#### A `Post` definiálása és új példány létrehozása
 
-Let’s get started on the implementation of the library! We know we need a
-public `Post` struct that holds some content, so we’ll start with the
-definition of the struct and an associated public `new` function to create an
-instance of `Post`, as shown in Listing 18-12. We’ll also make a private
-`State` trait that will define the behavior that all state objects for a `Post`
-must have.
+Vágjunk bele a könyvtár implementációjába! Tudjuk, hogy szükségünk van egy
+publikus `Post` structra, amely valamilyen tartalmat tárol, ezért a struct
+definíciójával és egy hozzá tartozó publikus `new` függvénnyel kezdjük, amely
+`Post` példányt hoz létre, ahogy a 18-12. listában látható. Készítünk egy
+privát `State` traitet is, amely azt a viselkedést definiálja, amellyel a
+`Post` minden állapotobjektumának rendelkeznie kell.
 
-Then, `Post` will hold a trait object of `Box<dyn State>` inside an `Option<T>`
-in a private field named `state` to hold the state object. You’ll see why the
-`Option<T>` is necessary in a bit.
+Ezután a `Post` egy `Box<dyn State>` trait objectet fog tartani egy `Option<T>`
+belsejében, egy `state` nevű privát mezőben, hogy tárolja az
+állapotobjektumot. Mindjárt látni fogod, miért van szükség az `Option<T>`-re.
 
-<Listing number="18-12" file-name="src/lib.rs" caption="Definition of a `Post` struct and a `new` function that creates a new `Post` instance, a `State` trait, and a `Draft` struct">
+<Listing number="18-12" file-name="src/lib.rs" caption="Egy `Post` struct és egy `new` függvény definíciója, amely új `Post` példányt hoz létre, valamint egy `State` trait és egy `Draft` struct">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-12/src/lib.rs}}
@@ -110,30 +119,30 @@ in a private field named `state` to hold the state object. You’ll see why the
 
 </Listing>
 
-The `State` trait defines the behavior shared by different post states. The
-state objects are `Draft`, `PendingReview`, and `Published`, and they will all
-implement the `State` trait. For now, the trait doesn’t have any methods, and
-we’ll start by defining just the `Draft` state because that is the state we
-want a post to start in.
+A `State` trait a bejegyzés különböző állapotai által megosztott viselkedést
+definiálja. Az állapotobjektumok a `Draft`, a `PendingReview` és a `Published`,
+és mindegyik implementálni fogja a `State` traitet. Egyelőre a traitnek nincs
+egyetlen metódusa sem, és azzal kezdjük, hogy csak a `Draft` állapotot
+definiáljuk, mert azt szeretnénk, hogy a bejegyzés ebben az állapotban induljon.
 
-When we create a new `Post`, we set its `state` field to a `Some` value that
-holds a `Box`. This `Box` points to a new instance of the `Draft` struct. This
-ensures that whenever we create a new instance of `Post`, it will start out as
-a draft. Because the `state` field of `Post` is private, there is no way to
-create a `Post` in any other state! In the `Post::new` function, we set the
-`content` field to a new, empty `String`.
+Amikor új `Post`-ot hozunk létre, a `state` mezőjét egy `Some` értékre
+állítjuk, amely egy `Box`-ot tart. Ez a `Box` a `Draft` struct egy új
+példányára mutat. Ez biztosítja, hogy valahányszor új `Post` példányt hozunk
+létre, az piszkozatként induljon. Mivel a `Post` `state` mezője privát, nincs
+mód arra, hogy más állapotban hozzunk létre `Post`-ot! A `Post::new`
+függvényben a `content` mezőt egy új, üres `String`-re állítjuk.
 
-#### Storing the Text of the Post Content
+#### A bejegyzés tartalmának tárolása
 
-We saw in Listing 18-11 that we want to be able to call a method named
-`add_text` and pass it a `&str` that is then added as the text content of the
-blog post. We implement this as a method, rather than exposing the `content`
-field as `pub`, so that later we can implement a method that will control how
-the `content` field’s data is read. The `add_text` method is pretty
-straightforward, so let’s add the implementation in Listing 18-13 to the `impl
-Post` block.
+A 18-11. listában láttuk, hogy szeretnénk meghívni egy `add_text` nevű
+metódust, és átadni neki egy `&str`-t, amely aztán a blogbejegyzés
+szövegtartalmához adódik. Ezt metódusként valósítjuk meg ahelyett, hogy a
+`content` mezőt `pub`-ként tennénk elérhetővé, hogy később olyan metódust
+implementálhassunk, amely szabályozza, hogyan olvasható a `content` mező adata.
+Az `add_text` metódus meglehetősen egyszerű, úgyhogy adjuk hozzá a 18-13.
+listában látható implementációt az `impl Post` blokkhoz.
 
-<Listing number="18-13" file-name="src/lib.rs" caption="Implementing the `add_text` method to add text to a post’s `content`">
+<Listing number="18-13" file-name="src/lib.rs" caption="Az `add_text` metódus implementálása, amely szöveget ad a bejegyzés `content` mezőjéhez">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-13/src/lib.rs:here}}
@@ -141,31 +150,32 @@ Post` block.
 
 </Listing>
 
-The `add_text` method takes a mutable reference to `self` because we’re
-changing the `Post` instance that we’re calling `add_text` on. We then call
-`push_str` on the `String` in `content` and pass the `text` argument to add to
-the saved `content`. This behavior doesn’t depend on the state the post is in,
-so it’s not part of the state pattern. The `add_text` method doesn’t interact
-with the `state` field at all, but it is part of the behavior we want to
-support.
+Az `add_text` metódus módosítható referenciát vesz át a `self`-re, mert
+megváltoztatjuk azt a `Post` példányt, amelyen az `add_text`-et meghívjuk.
+Ezután meghívjuk a `push_str`-t a `content`-ben lévő `String`-en, és átadjuk a
+`text` argumentumot, hogy hozzáadódjon az elmentett `content`-hez. Ez a
+viselkedés nem függ attól, milyen állapotban van a bejegyzés, ezért nem része a
+state patternnek. Az `add_text` metódus egyáltalán nem lép kapcsolatba a
+`state` mezővel, de része annak a viselkedésnek, amelyet támogatni szeretnénk.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="ensuring-the-content-of-a-draft-post-is-empty"></a>
 
-#### Ensuring That the Content of a Draft Post Is Empty
+#### Annak biztosítása, hogy egy piszkozat bejegyzés tartalma üres legyen
 
-Even after we’ve called `add_text` and added some content to our post, we still
-want the `content` method to return an empty string slice because the post is
-still in the draft state, as shown by the first `assert_eq!` in Listing 18-11.
-For now, let’s implement the `content` method with the simplest thing that will
-fulfill this requirement: always returning an empty string slice. We’ll change
-this later once we implement the ability to change a post’s state so that it
-can be published. So far, posts can only be in the draft state, so the post
-content should always be empty. Listing 18-14 shows this placeholder
-implementation.
+Még azután is, hogy meghívtuk az `add_text`-et, és tartalmat adtunk a
+bejegyzésünkhöz, azt szeretnénk, hogy a `content` metódus üres string slice-ot
+adjon vissza, mert a bejegyzés még mindig piszkozat állapotban van, ahogy azt a
+18-11. lista első `assert_eq!` hívása mutatja. Egyelőre implementáljuk a
+`content` metódust a lehető legegyszerűbb módon, amely kielégíti ezt a
+követelményt: mindig üres string slice-ot adunk vissza. Ezt később
+megváltoztatjuk, miután megvalósítottuk a bejegyzés állapotának
+megváltoztatását, hogy publikálható legyen. Egyelőre a bejegyzések csak
+piszkozat állapotban lehetnek, tehát a bejegyzés tartalmának mindig üresnek
+kell lennie. A 18-14. lista mutatja ezt az ideiglenes implementációt.
 
-<Listing number="18-14" file-name="src/lib.rs" caption="Adding a placeholder implementation for the `content` method on `Post` that always returns an empty string slice">
+<Listing number="18-14" file-name="src/lib.rs" caption="Ideiglenes implementáció hozzáadása a `Post` `content` metódusához, amely mindig üres string slice-ot ad vissza">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-14/src/lib.rs:here}}
@@ -173,20 +183,21 @@ implementation.
 
 </Listing>
 
-With this added `content` method, everything in Listing 18-11 through the first
-`assert_eq!` works as intended.
+Ezzel a hozzáadott `content` metódussal a 18-11. listában minden a szándékunk
+szerint működik az első `assert_eq!` hívásig bezárólag.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="requesting-a-review-of-the-post-changes-its-state"></a>
 <a id="requesting-a-review-changes-the-posts-state"></a>
 
-#### Requesting a Review, Which Changes the Post’s State
+#### Lektorálás kérése, amely megváltoztatja a bejegyzés állapotát
 
-Next, we need to add functionality to request a review of a post, which should
-change its state from `Draft` to `PendingReview`. Listing 18-15 shows this code.
+Ezután olyan funkciót kell hozzáadnunk, amellyel lektorálást lehet kérni egy
+bejegyzésre, és amelynek `Draft`-ról `PendingReview`-ra kell változtatnia az
+állapotát. A 18-15. lista mutatja ezt a kódot.
 
-<Listing number="18-15" file-name="src/lib.rs" caption="Implementing `request_review` methods on `Post` and the `State` trait">
+<Listing number="18-15" file-name="src/lib.rs" caption="A `request_review` metódusok implementálása a `Post`-on és a `State` traiten">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-15/src/lib.rs:here}}
@@ -194,60 +205,63 @@ change its state from `Draft` to `PendingReview`. Listing 18-15 shows this code.
 
 </Listing>
 
-We give `Post` a public method named `request_review` that will take a mutable
-reference to `self`. Then, we call an internal `request_review` method on the
-current state of `Post`, and this second `request_review` method consumes the
-current state and returns a new state.
+A `Post`-nak adunk egy `request_review` nevű publikus metódust, amely
+módosítható referenciát vesz át a `self`-re. Ezután meghívunk egy belső
+`request_review` metódust a `Post` aktuális állapotán, és ez a második
+`request_review` metódus felemészti az aktuális állapotot, és új állapotot ad
+vissza.
 
-We add the `request_review` method to the `State` trait; all types that
-implement the trait will now need to implement the `request_review` method.
-Note that rather than having `self`, `&self`, or `&mut self` as the first
-parameter of the method, we have `self: Box<Self>`. This syntax means the
-method is only valid when called on a `Box` holding the type. This syntax takes
-ownership of `Box<Self>`, invalidating the old state so that the state value of
-the `Post` can transform into a new state.
+A `request_review` metódust hozzáadjuk a `State` traithez; a traitet
+implementáló minden típusnak mostantól implementálnia kell a `request_review`
+metódust. Vedd észre, hogy a metódus első paramétereként nem `self`, `&self`
+vagy `&mut self` szerepel, hanem `self: Box<Self>`. Ez a szintaxis azt jelenti,
+hogy a metódus csak akkor érvényes, ha az adott típust tartó `Box`-on hívjuk
+meg. Ez a szintaxis átveszi a `Box<Self>` ownershipjét, érvénytelenítve a régi
+állapotot, hogy a `Post` állapotértéke új állapottá alakulhasson.
 
-To consume the old state, the `request_review` method needs to take ownership
-of the state value. This is where the `Option` in the `state` field of `Post`
-comes in: We call the `take` method to take the `Some` value out of the `state`
-field and leave a `None` in its place because Rust doesn’t let us have
-unpopulated fields in structs. This lets us move the `state` value out of
-`Post` rather than borrowing it. Then, we’ll set the post’s `state` value to
-the result of this operation.
+Ahhoz, hogy felemészthesse a régi állapotot, a `request_review` metódusnak át
+kell vennie az állapotérték ownershipjét. Itt jön a képbe a `Post` `state`
+mezőjében lévő `Option`: meghívjuk a `take` metódust, hogy kivegyük a `Some`
+értéket a `state` mezőből, és `None`-t hagyjunk a helyén, mert a Rust nem
+engedi meg, hogy a structjainkban feltöltetlen mezők legyenek. Ez lehetővé
+teszi, hogy a `state` értéket kimozgassuk a `Post`-ból, ahelyett hogy csak
+kölcsönvennénk. Ezután a bejegyzés `state` értékét a művelet eredményére
+állítjuk.
 
-We need to set `state` to `None` temporarily rather than setting it directly
-with code like `self.state = self.state.request_review();` to get ownership of
-the `state` value. This ensures that `Post` can’t use the old `state` value
-after we’ve transformed it into a new state.
+A `state` mezőt átmenetileg `None`-ra kell állítanunk, ahelyett hogy
+közvetlenül olyan kóddal állítanánk be, mint a `self.state =
+self.state.request_review();`, hogy megkapjuk a `state` érték ownershipjét. Ez
+biztosítja, hogy a `Post` ne használhassa a régi `state` értéket azután, hogy
+azt új állapottá alakítottuk.
 
-The `request_review` method on `Draft` returns a new, boxed instance of a new
-`PendingReview` struct, which represents the state when a post is waiting for a
-review. The `PendingReview` struct also implements the `request_review` method
-but doesn’t do any transformations. Rather, it returns itself because when we
-request a review on a post already in the `PendingReview` state, it should stay
-in the `PendingReview` state.
+A `Draft` `request_review` metódusa egy új `PendingReview` struct új, boxolt
+példányát adja vissza, amely azt az állapotot képviseli, amikor a bejegyzés
+lektorálásra vár. A `PendingReview` struct is implementálja a `request_review`
+metódust, de nem végez semmilyen átalakítást. Ehelyett önmagát adja vissza,
+mert ha egy már `PendingReview` állapotban lévő bejegyzésre kérünk
+lektorálást, annak `PendingReview` állapotban kell maradnia.
 
-Now we can start seeing the advantages of the state pattern: The
-`request_review` method on `Post` is the same no matter its `state` value. Each
-state is responsible for its own rules.
+Most már kezdhetjük látni a state pattern előnyeit: a `Post` `request_review`
+metódusa ugyanaz, függetlenül attól, mi a `state` értéke. Minden állapot a
+saját szabályaiért felel.
 
-We’ll leave the `content` method on `Post` as is, returning an empty string
-slice. We can now have a `Post` in the `PendingReview` state as well as in the
-`Draft` state, but we want the same behavior in the `PendingReview` state.
-Listing 18-11 now works up to the second `assert_eq!` call!
+A `Post` `content` metódusát így hagyjuk, üres string slice-ot ad vissza. Most
+már a `Draft` állapot mellett `PendingReview` állapotban is lehet egy `Post`,
+de ugyanazt a viselkedést szeretnénk `PendingReview` állapotban is. A 18-11.
+lista mostantól a második `assert_eq!` hívásig működik!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="adding-the-approve-method-that-changes-the-behavior-of-content"></a>
 <a id="adding-approve-to-change-the-behavior-of-content"></a>
 
-#### Adding `approve` to Change `content`'s Behavior
+#### Az `approve` hozzáadása a `content` viselkedésének megváltoztatásához
 
-The `approve` method will be similar to the `request_review` method: It will
-set `state` to the value that the current state says it should have when that
-state is approved, as shown in Listing 18-16.
+Az `approve` metódus hasonló lesz a `request_review` metódushoz: a `state`
+mezőt arra az értékre állítja, amelyet az aktuális állapot szerint az adott
+állapot jóváhagyásakor fel kell vennie, ahogy a 18-16. listában látható.
 
-<Listing number="18-16" file-name="src/lib.rs" caption="Implementing the `approve` method on `Post` and the `State` trait">
+<Listing number="18-16" file-name="src/lib.rs" caption="Az `approve` metódus implementálása a `Post`-on és a `State` traiten">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-16/src/lib.rs:here}}
@@ -255,23 +269,23 @@ state is approved, as shown in Listing 18-16.
 
 </Listing>
 
-We add the `approve` method to the `State` trait and add a new struct that
-implements `State`, the `Published` state.
+Hozzáadjuk az `approve` metódust a `State` traithez, és felveszünk egy új
+structot, amely implementálja a `State`-et: a `Published` állapotot.
 
-Similar to the way `request_review` on `PendingReview` works, if we call the
-`approve` method on a `Draft`, it will have no effect because `approve` will
-return `self`. When we call `approve` on `PendingReview`, it returns a new,
-boxed instance of the `Published` struct. The `Published` struct implements the
-`State` trait, and for both the `request_review` method and the `approve`
-method, it returns itself because the post should stay in the `Published` state
-in those cases.
+Ahhoz hasonlóan, ahogy a `PendingReview` `request_review` metódusa működik, ha
+az `approve` metódust egy `Draft`-on hívjuk meg, annak nem lesz hatása, mert az
+`approve` a `self`-et adja vissza. Amikor az `approve`-ot a `PendingReview`-n
+hívjuk meg, az a `Published` struct új, boxolt példányát adja vissza. A
+`Published` struct implementálja a `State` traitet, és mind a `request_review`,
+mind az `approve` metódus esetében önmagát adja vissza, mert ezekben az
+esetekben a bejegyzésnek `Published` állapotban kell maradnia.
 
-Now we need to update the `content` method on `Post`. We want the value
-returned from `content` to depend on the current state of the `Post`, so we’re
-going to have the `Post` delegate to a `content` method defined on its `state`,
-as shown in Listing 18-17.
+Most frissítenünk kell a `Post` `content` metódusát. Azt szeretnénk, hogy a
+`content` által visszaadott érték a `Post` aktuális állapotától függjön, ezért
+a `Post`-tal a `state` értékén definiált `content` metódusra delegáltatjuk a
+feladatot, ahogy a 18-17. listában látható.
 
-<Listing number="18-17" file-name="src/lib.rs" caption="Updating the `content` method on `Post` to delegate to a `content` method on `State`">
+<Listing number="18-17" file-name="src/lib.rs" caption="A `Post` `content` metódusának frissítése, hogy a `State` `content` metódusára delegáljon">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch18-oop/listing-18-17/src/lib.rs:here}}
@@ -279,33 +293,35 @@ as shown in Listing 18-17.
 
 </Listing>
 
-Because the goal is to keep all of these rules inside the structs that
-implement `State`, we call a `content` method on the value in `state` and pass
-the post instance (that is, `self`) as an argument. Then, we return the value
-that’s returned from using the `content` method on the `state` value.
+Mivel az a cél, hogy mindezek a szabályok a `State`-et implementáló structokon
+belül maradjanak, meghívunk egy `content` metódust a `state`-ben lévő értéken,
+és argumentumként átadjuk a bejegyzés példányát (vagyis a `self`-et). Ezután
+visszaadjuk azt az értéket, amelyet a `state` értéken meghívott `content`
+metódus adott vissza.
 
-We call the `as_ref` method on the `Option` because we want a reference to the
-value inside the `Option` rather than ownership of the value. Because `state` is
-an `Option<Box<dyn State>>`, when we call `as_ref`, an `Option<&Box<dyn
-State>>` is returned. If we didn’t call `as_ref`, we would get an error because
-we can’t move `state` out of the borrowed `&self` of the function parameter.
+Az `Option`-on meghívjuk az `as_ref` metódust, mert az `Option`-ben lévő
+értékre referenciát szeretnénk kapni, nem pedig az érték ownershipjét. Mivel a
+`state` típusa `Option<Box<dyn State>>`, az `as_ref` hívásakor egy
+`Option<&Box<dyn State>>` értéket kapunk vissza. Ha nem hívnánk meg az
+`as_ref`-et, hibát kapnánk, mert nem tudjuk kimozgatni a `state`-et a
+függvényparaméter kölcsönvett `&self`-jéből.
 
-We then call the `unwrap` method, which we know will never panic because we
-know the methods on `Post` ensure that `state` will always contain a `Some`
-value when those methods are done. This is one of the cases we talked about in
-the [“When You Have More Information Than the
-Compiler”][more-info-than-rustc]<!-- ignore --> section of Chapter 9 when we
-know that a `None` value is never possible, even though the compiler isn’t able
-to understand that.
+Ezután meghívjuk az `unwrap` metódust, amelyről tudjuk, hogy soha nem fog
+panicot kiváltani, mert tudjuk, hogy a `Post` metódusai gondoskodnak arról,
+hogy a `state` mindig `Some` értéket tartalmazzon, amikor ezek a metódusok
+lefutottak. Ez egyike azoknak az eseteknek, amelyekről a 9. fejezet [„Amikor
+több információd van, mint a fordítónak”][more-info-than-rustc]<!-- ignore -->
+című szakaszában beszéltünk, amikor tudjuk, hogy a `None` érték soha nem
+fordulhat elő, még ha a fordító ezt nem is képes belátni.
 
-At this point, when we call `content` on the `&Box<dyn State>`, deref coercion
-will take effect on the `&` and the `Box` so that the `content` method will
-ultimately be called on the type that implements the `State` trait. That means
-we need to add `content` to the `State` trait definition, and that is where
-we’ll put the logic for what content to return depending on which state we
-have, as shown in Listing 18-18.
+Ezen a ponton, amikor a `&Box<dyn State>` értéken meghívjuk a `content`-et, a
+deref coercion lép működésbe a `&`-en és a `Box`-on, így a `content` metódus
+végül a `State` traitet implementáló típuson hívódik meg. Ez azt jelenti, hogy
+a `content`-et fel kell vennünk a `State` trait definíciójába, és ott fogjuk
+elhelyezni azt a logikát, amely megmondja, milyen tartalmat adjunk vissza az
+adott állapottól függően, ahogy a 18-18. listában látható.
 
-<Listing number="18-18" file-name="src/lib.rs" caption="Adding the `content` method to the `State` trait">
+<Listing number="18-18" file-name="src/lib.rs" caption="A `content` metódus hozzáadása a `State` traithez">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-18/src/lib.rs:here}}
@@ -313,105 +329,114 @@ have, as shown in Listing 18-18.
 
 </Listing>
 
-We add a default implementation for the `content` method that returns an empty
-string slice. That means we don’t need to implement `content` on the `Draft`
-and `PendingReview` structs. The `Published` struct will override the `content`
-method and return the value in `post.content`. While convenient, having the
-`content` method on `State` determine the content of the `Post` is blurring
-the lines between the responsibility of `State` and the responsibility of
-`Post`.
+Alapértelmezett implementációt adunk a `content` metódushoz, amely üres string
+slice-ot ad vissza. Ez azt jelenti, hogy a `Draft` és a `PendingReview`
+structon nem kell implementálnunk a `content`-et. A `Published` struct
+felülírja a `content` metódust, és a `post.content` értékét adja vissza. Bár ez
+kényelmes, az, hogy a `State` `content` metódusa dönti el a `Post` tartalmát,
+elmossa a határt a `State` és a `Post` felelőssége között.
 
-Note that we need lifetime annotations on this method, as we discussed in
-Chapter 10. We’re taking a reference to a `post` as an argument and returning a
-reference to part of that `post`, so the lifetime of the returned reference is
-related to the lifetime of the `post` argument.
+Vedd észre, hogy ehhez a metódushoz lifetime-annotációkra van szükségünk, ahogy
+azt a 10. fejezetben megbeszéltük. Argumentumként egy `post`-ra vett
+referenciát veszünk át, és e `post` egy részére vett referenciát adunk vissza,
+így a visszaadott referencia lifetime-ja a `post` argumentum lifetime-jához
+kapcsolódik.
 
-And we’re done—all of Listing 18-11 now works! We’ve implemented the state
-pattern with the rules of the blog post workflow. The logic related to the
-rules lives in the state objects rather than being scattered throughout `Post`.
+És készen is vagyunk – a 18-11. lista most már teljes egészében működik!
+Megvalósítottuk a state patternt a blogbejegyzés-munkafolyamat szabályaival. A
+szabályokhoz kapcsolódó logika az állapotobjektumokban él, ahelyett hogy szét
+lenne szórva a `Post`-ban.
 
-> ### Why Not An Enum?
+> ### Miért nem enummal?
 >
-> You may have been wondering why we didn’t use an enum with the different
-> possible post states as variants. That’s certainly a possible solution; try it
-> and compare the end results to see which you prefer! One disadvantage of using
-> an enum is that every place that checks the value of the enum will need a
-> `match` expression or similar to handle every possible variant. This could get
-> more repetitive than this trait object solution.
+> Talán elgondolkodtál azon, miért nem használtunk olyan enumot, amelynek a
+> variánsai a bejegyzés lehetséges állapotai. Ez mindenképpen járható megoldás;
+> próbáld ki, és hasonlítsd össze a végeredményeket, hogy lásd, melyiket
+> szereted jobban! Az enum használatának egyik hátránya, hogy minden helyen,
+> ahol az enum értékét vizsgáljuk, `match` kifejezésre vagy hasonlóra lesz
+> szükség az összes lehetséges variáns kezeléséhez. Ez ismétlődőbb lehet, mint
+> ez a trait objectes megoldás.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="trade-offs-of-the-state-pattern"></a>
 
-#### Evaluating the State Pattern
+#### A state pattern értékelése
 
-We’ve shown that Rust is capable of implementing the object-oriented state
-pattern to encapsulate the different kinds of behavior a post should have in
-each state. The methods on `Post` know nothing about the various behaviors.
-Because of the way we organized the code, we have to look in only one place to
-know the different ways a published post can behave: the implementation of the
-`State` trait on the `Published` struct.
+Megmutattuk, hogy a Rust képes megvalósítani az objektumorientált state
+patternt, hogy egységbe zárja a bejegyzés különböző állapotaihoz tartozó
+eltérő viselkedéseket. A `Post` metódusai semmit nem tudnak ezekről a
+viselkedésekről. A kód szervezésének módja miatt csak egyetlen helyre kell
+néznünk ahhoz, hogy megtudjuk, egy publikált bejegyzés hogyan viselkedhet: a
+`State` trait `Published` structon lévő implementációjához.
 
-If we were to create an alternative implementation that didn’t use the state
-pattern, we might instead use `match` expressions in the methods on `Post` or
-even in the `main` code that checks the state of the post and changes behavior
-in those places. That would mean we would have to look in several places to
-understand all the implications of a post being in the published state.
+Ha olyan alternatív implementációt készítenénk, amely nem használja a state
+patternt, akkor helyette valószínűleg `match` kifejezéseket alkalmaznánk a
+`Post` metódusaiban, vagy akár a `main` kódjában, amely megvizsgálja a
+bejegyzés állapotát, és ezeken a helyeken változtat a viselkedésen. Ez azt
+jelentené, hogy több helyre kellene néznünk ahhoz, hogy megértsük, mi mindennel
+jár, ha egy bejegyzés publikált állapotban van.
 
-With the state pattern, the `Post` methods and the places we use `Post` don’t
-need `match` expressions, and to add a new state, we would only need to add a
-new struct and implement the trait methods on that one struct in one location.
+A state patternnel a `Post` metódusaiban és azokon a helyeken, ahol a `Post`-ot
+használjuk, nincs szükség `match` kifejezésekre, új állapot felvételéhez pedig
+csak egy új structot kellene hozzáadnunk, és egyetlen helyen, azon az egyetlen
+structon implementálnunk a trait metódusait.
 
-The implementation using the state pattern is easy to extend to add more
-functionality. To see the simplicity of maintaining code that uses the state
-pattern, try a few of these suggestions:
+A state patternt használó implementációt könnyű további funkciókkal bővíteni.
+Hogy lásd, mennyire egyszerű a state patternt használó kód karbantartása,
+próbálj ki néhányat az alábbi javaslatok közül:
 
-- Add a `reject` method that changes the post’s state from `PendingReview` back
-  to `Draft`.
-- Require two calls to `approve` before the state can be changed to `Published`.
-- Allow users to add text content only when a post is in the `Draft` state.
-  Hint: have the state object responsible for what might change about the
-  content but not responsible for modifying the `Post`.
+- Adj hozzá egy `reject` metódust, amely a bejegyzés állapotát
+  `PendingReview`-ról visszaállítja `Draft`-ra.
+- Írd elő, hogy két `approve` hívásra legyen szükség, mielőtt az állapot
+  `Published`-ra változhat.
+- Csak akkor engedd, hogy a felhasználók szöveges tartalmat adjanak hozzá, ha a
+  bejegyzés `Draft` állapotban van. Tipp: az állapotobjektum feleljen azért,
+  ami a tartalommal kapcsolatban változhat, de ne feleljen a `Post`
+  módosításáért.
 
-One downside of the state pattern is that, because the states implement the
-transitions between states, some of the states are coupled to each other. If we
-add another state between `PendingReview` and `Published`, such as `Scheduled`,
-we would have to change the code in `PendingReview` to transition to
-`Scheduled` instead. It would be less work if `PendingReview` didn’t need to
-change with the addition of a new state, but that would mean switching to
-another design pattern.
+A state pattern egyik hátránya, hogy mivel az állapotok valósítják meg az
+állapotok közötti átmeneteket, egyes állapotok összekapcsolódnak egymással. Ha
+a `PendingReview` és a `Published` közé felveszünk egy újabb állapotot, például
+a `Scheduled`-t, akkor a `PendingReview` kódját kellene megváltoztatnunk, hogy
+helyette a `Scheduled`-be váltson át. Kevesebb munka lenne, ha a
+`PendingReview`-t nem kellene megváltoztatni egy új állapot felvételekor, de ez
+azt jelentené, hogy másik tervezési mintára kellene váltanunk.
 
-Another downside is that we’ve duplicated some logic. To eliminate some of the
-duplication, we might try to make default implementations for the
-`request_review` and `approve` methods on the `State` trait that return `self`.
-However, this wouldn’t work: When using `State` as a trait object, the trait
-doesn’t know what the concrete `self` will be exactly, so the return type isn’t
-known at compile time. (This is one of the dyn compatibility rules mentioned
-earlier.)
+Egy másik hátrány, hogy némi logikát megkettőztünk. Az ismétlődés egy részének
+kiküszöbölésére megpróbálhatnánk alapértelmezett implementációkat készíteni a
+`State` trait `request_review` és `approve` metódusaihoz, amelyek a `self`-et
+adják vissza. Ez azonban nem működne: amikor a `State`-et trait objectként
+használjuk, a trait nem tudja, pontosan mi lesz a konkrét `self`, így a
+visszatérési típus fordítási időben nem ismert. (Ez egyike a korábban említett
+dyn kompatibilitási szabályoknak.)
 
-Other duplication includes the similar implementations of the `request_review`
-and `approve` methods on `Post`. Both methods use `Option::take` with the
-`state` field of `Post`, and if `state` is `Some`, they delegate to the wrapped
-value’s implementation of the same method and set the new value of the `state`
-field to the result. If we had a lot of methods on `Post` that followed this
-pattern, we might consider defining a macro to eliminate the repetition (see
-the [“Macros”][macros]<!-- ignore --> section in Chapter 20).
+További ismétlődés a `Post` `request_review` és `approve` metódusainak hasonló
+implementációja. Mindkét metódus az `Option::take`-et használja a `Post`
+`state` mezőjén, és ha a `state` értéke `Some`, akkor a becsomagolt érték
+ugyanezen metódusának implementációjára delegálnak, majd a `state` mező új
+értékét az eredményre állítják. Ha a `Post`-on sok ilyen mintát követő
+metódusunk lenne, elgondolkodhatnánk azon, hogy makrót definiálunk az ismétlés
+kiküszöbölésére (lásd a 20. fejezet [„Makrók”][macros]<!-- ignore --> című
+szakaszát).
 
-By implementing the state pattern exactly as it’s defined for object-oriented
-languages, we’re not taking as full advantage of Rust’s strengths as we could.
-Let’s look at some changes we can make to the `blog` crate that can make
-invalid states and transitions into compile-time errors.
+Azzal, hogy a state patternt pontosan úgy valósítjuk meg, ahogy azt az
+objektumorientált nyelvekre definiálták, nem használjuk ki olyan teljes
+mértékben a Rust erősségeit, ahogy tehetnénk. Nézzünk meg néhány olyan
+változtatást a `blog` crate-en, amelyekkel az érvénytelen állapotok és
+átmenetek fordítási idejű hibává tehetők.
 
-### Encoding States and Behavior as Types {#encoding-states-and-behavior-as-types}
+### Az állapotok és a viselkedés típusokként való kódolása {#encoding-states-and-behavior-as-types}
 
-We’ll show you how to rethink the state pattern to get a different set of
-trade-offs. Rather than encapsulating the states and transitions completely so
-that outside code has no knowledge of them, we’ll encode the states into
-different types. Consequently, Rust’s type-checking system will prevent
-attempts to use draft posts where only published posts are allowed by issuing a
-compiler error.
+Megmutatjuk, hogyan gondolhatod újra a state patternt, hogy más
+kompromisszumokat kapj. Ahelyett, hogy az állapotokat és az átmeneteket
+teljesen egységbe zárnánk úgy, hogy a külső kód semmit se tudjon róluk, az
+állapotokat különböző típusokba kódoljuk. Ennek következtében a Rust
+típusellenőrző rendszere fordítói hibával akadályozza meg azokat a
+kísérleteket, amelyek piszkozat bejegyzéseket használnának ott, ahol csak
+publikált bejegyzések megengedettek.
 
-Let’s consider the first part of `main` in Listing 18-11:
+Nézzük meg a `main` első részét a 18-11. listából:
 
 <Listing file-name="src/main.rs">
 
@@ -421,17 +446,19 @@ Let’s consider the first part of `main` in Listing 18-11:
 
 </Listing>
 
-We still enable the creation of new posts in the draft state using `Post::new`
-and the ability to add text to the post’s content. But instead of having a
-`content` method on a draft post that returns an empty string, we’ll make it so
-that draft posts don’t have the `content` method at all. That way, if we try to
-get a draft post’s content, we’ll get a compiler error telling us the method
-doesn’t exist. As a result, it will be impossible for us to accidentally
-display draft post content in production because that code won’t even compile.
-Listing 18-19 shows the definition of a `Post` struct and a `DraftPost` struct,
-as well as methods on each.
+Továbbra is lehetővé tesszük, hogy a `Post::new` segítségével piszkozat
+állapotú új bejegyzéseket hozzunk létre, és hogy szöveget adhassunk a bejegyzés
+tartalmához. Ahelyett azonban, hogy a piszkozat bejegyzésnek lenne egy üres
+sztringet visszaadó `content` metódusa, azt fogjuk elérni, hogy a piszkozat
+bejegyzéseknek egyáltalán ne legyen `content` metódusuk. Így ha megpróbáljuk
+lekérdezni egy piszkozat bejegyzés tartalmát, fordítói hibát kapunk, amely
+közli, hogy a metódus nem létezik. Ennek eredményeként lehetetlen lesz, hogy
+véletlenül megjelenítsük egy piszkozat bejegyzés tartalmát az éles
+környezetben, mert az a kód le sem fordul. A 18-19. lista mutatja egy `Post`
+struct és egy `DraftPost` struct definícióját, valamint a rajtuk lévő
+metódusokat.
 
-<Listing number="18-19" file-name="src/lib.rs" caption="A `Post` with a `content` method and a `DraftPost` without a `content` method">
+<Listing number="18-19" file-name="src/lib.rs" caption="Egy `Post` `content` metódussal és egy `DraftPost` `content` metódus nélkül">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-19/src/lib.rs}}
@@ -439,36 +466,38 @@ as well as methods on each.
 
 </Listing>
 
-Both the `Post` and `DraftPost` structs have a private `content` field that
-stores the blog post text. The structs no longer have the `state` field because
-we’re moving the encoding of the state to the types of the structs. The `Post`
-struct will represent a published post, and it has a `content` method that
-returns the `content`.
+Mind a `Post`, mind a `DraftPost` structnak van egy privát `content` mezője,
+amely a blogbejegyzés szövegét tárolja. A structoknak már nincs `state`
+mezőjük, mert az állapot kódolását áthelyezzük a structok típusaiba. A `Post`
+struct a publikált bejegyzést fogja képviselni, és van egy `content` metódusa,
+amely visszaadja a `content` mezőt.
 
-We still have a `Post::new` function, but instead of returning an instance of
-`Post`, it returns an instance of `DraftPost`. Because `content` is private and
-there aren’t any functions that return `Post`, it’s not possible to create an
-instance of `Post` right now.
+Továbbra is van egy `Post::new` függvényünk, de ez `Post` példány helyett
+`DraftPost` példányt ad vissza. Mivel a `content` privát, és nincs olyan
+függvény, amely `Post`-ot adna vissza, jelenleg nem lehet `Post` példányt
+létrehozni.
 
-The `DraftPost` struct has an `add_text` method, so we can add text to
-`content` as before, but note that `DraftPost` does not have a `content` method
-defined! So now the program ensures that all posts start as draft posts, and
-draft posts don’t have their content available for display. Any attempt to get
-around these constraints will result in a compiler error.
+A `DraftPost` structnak van egy `add_text` metódusa, így a korábbiakhoz
+hasonlóan hozzáadhatunk szöveget a `content`-hez, de vedd észre, hogy a
+`DraftPost`-on nincs definiálva `content` metódus! A program mostantól tehát
+biztosítja, hogy minden bejegyzés piszkozatként induljon, és hogy a piszkozat
+bejegyzések tartalma ne legyen elérhető megjelenítésre. Minden kísérlet arra,
+hogy ezeket a megkötéseket megkerüljük, fordítói hibát eredményez.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="implementing-transitions-as-transformations-into-different-types"></a>
 
-So, how do we get a published post? We want to enforce the rule that a draft
-post has to be reviewed and approved before it can be published. A post in the
-pending review state should still not display any content. Let’s implement
-these constraints by adding another struct, `PendingReviewPost`, defining the
-`request_review` method on `DraftPost` to return a `PendingReviewPost` and
-defining an `approve` method on `PendingReviewPost` to return a `Post`, as
-shown in Listing 18-20.
+Hogyan jutunk hát publikált bejegyzéshez? Azt a szabályt szeretnénk
+kikényszeríteni, hogy egy piszkozat bejegyzést le kell lektorálni és jóvá kell
+hagyni, mielőtt publikálható lenne. A lektorálásra váró állapotban lévő
+bejegyzésnek továbbra sem szabad tartalmat megjelenítenie. Valósítsuk meg ezeket
+a megkötéseket egy újabb struct, a `PendingReviewPost` hozzáadásával: a
+`DraftPost`-on definiálunk egy `request_review` metódust, amely
+`PendingReviewPost`-ot ad vissza, a `PendingReviewPost`-on pedig egy `approve`
+metódust, amely `Post`-ot ad vissza, ahogy a 18-20. listában látható.
 
-<Listing number="18-20" file-name="src/lib.rs" caption="A `PendingReviewPost` that gets created by calling `request_review` on `DraftPost` and an `approve` method that turns a `PendingReviewPost` into a published `Post`">
+<Listing number="18-20" file-name="src/lib.rs" caption="Egy `PendingReviewPost`, amely a `DraftPost` `request_review` metódusának meghívásával jön létre, és egy `approve` metódus, amely a `PendingReviewPost`-ot publikált `Post`-tá alakítja">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-20/src/lib.rs:here}}
@@ -476,27 +505,30 @@ shown in Listing 18-20.
 
 </Listing>
 
-The `request_review` and `approve` methods take ownership of `self`, thus
-consuming the `DraftPost` and `PendingReviewPost` instances and transforming
-them into a `PendingReviewPost` and a published `Post`, respectively. This way,
-we won’t have any lingering `DraftPost` instances after we’ve called
-`request_review` on them, and so forth. The `PendingReviewPost` struct doesn’t
-have a `content` method defined on it, so attempting to read its content
-results in a compiler error, as with `DraftPost`. Because the only way to get a
-published `Post` instance that does have a `content` method defined is to call
-the `approve` method on a `PendingReviewPost`, and the only way to get a
-`PendingReviewPost` is to call the `request_review` method on a `DraftPost`,
-we’ve now encoded the blog post workflow into the type system.
+A `request_review` és az `approve` metódus átveszi a `self` ownershipjét, így
+felemészti a `DraftPost`, illetve a `PendingReviewPost` példányt, és
+`PendingReviewPost`-tá, illetve publikált `Post`-tá alakítja őket. Ily módon
+nem maradnak ottfelejtett `DraftPost` példányaink azután, hogy meghívtuk rajtuk
+a `request_review`-t, és így tovább. A `PendingReviewPost` structon nincs
+definiálva `content` metódus, ezért a tartalmának olvasására tett kísérlet
+fordítói hibát eredményez, akárcsak a `DraftPost` esetében. Mivel az egyetlen
+mód arra, hogy olyan publikált `Post` példányhoz jussunk, amelyen van
+definiálva `content` metódus, az `approve` metódus meghívása egy
+`PendingReviewPost`-on, `PendingReviewPost`-hoz pedig kizárólag a `DraftPost`
+`request_review` metódusának meghívásával juthatunk, ezzel a
+blogbejegyzés-munkafolyamatot bekódoltuk a típusrendszerbe.
 
-But we also have to make some small changes to `main`. The `request_review` and
-`approve` methods return new instances rather than modifying the struct they’re
-called on, so we need to add more `let post =` shadowing assignments to save
-the returned instances. We also can’t have the assertions about the draft and
-pending review posts’ contents be empty strings, nor do we need them: We can’t
-compile code that tries to use the content of posts in those states any longer.
-The updated code in `main` is shown in Listing 18-21.
+Néhány apró változtatást azonban a `main`-en is el kell végeznünk. A
+`request_review` és az `approve` metódus új példányokat ad vissza, ahelyett
+hogy módosítaná azt a structot, amelyen meghívjuk őket, ezért további `let post
+=` shadowing értékadásokat kell felvennünk a visszakapott példányok
+elmentéséhez. Azok az állítások sem szerepelhetnek már, amelyek szerint a
+piszkozat és a lektorálásra váró bejegyzések tartalma üres sztring, és nincs is
+rájuk szükségünk: már le sem tudjuk fordítani azt a kódot, amely az ilyen
+állapotban lévő bejegyzések tartalmát próbálná használni. A frissített `main`
+kódot a 18-21. lista mutatja.
 
-<Listing number="18-21" file-name="src/main.rs" caption="Modifications to `main` to use the new implementation of the blog post workflow">
+<Listing number="18-21" file-name="src/main.rs" caption="A `main` módosításai, hogy a blogbejegyzés-munkafolyamat új implementációját használja">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-21/src/main.rs}}
@@ -504,43 +536,47 @@ The updated code in `main` is shown in Listing 18-21.
 
 </Listing>
 
-The changes we needed to make to `main` to reassign `post` mean that this
-implementation doesn’t quite follow the object-oriented state pattern anymore:
-The transformations between the states are no longer encapsulated entirely
-within the `Post` implementation. However, our gain is that invalid states are
-now impossible because of the type system and the type checking that happens at
-compile time! This ensures that certain bugs, such as display of the content of
-an unpublished post, will be discovered before they make it to production.
+Azok a változtatások, amelyeket a `main`-en el kellett végeznünk a `post`
+újbóli értékadásához, azt jelentik, hogy ez az implementáció már nem egészen
+követi az objektumorientált state patternt: az állapotok közötti átalakulások
+már nincsenek teljes egészében a `Post` implementációjába zárva. Cserébe
+viszont azt nyerjük, hogy az érvénytelen állapotok immár lehetetlenek a
+típusrendszernek és a fordítási időben történő típusellenőrzésnek
+köszönhetően! Ez biztosítja, hogy bizonyos hibák – például egy publikálatlan
+bejegyzés tartalmának megjelenítése – kiderüljenek, mielőtt éles környezetbe
+kerülnének.
 
-Try the tasks suggested at the start of this section on the `blog` crate as it
-is after Listing 18-21 to see what you think about the design of this version
-of the code. Note that some of the tasks might be completed already in this
-design.
+Próbáld ki a szakasz elején javasolt feladatokat a `blog` crate-en abban az
+állapotában, ahogy a 18-21. lista után áll, és nézd meg, mit gondolsz a kód
+ezen változatának a felépítéséről. Vedd észre, hogy néhány feladat ebben a
+kialakításban talán már eleve teljesül.
 
-We’ve seen that even though Rust is capable of implementing object-oriented
-design patterns, other patterns, such as encoding state into the type system,
-are also available in Rust. These patterns have different trade-offs. Although
-you might be very familiar with object-oriented patterns, rethinking the
-problem to take advantage of Rust’s features can provide benefits, such as
-preventing some bugs at compile time. Object-oriented patterns won’t always be
-the best solution in Rust due to certain features, like ownership, that
-object-oriented languages don’t have.
+Láttuk, hogy bár a Rust képes megvalósítani objektumorientált tervezési
+mintákat, más minták is rendelkezésre állnak benne, például az, hogy az
+állapotot a típusrendszerbe kódoljuk. Ezek a minták más-más
+kompromisszumokkal járnak. Bár lehet, hogy nagyon jól ismered az
+objektumorientált mintákat, ha a Rust képességeit kihasználva újragondolod a
+problémát, az előnyökkel járhat: például bizonyos hibák már fordítási időben
+kiszűrhetők. Az objektumorientált minták nem mindig lesznek a legjobb megoldás
+Rustban, mert vannak olyan képességek – például az ownership –, amelyekkel az
+objektumorientált nyelvek nem rendelkeznek.
 
-## Summary
+## Összefoglalás
 
-Regardless of whether you think Rust is an object-oriented language after
-reading this chapter, you now know that you can use trait objects to get some
-object-oriented features in Rust. Dynamic dispatch can give your code some
-flexibility in exchange for a bit of runtime performance. You can use this
-flexibility to implement object-oriented patterns that can help your code’s
-maintainability. Rust also has other features, like ownership, that
-object-oriented languages don’t have. An object-oriented pattern won’t always
-be the best way to take advantage of Rust’s strengths, but it is an available
-option.
+Függetlenül attól, hogy e fejezet elolvasása után objektumorientált nyelvnek
+tartod-e a Rustot, most már tudod, hogy trait objectek használatával
+megkaphatsz néhány objektumorientált képességet a Rustban. A dinamikus dispatch
+egy kis futásidejű teljesítmény árán rugalmasságot adhat a kódodnak. Ezt a
+rugalmasságot olyan objektumorientált minták megvalósítására használhatod,
+amelyek javíthatják a kódod karbantarthatóságát. A Rustnak vannak más
+képességei is, például az ownership, amelyekkel az objektumorientált nyelvek
+nem rendelkeznek. Egy objektumorientált minta nem mindig lesz a legjobb mód a
+Rust erősségeinek kihasználására, de rendelkezésre álló lehetőség.
 
-Next, we’ll look at patterns, which are another of Rust’s features that enable
-lots of flexibility. We’ve looked at them briefly throughout the book but
-haven’t seen their full capability yet. Let’s go!
+A következőkben a mintákat vesszük szemügyre, amelyek a Rust egy másik olyan
+képességét jelentik, amely nagy rugalmasságot tesz lehetővé. A könyv során már
+röviden találkoztunk velük, de a teljes képességüket még nem láttuk. Vágjunk
+bele!
 
 [more-info-than-rustc]: ch09-03-to-panic-or-not-to-panic.html#cases-in-which-you-have-more-information-than-the-compiler
 [macros]: ch20-05-macros.html#macros

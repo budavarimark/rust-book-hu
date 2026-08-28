@@ -1,68 +1,72 @@
-## Putting It All Together: Futures, Tasks, and Threads
+## Tegyük össze: future-ök, taskok és szálak
 
-As we saw in [Chapter 16][ch16]<!-- ignore -->, threads provide one approach to
-concurrency. We’ve seen another approach in this chapter: using async with
-futures and streams. If you’re wondering when to choose one method over the other,
-the answer is: it depends! And in many cases, the choice isn’t threads _or_
-async but rather threads _and_ async.
+Ahogy a [16. fejezetben][ch16]<!-- ignore --> láttuk, a szálak egyfajta
+megközelítést kínálnak a konkurenciához. Ebben a fejezetben egy másik
+megközelítést láttunk: az async használatát future-ökkel és stream-ekkel. Ha
+azon töprengsz, mikor melyiket válaszd, a válasz: attól függ! És sok esetben
+nem is szálak _vagy_ async a kérdés, hanem szálak _és_ async.
 
-Many operating systems have supplied threading-based concurrency models for
-decades now, and many programming languages support them as a result. However,
-these models are not without their tradeoffs. On many operating systems, they
-use a fair bit of memory for each thread. Threads are also only an option when
-your operating system and hardware support them. Unlike mainstream desktop and
-mobile computers, some embedded systems don’t have an OS at all, so they also
-don’t have threads.
+Sok operációs rendszer már évtizedek óta kínál szálalapú konkurenciamodelleket,
+és ennek megfelelően sok programozási nyelv is támogatja őket. Ezeknek a
+modelleknek azonban megvannak a maguk kompromisszumai. Számos operációs
+rendszeren minden szál elég sok memóriát használ. A szálak ráadásul csak akkor
+jöhetnek szóba, ha az operációs rendszered és a hardvered támogatja őket. A
+mainstream asztali és mobil számítógépekkel ellentétben egyes beágyazott
+rendszereken egyáltalán nincs operációs rendszer, tehát szálak sincsenek.
 
-The async model provides a different—and ultimately complementary—set of
-tradeoffs. In the async model, concurrent operations don’t require their own
-threads. Instead, they can run on tasks, as when we used `trpl::spawn_task` to
-kick off work from a synchronous function in the streams section. A task is
-similar to a thread, but instead of being managed by the operating system, it’s
-managed by library-level code: the runtime.
+Az async modell másfajta – és végső soron kiegészítő – kompromisszumokat kínál.
+Az async modellben a konkurens műveleteknek nincs szükségük saját szálra.
+Helyette taskokon futhatnak, ahogy akkor is, amikor a stream-ekről szóló
+szakaszban a `trpl::spawn_task` hívással indítottunk el munkát egy szinkron
+függvényből. A task hasonlít a szálhoz, de nem az operációs rendszer kezeli,
+hanem könyvtári szintű kód: a runtime.
 
-There’s a reason the APIs for spawning threads and spawning tasks are so
-similar. Threads act as a boundary for sets of synchronous operations;
-concurrency is possible _between_ threads. Tasks act as a boundary for sets of
-_asynchronous_ operations; concurrency is possible both _between_ and _within_
-tasks, because a task can switch between futures in its body. Finally, futures
-are Rust’s most granular unit of concurrency, and each future may represent a
-tree of other futures. The runtime—specifically, its executor—manages tasks,
-and tasks manage futures. In that regard, tasks are similar to lightweight,
-runtime-managed threads with added capabilities that come from being managed by
-a runtime instead of by the operating system.
+Nem véletlen, hogy a szálak és a taskok indítására szolgáló API-k ennyire
+hasonlítanak egymásra. A szálak határt húznak szinkron műveletek csoportjai
+köré; a konkurencia a szálak _között_ lehetséges. A taskok _aszinkron_
+műveletek csoportjai köré húznak határt; a konkurencia a taskok _között_ és a
+taskokon _belül_ is lehetséges, mert egy task válthat a törzsében lévő
+future-ök között. Végül a future-ök a Rust legfinomabb szemcsézettségű
+konkurencia-egységei, és minden future future-ök egész fáját képviselheti. A
+runtime – pontosabban annak executora – a taskokat kezeli, a taskok pedig a
+future-öket. Ilyen értelemben a taskok könnyűsúlyú, runtime által kezelt
+szálakhoz hasonlítanak, kiegészítve azokkal a képességekkel, amelyek abból
+fakadnak, hogy nem az operációs rendszer, hanem egy runtime kezeli őket.
 
-This doesn’t mean that async tasks are always better than threads (or vice
-versa). Concurrency with threads is in some ways a simpler programming model
-than concurrency with `async`. That can be a strength or a weakness. Threads are
-somewhat “fire and forget”; they have no native equivalent to a future, so they
-simply run to completion without being interrupted except by the operating
-system itself.
+Ez nem jelenti azt, hogy az async taskok mindig jobbak a szálaknál (vagy
+fordítva). A szálakkal megvalósított konkurencia bizonyos szempontból
+egyszerűbb programozási modell, mint az `async`-kal megvalósított. Ez lehet erő
+és gyengeség is. A szálak némileg „elindítod és elfelejted” jellegűek; nincs
+natív megfelelőjük a future-re, így egyszerűen befejezésig futnak, és csak maga
+az operációs rendszer szakítja meg őket.
 
-And it turns out that threads and tasks often work
-very well together, because tasks can (at least in some runtimes) be moved
-around between threads. In fact, under the hood, the runtime we’ve been
-using—including the `spawn_blocking` and `spawn_task` functions—is multithreaded
-by default! Many runtimes use an approach called _work stealing_ to
-transparently move tasks around between threads, based on how the threads are
-currently being utilized, to improve the system’s overall performance. That
-approach actually requires threads _and_ tasks, and therefore futures.
+Kiderül továbbá, hogy a szálak és a taskok gyakran nagyon jól működnek együtt,
+mert a taskok (legalábbis egyes runtime-okban) mozgathatók a szálak között.
+Sőt, a motorháztető alatt az általunk használt runtime – beleértve a
+`spawn_blocking` és a `spawn_task` függvényt is – alapértelmezés szerint
+többszálú! Sok runtime a _work stealing_ (munkalopás) nevű megközelítést
+használja arra, hogy a szálak aktuális kihasználtsága alapján átlátszó módon
+mozgassa a taskokat a szálak között, javítva ezzel a rendszer
+összteljesítményét. Ehhez a megközelítéshez valójában szálak _és_ taskok,
+tehát future-ök is kellenek.
 
-When thinking about which method to use when, consider these rules of thumb:
+Amikor azon gondolkodsz, mikor melyik módszert használd, vedd figyelembe ezeket
+az ökölszabályokat:
 
-- If the work is _very parallelizable_ (that is, CPU-bound), such as processing
-  a bunch of data where each part can be processed separately, threads are a
-  better choice.
-- If the work is _very concurrent_ (that is, I/O-bound), such as handling
-  messages from a bunch of different sources that may come in at different
-  intervals or different rates, async is a better choice.
+- Ha a munka _jól párhuzamosítható_ (vagyis CPU-igényes), például egy csomó
+  adatot kell feldolgozni úgy, hogy minden rész külön feldolgozható, akkor a
+  szálak a jobb választás.
+- Ha a munka _erősen konkurens_ (vagyis I/O-igényes), például egy csomó
+  különböző forrásból érkező üzenetet kell kezelni, amelyek eltérő időközönként
+  vagy eltérő ütemben érkezhetnek, akkor az async a jobb választás.
 
-And if you need both parallelism and concurrency, you don’t have to choose
-between threads and async. You can use them together freely, letting each
-play the part it’s best at. For example, Listing 17-25 shows a fairly common
-example of this kind of mix in real-world Rust code.
+És ha egyszerre van szükséged párhuzamosságra és konkurenciára, nem kell
+választanod a szálak és az async között. Szabadon használhatod őket együtt,
+hagyva, hogy mindegyik azt a szerepet töltse be, amelyben a legjobb. A 17-25.
+lista például egy elég gyakori példát mutat az ilyen keverésre a valós Rust
+kódban.
 
-<Listing number="17-25" caption="Sending messages with blocking code in a thread and awaiting the messages in an async block" file-name="src/main.rs">
+<Listing number="17-25" caption="Üzenetek küldése blokkoló kóddal egy szálban, és az üzenetek bevárása egy async blokkban" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-25/src/main.rs:all}}
@@ -70,34 +74,36 @@ example of this kind of mix in real-world Rust code.
 
 </Listing>
 
-We begin by creating an async channel, then spawning a thread that takes
-ownership of the sender side of the channel using the `move` keyword. Within
-the thread, we send the numbers 1 through 10, sleeping for a second between
-each. Finally, we run a future created with an async block passed to
-`trpl::block_on` just as we have throughout the chapter. In that future, we
-await those messages, just as in the other message-passing examples we have
-seen.
+Először létrehozunk egy async csatornát, majd indítunk egy szálat, amely a
+`move` kulcsszóval átveszi a csatorna küldő oldalának ownershipjét. A szálon
+belül elküldjük az 1-től 10-ig terjedő számokat, és mindegyik között alszunk egy
+másodpercet. Végül lefuttatunk egy future-t, amelyet a `trpl::block_on`-nak
+átadott async blokkból hoztunk létre, ahogy a fejezet során végig tettük. Ebben
+a future-ben bevárjuk ezeket az üzeneteket, akárcsak a többi, üzenetküldéssel
+kapcsolatos példában, amelyet láttunk.
 
-To return to the scenario we opened the chapter with, imagine running a set of
-video encoding tasks using a dedicated thread (because video encoding is
-compute-bound) but notifying the UI that those operations are done with an
-async channel. There are countless examples of these kinds of combinations in
-real-world use cases.
+Visszatérve a fejezet elején felvázolt forgatókönyvhöz, képzeld el, hogy egy
+csomó videokódolási feladatot futtatsz egy dedikált szálon (mert a videokódolás
+számításigényes), de egy async csatornán értesíted a felhasználói felületet,
+hogy ezek a műveletek elkészültek. Az ilyen kombinációkra számtalan példa akad a
+valós felhasználási esetekben.
 
-## Summary
+## Összefoglalás
 
-This isn’t the last you’ll see of concurrency in this book. The project in
-[Chapter 21][ch21]<!-- ignore --> will apply these concepts in a more realistic
-situation than the simpler examples discussed here and compare problem-solving
-with threading versus tasks and futures more directly.
+Nem ez az utolsó alkalom, hogy konkurenciával találkozol ebben a könyvben. A
+[21. fejezet][ch21]<!-- ignore --> projektje az itt tárgyalt egyszerűbb
+példáknál valósághűbb helyzetben alkalmazza ezeket a fogalmakat, és
+közvetlenebbül hasonlítja össze a szálakkal, illetve a taskokkal és future-ökkel
+való problémamegoldást.
 
-No matter which of these approaches you choose, Rust gives you the tools you
-need to write safe, fast, concurrent code—whether for a high-throughput web
-server or an embedded operating system.
+Bármelyik megközelítést választod is, a Rust megadja a szükséges eszközöket
+ahhoz, hogy biztonságos, gyors, konkurens kódot írj – akár egy nagy
+átbocsátóképességű webszerverhez, akár egy beágyazott operációs rendszerhez.
 
-Next, we’ll talk about idiomatic ways to model problems and structure solutions
-as your Rust programs get bigger. In addition, we’ll discuss how Rust’s idioms
-relate to those you might be familiar with from object-oriented programming.
+Ezután arról lesz szó, hogyan modellezhetsz problémákat és hogyan
+strukturálhatsz megoldásokat idiomatikus módon, ahogy a Rust programjaid egyre
+nagyobbak lesznek. Emellett megbeszéljük, hogyan viszonyulnak a Rust idiómái
+azokhoz, amelyeket az objektumorientált programozásból ismerhetsz.
 
 [ch16]: ch16-00-concurrency.html
 [combining-futures]: ch17-03-more-futures.html#building-our-own-async-abstractions

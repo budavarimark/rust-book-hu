@@ -1,183 +1,191 @@
-## Appendix C: Derivable Traits
+## C függelék: Származtatható trait-ek
 
-In various places in the book, we’ve discussed the `derive` attribute, which
-you can apply to a struct or enum definition. The `derive` attribute generates
-code that will implement a trait with its own default implementation on the
-type you’ve annotated with the `derive` syntax.
+A könyv több pontján is szó volt a `derive` attribútumról, amelyet egy struct-
+vagy enum-definícióra alkalmazhatsz. A `derive` attribútum olyan kódot generál,
+amely a saját alapértelmezett implementációjával implementál egy trait-et azon a
+típuson, amelyet a `derive` szintaxissal annotáltál.
 
-In this appendix, we provide a reference of all the traits in the standard
-library that you can use with `derive`. Each section covers:
+Ebben a függelékben azoknak a standard könyvtárbeli trait-eknek a referenciáját
+adjuk meg, amelyeket a `derive`-val használhatsz. Minden szakasz kitér a
+következőkre:
 
-- What operators and methods deriving this trait will enable
-- What the implementation of the trait provided by `derive` does
-- What implementing the trait signifies about the type
-- The conditions in which you’re allowed or not allowed to implement the trait
-- Examples of operations that require the trait
+- Milyen operátorokat és metódusokat tesz elérhetővé a trait származtatása
+- Mit csinál a trait `derive` által biztosított implementációja
+- Mit jelent a típusra nézve a trait implementálása
+- Milyen feltételek mellett szabad, illetve nem szabad implementálnod a trait-et
+- Példák olyan műveletekre, amelyekhez szükség van a trait-re
 
-If you want different behavior from that provided by the `derive` attribute,
-consult the [standard library documentation](../std/index.html)<!-- ignore -->
-for each trait for details on how to manually implement them.
+Ha a `derive` attribútum által biztosítottól eltérő viselkedést szeretnél, nézd
+meg az egyes trait-ek [standard könyvtárbeli dokumentációját](../std/index.html)<!-- ignore -->,
+ahol a kézi implementálásuk részleteit is megtalálod.
 
-The traits listed here are the only ones defined by the standard library that
-can be implemented on your types using `derive`. Other traits defined in the
-standard library don’t have sensible default behavior, so it’s up to you to
-implement them in the way that makes sense for what you’re trying to accomplish.
+Az itt felsorolt trait-ek az egyetlenek a standard könyvtárban definiáltak
+közül, amelyeket `derive` segítségével implementálhatsz a saját típusaidon. A
+standard könyvtárban definiált többi trait-nek nincs ésszerű alapértelmezett
+viselkedése, így rajtad múlik, hogy úgy implementáld őket, ahogy az a céljaid
+szempontjából értelmes.
 
-An example of a trait that can’t be derived is `Display`, which handles
-formatting for end users. You should always consider the appropriate way to
-display a type to an end user. What parts of the type should an end user be
-allowed to see? What parts would they find relevant? What format of the data
-would be most relevant to them? The Rust compiler doesn’t have this insight, so
-it can’t provide appropriate default behavior for you.
+Egy példa olyan trait-re, amelyet nem lehet származtatni, a `Display`, amely a
+végfelhasználók számára történő formázást intézi. Mindig gondold át, hogyan
+helyes egy típust megjeleníteni a végfelhasználónak. Mely részeit láthatja a
+típusnak a végfelhasználó? Mely részeket találná relevánsnak? Az adat melyik
+formátuma lenne számára a legrelevánsabb? A Rust fordítónak nincs meg ez a
+rálátása, így nem tud helyetted megfelelő alapértelmezett viselkedést nyújtani.
 
-The list of derivable traits provided in this appendix is not comprehensive:
-Libraries can implement `derive` for their own traits, making the list of
-traits you can use `derive` with truly open ended. Implementing `derive`
-involves using a procedural macro, which is covered in the [“Custom `derive`
-Macros”][custom-derive-macros]<!-- ignore --> section in Chapter 20.
+A függelékben felsorolt származtatható trait-ek listája nem teljes körű: a
+könyvtárak a saját trait-jeikhez is implementálhatják a `derive`-ot, így azoknak
+a trait-eknek a listája, amelyekkel a `derive`-ot használhatod, valójában nyitott.
+A `derive` implementálásához procedurális makróra van szükség, amelyről a 20.
+fejezet [„Egyedi `derive` makrók”][custom-derive-macros]<!-- ignore --> című
+szakaszában esik szó.
 
-### `Debug` for Programmer Output
+### `Debug` a programozói kimenethez
 
-The `Debug` trait enables debug formatting in format strings, which you
-indicate by adding `:?` within `{}` placeholders.
+A `Debug` trait teszi lehetővé a debug formázást a formátumsztringekben, amit a
+`{}` helyőrzőkön belüli `:?` hozzáadásával jelzel.
 
-The `Debug` trait allows you to print instances of a type for debugging
-purposes, so you and other programmers using your type can inspect an instance
-at a particular point in a program’s execution.
+A `Debug` trait lehetővé teszi, hogy hibakeresési céllal kiírd egy típus
+példányait, így te és a típusodat használó más programozók megvizsgálhattok egy
+példányt a program végrehajtásának adott pontján.
 
-The `Debug` trait is required, for example, in the use of the `assert_eq!`
-macro. This macro prints the values of instances given as arguments if the
-equality assertion fails so that programmers can see why the two instances
-weren’t equal.
+A `Debug` trait szükséges például az `assert_eq!` makró használatához. Ez a makró
+kiírja az argumentumként megadott példányok értékeit, ha az egyenlőségi állítás
+nem teljesül, hogy a programozók láthassák, miért nem volt egyenlő a két
+példány.
 
-### `PartialEq` and `Eq` for Equality Comparisons
+### `PartialEq` és `Eq` az egyenlőség-összehasonlításokhoz
 
-The `PartialEq` trait allows you to compare instances of a type to check for
-equality and enables use of the `==` and `!=` operators.
+A `PartialEq` trait lehetővé teszi, hogy egy típus példányait egyenlőségre
+vizsgálva összehasonlítsd, és elérhetővé teszi a `==` és a `!=` operátor
+használatát.
 
-Deriving `PartialEq` implements the `eq` method. When `PartialEq` is derived on
-structs, two instances are equal only if _all_ fields are equal, and the
-instances are not equal if _any_ fields are not equal. When derived on enums,
-each variant is equal to itself and not equal to the other variants.
+A `PartialEq` származtatása az `eq` metódust implementálja. Amikor a `PartialEq`-t
+struct-okon származtatjuk, két példány csak akkor egyenlő, ha _minden_ mező
+egyenlő, és nem egyenlők, ha _bármelyik_ mező nem egyenlő. Enumokon
+származtatva minden variáns egyenlő önmagával, és nem egyenlő a többi
+variánssal.
 
-The `PartialEq` trait is required, for example, with the use of the
-`assert_eq!` macro, which needs to be able to compare two instances of a type
-for equality.
+A `PartialEq` trait szükséges például az `assert_eq!` makró használatához,
+amelynek képesnek kell lennie egy típus két példányát egyenlőségre
+összehasonlítani.
 
-The `Eq` trait has no methods. Its purpose is to signal that for every value of
-the annotated type, the value is equal to itself. The `Eq` trait can only be
-applied to types that also implement `PartialEq`, although not all types that
-implement `PartialEq` can implement `Eq`. One example of this is floating-point
-number types: The implementation of floating-point numbers states that two
-instances of the not-a-number (`NaN`) value are not equal to each other.
+Az `Eq` trait-nek nincsenek metódusai. Az a célja, hogy jelezze: az annotált
+típus minden értéke egyenlő önmagával. Az `Eq` trait csak olyan típusokra
+alkalmazható, amelyek a `PartialEq`-t is implementálják, bár nem minden
+`PartialEq`-t implementáló típus tudja implementálni az `Eq`-t. Erre példa a
+lebegőpontos számtípusok esete: a lebegőpontos számok implementációja kimondja,
+hogy a nem szám (`NaN`) érték két példánya nem egyenlő egymással.
 
-An example of when `Eq` is required is for keys in a `HashMap<K, V>` so that
-the `HashMap<K, V>` can tell whether two keys are the same.
+Az `Eq`-ra például akkor van szükség, amikor egy `HashMap<K, V>` kulcsairól van
+szó, hogy a `HashMap<K, V>` meg tudja mondani, két kulcs azonos-e.
 
-### `PartialOrd` and `Ord` for Ordering Comparisons
+### `PartialOrd` és `Ord` a rendezési összehasonlításokhoz
 
-The `PartialOrd` trait allows you to compare instances of a type for sorting
-purposes. A type that implements `PartialOrd` can be used with the `<`, `>`,
-`<=`, and `>=` operators. You can only apply the `PartialOrd` trait to types
-that also implement `PartialEq`.
+A `PartialOrd` trait lehetővé teszi, hogy egy típus példányait rendezési céllal
+hasonlítsd össze. A `PartialOrd`-ot implementáló típus használható a `<`, a `>`,
+a `<=` és a `>=` operátorral. A `PartialOrd` trait-et csak olyan típusokra
+alkalmazhatod, amelyek a `PartialEq`-t is implementálják.
 
-Deriving `PartialOrd` implements the `partial_cmp` method, which returns an
-`Option<Ordering>` that will be `None` when the values given don’t produce an
-ordering. An example of a value that doesn’t produce an ordering, even though
-most values of that type can be compared, is the `NaN` floating point value.
-Calling `partial_cmp` with any floating-point number and the `NaN`
-floating-point value will return `None`.
+A `PartialOrd` származtatása a `partial_cmp` metódust implementálja, amely egy
+`Option<Ordering>`-et ad vissza; ez `None` lesz, ha a megadott értékek nem
+állíthatók sorrendbe. Példa olyan értékre, amely nem eredményez rendezést, noha
+az adott típus legtöbb értéke összehasonlítható: a `NaN` lebegőpontos érték. A
+`partial_cmp` hívása bármely lebegőpontos számmal és a `NaN` lebegőpontos
+értékkel `None`-t ad vissza.
 
-When derived on structs, `PartialOrd` compares two instances by comparing the
-value in each field in the order in which the fields appear in the struct
-definition. When derived on enums, variants of the enum declared earlier in the
-enum definition are considered less than the variants listed later.
+Struct-okon származtatva a `PartialOrd` úgy hasonlít össze két példányt, hogy az
+egyes mezők értékeit abban a sorrendben veti össze, ahogy a mezők a
+struct-definícióban szerepelnek. Enumokon származtatva az enum-definícióban
+korábban deklarált variánsok kisebbnek számítanak a később felsoroltaknál.
 
-The `PartialOrd` trait is required, for example, for the `gen_range` method
-from the `rand` crate that generates a random value in the range specified by a
-range expression.
+A `PartialOrd` trait szükséges például a `rand` crate `gen_range` metódusához,
+amely egy tartománykifejezéssel megadott tartományban generál véletlen értéket.
 
-The `Ord` trait allows you to know that for any two values of the annotated
-type, a valid ordering will exist. The `Ord` trait implements the `cmp` method,
-which returns an `Ordering` rather than an `Option<Ordering>` because a valid
-ordering will always be possible. You can only apply the `Ord` trait to types
-that also implement `PartialOrd` and `Eq` (and `Eq` requires `PartialEq`). When
-derived on structs and enums, `cmp` behaves the same way as the derived
-implementation for `partial_cmp` does with `PartialOrd`.
+Az `Ord` trait révén tudhatod, hogy az annotált típus bármely két értéke között
+létezik érvényes rendezés. Az `Ord` trait a `cmp` metódust implementálja, amely
+`Option<Ordering>` helyett `Ordering`-et ad vissza, mert érvényes rendezés
+mindig lehetséges. Az `Ord` trait-et csak olyan típusokra alkalmazhatod, amelyek
+a `PartialOrd`-ot és az `Eq`-t is implementálják (az `Eq` pedig megköveteli a
+`PartialEq`-t). Struct-okon és enumokon származtatva a `cmp` ugyanúgy viselkedik,
+ahogy a `partial_cmp` származtatott implementációja a `PartialOrd` esetén.
 
-An example of when `Ord` is required is when storing values in a `BTreeSet<T>`,
-a data structure that stores data based on the sort order of the values.
+Az `Ord`-ra például akkor van szükség, amikor értékeket tárolunk egy
+`BTreeSet<T>`-ben, egy olyan adatszerkezetben, amely az értékek rendezési
+sorrendje alapján tárolja az adatokat.
 
-### `Clone` and `Copy` for Duplicating Values
+### `Clone` és `Copy` az értékek duplikálásához
 
-The `Clone` trait allows you to explicitly create a deep copy of a value, and
-the duplication process might involve running arbitrary code and copying heap
-data. See the [“Variables and Data Interacting with
-Clone”][variables-and-data-interacting-with-clone]<!-- ignore --> section in
-Chapter 4 for more information on `Clone`.
+A `Clone` trait lehetővé teszi, hogy explicit módon mélymásolatot készíts egy
+értékről, és a duplikálási folyamat tetszőleges kód futtatásával, valamint a
+heapen lévő adatok másolásával járhat. A `Clone`-ról bővebben a 4. fejezet
+[„Változók és adatok kölcsönhatása:
+clone”][variables-and-data-interacting-with-clone]<!-- ignore --> című
+szakaszában olvashatsz.
 
-Deriving `Clone` implements the `clone` method, which when implemented for the
-whole type, calls `clone` on each of the parts of the type. This means all the
-fields or values in the type must also implement `Clone` to derive `Clone`.
+A `Clone` származtatása a `clone` metódust implementálja, amely – ha a teljes
+típusra van implementálva – meghívja a `clone`-t a típus minden részére. Ez azt
+jelenti, hogy a `Clone` származtatásához a típus minden mezőjének vagy értékének
+implementálnia kell a `Clone`-t.
 
-An example of when `Clone` is required is when calling the `to_vec` method on a
-slice. The slice doesn’t own the type instances it contains, but the vector
-returned from `to_vec` will need to own its instances, so `to_vec` calls
-`clone` on each item. Thus, the type stored in the slice must implement `Clone`.
+A `Clone`-ra például akkor van szükség, amikor egy slice-on meghívjuk a `to_vec`
+metódust. A slice nem birtokolja az általa tartalmazott típuspéldányokat, de a
+`to_vec` által visszaadott vektornak birtokolnia kell a saját példányait, ezért
+a `to_vec` minden elemen meghívja a `clone`-t. Így a slice-ban tárolt típusnak
+implementálnia kell a `Clone`-t.
 
-The `Copy` trait allows you to duplicate a value by only copying bits stored on
-the stack; no arbitrary code is necessary. See the [“Stack-Only Data:
-Copy”][stack-only-data-copy]<!-- ignore --> section in Chapter 4 for more
-information on `Copy`.
+A `Copy` trait lehetővé teszi, hogy egy értéket pusztán a stacken tárolt bitek
+másolásával duplikálj; nincs szükség tetszőleges kódra. A `Copy`-ról bővebben a
+4. fejezet [„Csak a stack-en lévő adat: `Copy`”][stack-only-data-copy]<!-- ignore -->
+című szakaszában olvashatsz.
 
-The `Copy` trait doesn’t define any methods to prevent programmers from
-overloading those methods and violating the assumption that no arbitrary code
-is being run. That way, all programmers can assume that copying a value will be
-very fast.
+A `Copy` trait nem definiál metódusokat, hogy a programozók ne tudják
+túlterhelni azokat, és ezzel megsérteni azt a feltevést, hogy nem fut
+tetszőleges kód. Így minden programozó feltételezheti, hogy egy érték másolása
+nagyon gyors lesz.
 
-You can derive `Copy` on any type whose parts all implement `Copy`. A type that
-implements `Copy` must also implement `Clone` because a type that implements
-`Copy` has a trivial implementation of `Clone` that performs the same task as
-`Copy`.
+A `Copy`-t bármely olyan típuson származtathatod, amelynek minden része
+implementálja a `Copy`-t. Egy `Copy`-t implementáló típusnak a `Clone`-t is
+implementálnia kell, mert egy `Copy`-t implementáló típusnak triviális `Clone`
+implementációja van, amely ugyanazt a feladatot végzi, mint a `Copy`.
 
-The `Copy` trait is rarely required; types that implement `Copy` have
-optimizations available, meaning you don’t have to call `clone`, which makes
-the code more concise.
+A `Copy` trait-re ritkán van szükség; a `Copy`-t implementáló típusokhoz
+optimalizációk állnak rendelkezésre, vagyis nem kell meghívnod a `clone`-t, ami
+tömörebbé teszi a kódot.
 
-Everything possible with `Copy` you can also accomplish with `Clone`, but the
-code might be slower or have to use `clone` in places.
+Mindent, ami a `Copy`-val lehetséges, a `Clone`-nal is elérhetsz, de a kód
+lassabb lehet, vagy helyenként a `clone`-t kell használnia.
 
-### `Hash` for Mapping a Value to a Value of Fixed Size
+### `Hash` egy érték fix méretű értékké képezéséhez
 
-The `Hash` trait allows you to take an instance of a type of arbitrary size and
-map that instance to a value of fixed size using a hash function. Deriving
-`Hash` implements the `hash` method. The derived implementation of the `hash`
-method combines the result of calling `hash` on each of the parts of the type,
-meaning all fields or values must also implement `Hash` to derive `Hash`.
+A `Hash` trait lehetővé teszi, hogy egy tetszőleges méretű típus egy példányát
+egy hash függvény segítségével fix méretű értékké képezd le. A `Hash`
+származtatása a `hash` metódust implementálja. A `hash` metódus származtatott
+implementációja egyesíti a típus egyes részein meghívott `hash` eredményét, ami
+azt jelenti, hogy a `Hash` származtatásához minden mezőnek vagy értéknek
+implementálnia kell a `Hash`-t.
 
-An example of when `Hash` is required is in storing keys in a `HashMap<K, V>`
-to store data efficiently.
+A `Hash`-re például akkor van szükség, amikor kulcsokat tárolunk egy
+`HashMap<K, V>`-ben az adatok hatékony tárolása érdekében.
 
-### `Default` for Default Values
+### `Default` az alapértelmezett értékekhez
 
-The `Default` trait allows you to create a default value for a type. Deriving
-`Default` implements the `default` function. The derived implementation of the
-`default` function calls the `default` function on each part of the type,
-meaning all fields or values in the type must also implement `Default` to
-derive `Default`.
+A `Default` trait lehetővé teszi, hogy alapértelmezett értéket hozz létre egy
+típushoz. A `Default` származtatása a `default` függvényt implementálja. A
+`default` függvény származtatott implementációja meghívja a `default` függvényt a
+típus minden részén, ami azt jelenti, hogy a `Default` származtatásához a típus
+minden mezőjének vagy értékének implementálnia kell a `Default`-ot.
 
-The `Default::default` function is commonly used in combination with the struct
-update syntax discussed in the [“Creating Instances from Other Instances with
-Struct Update
-Syntax”][creating-instances-from-other-instances-with-struct-update-syntax]<!--
-ignore --> section in Chapter 5. You can customize a few fields of a struct and
-then set and use a default value for the rest of the fields by using
-`..Default::default()`.
+A `Default::default` függvényt gyakran a struct-frissítő szintaxissal együtt
+használják, amelyről az 5. fejezet [„Példányok létrehozása struct-frissítő
+szintaxissal”][creating-instances-from-other-instances-with-struct-update-syntax]<!--
+ignore --> című szakaszában volt szó. Egy struct néhány mezőjét testre szabhatod,
+a többi mezőhöz pedig a `..Default::default()` használatával alapértelmezett
+értéket állíthatsz be és használhatsz.
 
-The `Default` trait is required when you use the method `unwrap_or_default` on
-`Option<T>` instances, for example. If the `Option<T>` is `None`, the method
-`unwrap_or_default` will return the result of `Default::default` for the type
-`T` stored in the `Option<T>`.
+A `Default` trait-re például akkor van szükség, amikor az `unwrap_or_default`
+metódust használod `Option<T>` példányokon. Ha az `Option<T>` értéke `None`, az
+`unwrap_or_default` metódus az `Option<T>`-ben tárolt `T` típushoz tartozó
+`Default::default` eredményét adja vissza.
 
 [creating-instances-from-other-instances-with-struct-update-syntax]: ch05-01-defining-structs.html#creating-instances-from-other-instances-with-struct-update-syntax
 [stack-only-data-copy]: ch04-01-what-is-ownership.html#stack-only-data-copy

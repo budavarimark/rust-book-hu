@@ -86,9 +86,9 @@ A Rust azt kifogásolja, hogy nincs értelme cáfolhatatlan mintával használni
 Emiatt a `match`-ágaknak cáfolható mintákat kell használniuk, kivéve az utolsó
 ágat, amelynek egy cáfolhatatlan mintával kell illeszkednie az összes megmaradt
 értékre. A Rust megengedi, hogy egyetlen ágból álló `match`-ben cáfolhatatlan
-mintát használjunk, de ez a szintaxis nem különösebben hasznos, és kiváltható egy
-egyszerűbb `let` utasítással.
+mintát használjunk, de ez a szintaxis nem különösebben hasznos, és kiváltható
+egy egyszerűbb `let` utasítással.
 
 Most, hogy tudod, hol használhatsz mintákat, és mi a különbség a cáfolható és a
-cáfolhatatlan minták között, vegyük sorra az összes szintaxist, amellyel mintákat
-hozhatunk létre.
+cáfolhatatlan minták között, vegyük sorra az összes szintaxist, amellyel
+mintákat hozhatunk létre.

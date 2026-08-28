@@ -1,85 +1,88 @@
-## Macros {#macros}
+## Makrók {#macros}
 
-We’ve used macros like `println!` throughout this book, but we haven’t fully
-explored what a macro is and how it works. The term _macro_ refers to a family
-of features in Rust—declarative macros with `macro_rules!` and three kinds of
-procedural macros:
+A könyv során végig használtunk makrókat, például a `println!`-t, de még nem
+jártuk körül teljesen, mi is az a makró, és hogyan működik. A _makró_ kifejezés
+a Rust képességeinek egy egész családjára utal: a `macro_rules!` segítségével
+írt deklaratív makrókra és a procedurális makrók három fajtájára:
 
-- Custom `#[derive]` macros that specify code added with the `derive` attribute
-  used on structs and enums
-- Attribute-like macros that define custom attributes usable on any item
-- Function-like macros that look like function calls but operate on the tokens
-  specified as their argument
+- Egyedi `#[derive]` makrók, amelyek megadják a structokon és enumokon
+  használt `derive` attribútummal hozzáadott kódot
+- Attribútumszerű makrók, amelyek bármely elemen használható egyedi
+  attribútumokat definiálnak
+- Függvényszerű makrók, amelyek függvényhívásnak látszanak, de az
+  argumentumukként megadott tokeneken dolgoznak
 
-We’ll talk about each of these in turn, but first, let’s look at why we even
-need macros when we already have functions.
+Ezek mindegyikéről sorra beszélünk, de előbb nézzük meg, minek is kellenek
+egyáltalán makrók, ha már vannak függvényeink.
 
-### The Difference Between Macros and Functions
+### A makrók és a függvények közötti különbség
 
-Fundamentally, macros are a way of writing code that writes other code, which
-is known as _metaprogramming_. In Appendix C, we discuss the `derive`
-attribute, which generates an implementation of various traits for you. We’ve
-also used the `println!` and `vec!` macros throughout the book. All of these
-macros _expand_ to produce more code than the code you’ve written manually.
+A makrók alapvetően olyan kódírási módot jelentenek, amelyben a kód másik kódot
+ír; ezt _metaprogramozásnak_ nevezzük. A C függelékben a `derive` attribútumról
+lesz szó, amely különféle trait-ek implementációját generálja neked.
+Használtuk emellett a könyv során a `println!` és a `vec!` makrót is. Ezek a
+makrók mind _kifejtődnek_, és több kódot állítanak elő, mint amennyit kézzel
+írtál.
 
-Metaprogramming is useful for reducing the amount of code you have to write and
-maintain, which is also one of the roles of functions. However, macros have
-some additional powers that functions don’t have.
+A metaprogramozás azért hasznos, mert csökkenti a megírandó és karbantartandó
+kód mennyiségét — ez a függvények egyik szerepe is. A makróknak azonban van
+néhány további képességük, amellyel a függvények nem rendelkeznek.
 
-A function signature must declare the number and type of parameters the
-function has. Macros, on the other hand, can take a variable number of
-parameters: We can call `println!("hello")` with one argument or
-`println!("hello {}", name)` with two arguments. Also, macros are expanded
-before the compiler interprets the meaning of the code, so a macro can, for
-example, implement a trait on a given type. A function can’t, because it gets
-called at runtime and a trait needs to be implemented at compile time.
+Egy függvényszignatúrának deklarálnia kell, hány és milyen típusú paramétere
+van a függvénynek. A makrók ezzel szemben változó számú paramétert fogadhatnak:
+meghívhatjuk a `println!("hello")`-t egyetlen argumentummal, vagy a
+`println!("hello {}", name)`-et kettővel. Ráadásul a makrók még azelőtt
+kifejtődnek, hogy a fordító értelmezné a kód jelentését, így egy makró például
+implementálhat egy trait-et egy adott típusra. Egy függvény ezt nem teheti meg,
+mert futásidőben hívódik meg, a trait-eket viszont fordítási időben kell
+implementálni.
 
-The downside to implementing a macro instead of a function is that macro
-definitions are more complex than function definitions because you’re writing
-Rust code that writes Rust code. Due to this indirection, macro definitions are
-generally more difficult to read, understand, and maintain than function
-definitions.
+A makró — függvény helyett történő — implementálásának hátránya, hogy a
+makródefiníciók összetettebbek a függvénydefinícióknál, hiszen olyan Rust-kódot
+írsz, amely Rust-kódot ír. E közvetettség miatt a makródefiníciókat általában
+nehezebb olvasni, megérteni és karbantartani, mint a függvénydefiníciókat.
 
-Another important difference between macros and functions is that you must
-define macros or bring them into scope _before_ you call them in a file, as
-opposed to functions you can define anywhere and call anywhere.
+A makrók és a függvények közötti másik fontos különbség, hogy a makrókat egy
+fájlban _azelőtt_ kell definiálnod vagy hatókörbe hoznod, hogy meghívnád őket,
+míg a függvényeket bárhol definiálhatod és bárhol meghívhatod.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="declarative-macros-with-macro_rules-for-general-metaprogramming"></a>
 
-### Declarative Macros for General Metaprogramming
+### Deklaratív makrók az általános metaprogramozáshoz
 
-The most widely used form of macros in Rust is the _declarative macro_. These
-are also sometimes referred to as “macros by example,” “`macro_rules!` macros,”
-or just plain “macros.” At their core, declarative macros allow you to write
-something similar to a Rust `match` expression. As discussed in Chapter 6,
-`match` expressions are control structures that take an expression, compare the
-resultant value of the expression to patterns, and then run the code associated
-with the matching pattern. Macros also compare a value to patterns that are
-associated with particular code: In this situation, the value is the literal
-Rust source code passed to the macro; the patterns are compared with the
-structure of that source code; and the code associated with each pattern, when
-matched, replaces the code passed to the macro. This all happens during
-compilation.
+A Rustban a makrók legelterjedtebb formája a _deklaratív makró_. Ezeket néha
+„példa alapú makróknak” (macros by example), „`macro_rules!` makróknak” vagy
+egyszerűen csak „makróknak” nevezik. A deklaratív makrók lényegében azt teszik
+lehetővé, hogy a Rust `match` kifejezéseihez hasonló dolgot írj. Ahogy a 6.
+fejezetben szó volt róla, a `match` kifejezések olyan vezérlési szerkezetek,
+amelyek fogadnak egy kifejezést, összehasonlítják a kifejezés eredményül kapott
+értékét mintákkal, majd lefuttatják az illeszkedő mintához tartozó kódot. A
+makrók szintén egy értéket hasonlítanak össze bizonyos kódhoz tartozó mintákkal:
+ebben az esetben az érték a makrónak átadott, szó szerinti Rust forráskód; a
+mintákat ennek a forráskódnak a szerkezetével vetik össze; az egyes mintákhoz
+tartozó kód pedig illeszkedés esetén a makrónak átadott kód helyébe lép. Mindez
+a fordítás során történik.
 
-To define a macro, you use the `macro_rules!` construct. Let’s explore how to
-use `macro_rules!` by looking at how the `vec!` macro is defined. Chapter 8
-covered how we can use the `vec!` macro to create a new vector with particular
-values. For example, the following macro creates a new vector containing three
-integers:
+Makró definiálásához a `macro_rules!` szerkezetet használod. Nézzük meg a
+`macro_rules!` használatát azon keresztül, hogyan van definiálva a `vec!`
+makró. A 8. fejezet foglalkozott azzal, hogyan hozhatunk létre a `vec!`
+makróval új vektort adott értékekkel. Például az alábbi makró egy három egész
+számot tartalmazó új vektort hoz létre:
 
 ```rust
 let v: Vec<u32> = vec![1, 2, 3];
 ```
 
-We could also use the `vec!` macro to make a vector of two integers or a vector
-of five string slices. We wouldn’t be able to use a function to do the same
-because we wouldn’t know the number or type of values up front.
+Használhatnánk a `vec!` makrót két egész számból álló vektor vagy öt string
+slice-ból álló vektor létrehozására is. Függvénnyel ugyanezt nem tudnánk
+megtenni, mert előre nem ismernénk az értékek számát és típusát.
 
-Listing 20-35 shows a slightly simplified definition of the `vec!` macro.
+A 20-35. lista a `vec!` makró definíciójának kissé egyszerűsített változatát
+mutatja.
 
-<Listing number="20-35" file-name="src/lib.rs" caption="A simplified version of the `vec!` macro definition">
+<Listing number="20-35" file-name="src/lib.rs" caption="A `vec!` makró definíciójának egyszerűsített változata">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-35/src/lib.rs}}
@@ -87,54 +90,55 @@ Listing 20-35 shows a slightly simplified definition of the `vec!` macro.
 
 </Listing>
 
-> Note: The actual definition of the `vec!` macro in the standard library
-> includes code to pre-allocate the correct amount of memory up front. That code
-> is an optimization that we don’t include here, to make the example simpler.
+> Megjegyzés: a `vec!` makró tényleges definíciója a standard könyvtárban olyan
+> kódot is tartalmaz, amely előre lefoglalja a megfelelő mennyiségű memóriát. Ez
+> a kód egy optimalizáció, amelyet itt nem szerepeltetünk, hogy a példa
+> egyszerűbb legyen.
 
-The `#[macro_export]` annotation indicates that this macro should be made
-available whenever the crate in which the macro is defined is brought into
-scope. Without this annotation, the macro can’t be brought into scope.
+A `#[macro_export]` annotáció azt jelzi, hogy ennek a makrónak elérhetőnek kell
+lennie, valahányszor az őt definiáló crate-et hatókörbe hozzák. Enélkül az
+annotáció nélkül a makrót nem lehet hatókörbe hozni.
 
-We then start the macro definition with `macro_rules!` and the name of the
-macro we’re defining _without_ the exclamation mark. The name, in this case
-`vec`, is followed by curly brackets denoting the body of the macro definition.
+Ezután a makródefiníciót a `macro_rules!`-lal és a definiálandó makró nevével
+kezdjük, felkiáltójel _nélkül_. A nevet — ez esetben a `vec`-et — kapcsos
+zárójelek követik, amelyek a makródefiníció törzsét jelölik.
 
-The structure in the `vec!` body is similar to the structure of a `match`
-expression. Here we have one arm with the pattern `( $( $x:expr ),* )`,
-followed by `=>` and the block of code associated with this pattern. If the
-pattern matches, the associated block of code will be emitted. Given that this
-is the only pattern in this macro, there is only one valid way to match; any
-other pattern will result in an error. More complex macros will have more than
-one arm.
+A `vec!` törzsében lévő szerkezet a `match` kifejezés szerkezetéhez hasonlít.
+Egyetlen águnk van, a `( $( $x:expr ),* )` mintával, amelyet a `=>` és az ehhez
+a mintához tartozó kódblokk követ. Ha a minta illeszkedik, a hozzá tartozó
+kódblokk kerül kibocsátásra. Mivel ez az egyetlen minta ebben a makróban, csak
+egyféleképpen lehet illeszkedni; bármilyen más minta hibát eredményez. Az
+összetettebb makróknak több águk is lesz.
 
-Valid pattern syntax in macro definitions is different from the pattern syntax
-covered in Chapter 19 because macro patterns are matched against Rust code
-structure rather than values. Let’s walk through what the pattern pieces in
-Listing 20-29 mean; for the full macro pattern syntax, see the [Rust
-Reference][ref].
+A makródefiníciókban érvényes mintaszintaxis eltér a 19. fejezetben tárgyalt
+mintaszintaxistól, mert a makróknál a mintákat nem értékekkel, hanem a
+Rust-kód szerkezetével vetjük össze. Nézzük végig, mit jelentenek a minta egyes
+darabjai a 20-29. listában; a teljes makró-mintaszintaxist a [Rust
+referenciában][ref] találod.
 
-First, we use a set of parentheses to encompass the whole pattern. We use a
-dollar sign (`$`) to declare a variable in the macro system that will contain
-the Rust code matching the pattern. The dollar sign makes it clear this is a
-macro variable as opposed to a regular Rust variable. Next comes a set of
-parentheses that captures values that match the pattern within the parentheses
-for use in the replacement code. Within `$()` is `$x:expr`, which matches any
-Rust expression and gives the expression the name `$x`.
+Először is egy zárójelpárral fogjuk körül az egész mintát. Dollárjellel (`$`)
+deklarálunk a makrórendszerben egy változót, amely a mintára illeszkedő
+Rust-kódot fogja tartalmazni. A dollárjel egyértelművé teszi, hogy ez
+makróváltozó, nem közönséges Rust-változó. Ezután következik egy újabb
+zárójelpár, amely a benne lévő mintára illeszkedő értékeket fogja be a
+helyettesítő kódban való felhasználásra. A `$()` belsejében a `$x:expr` áll,
+amely bármely Rust-kifejezésre illeszkedik, és a `$x` nevet adja a
+kifejezésnek.
 
-The comma following `$()` indicates that a literal comma separator character
-must appear between each instance of the code that matches the code in `$()`.
-The `*` specifies that the pattern matches zero or more of whatever precedes
-the `*`.
+A `$()`-t követő vessző azt jelzi, hogy a `$()`-ben lévő kódra illeszkedő
+kódrészletek egyes példányai között szó szerinti vessző elválasztókaraktert
+kell írni. A `*` azt adja meg, hogy a minta nullaszor vagy többször illeszkedik
+arra, ami a `*` előtt áll.
 
-When we call this macro with `vec![1, 2, 3];`, the `$x` pattern matches three
-times with the three expressions `1`, `2`, and `3`.
+Amikor ezt a makrót a `vec![1, 2, 3];` alakban hívjuk meg, a `$x` minta
+háromszor illeszkedik, az `1`, a `2` és a `3` kifejezésekre.
 
-Now let’s look at the pattern in the body of the code associated with this arm:
-`temp_vec.push()` within `$()*` is generated for each part that matches `$()`
-in the pattern zero or more times depending on how many times the pattern
-matches. The `$x` is replaced with each expression matched. When we call this
-macro with `vec![1, 2, 3];`, the code generated that replaces this macro call
-will be the following:
+Most nézzük az ehhez az ághoz tartozó kód törzsében lévő mintát: a `$()*`-on
+belüli `temp_vec.push()` minden olyan részhez legenerálódik, amely a mintában
+lévő `$()`-re illeszkedik, nullaszor vagy többször, attól függően, hányszor
+illeszkedik a minta. A `$x` helyére minden illeszkedő kifejezés bekerül. Amikor
+ezt a makrót a `vec![1, 2, 3];` alakban hívjuk meg, a makróhívás helyébe lépő
+generált kód a következő lesz:
 
 ```rust,ignore
 {
@@ -146,29 +150,32 @@ will be the following:
 }
 ```
 
-We’ve defined a macro that can take any number of arguments of any type and can
-generate code to create a vector containing the specified elements.
+Olyan makrót definiáltunk, amely tetszőleges számú, tetszőleges típusú
+argumentumot fogadhat, és olyan kódot tud generálni, amely a megadott elemeket
+tartalmazó vektort hoz létre.
 
-To learn more about how to write macros, consult the online documentation or
-other resources, such as [“The Little Book of Rust Macros”][tlborm] started by
-Daniel Keep and continued by Lukas Wirth.
+Ha többet szeretnél megtudni a makróírásról, olvasd el az online
+dokumentációt vagy más forrásokat, például a Daniel Keep által elindított és
+Lukas Wirth által folytatott [„The Little Book of Rust Macros”][tlborm] című
+könyvet.
 
-### Procedural Macros for Generating Code from Attributes
+### Procedurális makrók kódgenerálásra attribútumokból
 
-The second form of macros is the procedural macro, which acts more like a
-function (and is a type of procedure). _Procedural macros_ accept some code as
-an input, operate on that code, and produce some code as an output rather than
-matching against patterns and replacing the code with other code as declarative
-macros do. The three kinds of procedural macros are custom `derive`,
-attribute-like, and function-like, and all work in a similar fashion.
+A makrók második formája a procedurális makró, amely inkább függvényként
+viselkedik (és egyfajta eljárás). A _procedurális makrók_ valamilyen kódot
+kapnak bemenetként, műveleteket végeznek rajta, és kódot állítanak elő
+kimenetként — ahelyett, hogy mintákra illesztenének, és a kódot másik kóddal
+helyettesítenék, ahogy a deklaratív makrók teszik. A procedurális makrók három
+fajtája az egyedi `derive`, az attribútumszerű és a függvényszerű makró, és
+mindegyik hasonlóan működik.
 
-When creating procedural macros, the definitions must reside in their own crate
-with a special crate type. This is for complex technical reasons that we hope
-to eliminate in the future. In Listing 20-36, we show how to define a
-procedural macro, where `some_attribute` is a placeholder for using a specific
-macro variety.
+Procedurális makrók készítésekor a definícióknak saját, speciális crate-típusú
+crate-ben kell lenniük. Ennek bonyolult technikai okai vannak, amelyeket
+reményeink szerint a jövőben meg tudunk szüntetni. A 20-36. listában
+megmutatjuk, hogyan definiálhatunk procedurális makrót; a `some_attribute` egy
+konkrét makrófajta használatának helyőrzője.
 
-<Listing number="20-36" file-name="src/lib.rs" caption="An example of defining a procedural macro">
+<Listing number="20-36" file-name="src/lib.rs" caption="Példa procedurális makró definiálására">
 
 ```rust,ignore
 use proc_macro::TokenStream;
@@ -180,36 +187,37 @@ pub fn some_name(input: TokenStream) -> TokenStream {
 
 </Listing>
 
-The function that defines a procedural macro takes a `TokenStream` as an input
-and produces a `TokenStream` as an output. The `TokenStream` type is defined by
-the `proc_macro` crate that is included with Rust and represents a sequence of
-tokens. This is the core of the macro: The source code that the macro is
-operating on makes up the input `TokenStream`, and the code the macro produces
-is the output `TokenStream`. The function also has an attribute attached to it
-that specifies which kind of procedural macro we’re creating. We can have
-multiple kinds of procedural macros in the same crate.
+A procedurális makrót definiáló függvény bemenetként egy `TokenStream`-et kap,
+és kimenetként `TokenStream`-et állít elő. A `TokenStream` típust a Rusttal
+együtt szállított `proc_macro` crate definiálja, és tokenek sorozatát
+reprezentálja. Ez a makró lényege: az a forráskód, amellyel a makró dolgozik,
+alkotja a bemeneti `TokenStream`-et, a makró által előállított kód pedig a
+kimeneti `TokenStream`. A függvényhez emellett egy attribútum is tartozik,
+amely megadja, milyen fajta procedurális makrót készítünk. Ugyanabban a
+crate-ben többféle procedurális makrónk is lehet.
 
-Let’s look at the different kinds of procedural macros. We’ll start with a
-custom `derive` macro and then explain the small dissimilarities that make the
-other forms different.
+Nézzük meg a procedurális makrók különböző fajtáit. Egy egyedi `derive`
+makróval kezdjük, majd elmagyarázzuk azokat az apró eltéréseket, amelyek a
+többi formát megkülönböztetik.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="how-to-write-a-custom-derive-macro"></a>
 
-### Custom `derive` Macros {#custom-derive-macros}
+### Egyedi `derive` makrók {#custom-derive-macros}
 
-Let’s create a crate named `hello_macro` that defines a trait named
-`HelloMacro` with one associated function named `hello_macro`. Rather than
-making our users implement the `HelloMacro` trait for each of their types,
-we’ll provide a procedural macro so that users can annotate their type with
-`#[derive(HelloMacro)]` to get a default implementation of the `hello_macro`
-function. The default implementation will print `Hello, Macro! My name is
-TypeName!` where `TypeName` is the name of the type on which this trait has
-been defined. In other words, we’ll write a crate that enables another
-programmer to write code like Listing 20-37 using our crate.
+Hozzunk létre egy `hello_macro` nevű crate-et, amely definiál egy `HelloMacro`
+nevű trait-et egyetlen, `hello_macro` nevű asszociált függvénnyel. Ahelyett,
+hogy a felhasználóinkkal implementáltatnánk a `HelloMacro` trait-et minden
+egyes típusukra, biztosítunk egy procedurális makrót, hogy a felhasználók a
+`#[derive(HelloMacro)]` annotációval ellássák a típusukat, és így megkapják a
+`hello_macro` függvény alapértelmezett implementációját. Az alapértelmezett
+implementáció a `Hello, Macro! My name is TypeName!` szöveget írja ki, ahol a
+`TypeName` annak a típusnak a neve, amelyre ezt a trait-et definiálták. Más
+szóval olyan crate-et írunk, amely lehetővé teszi, hogy egy másik programozó a
+crate-ünket használva a 20-37. listához hasonló kódot írjon.
 
-<Listing number="20-37" file-name="src/main.rs" caption="The code a user of our crate will be able to write when using our procedural macro">
+<Listing number="20-37" file-name="src/main.rs" caption="A kód, amelyet a crate-ünk felhasználója írhat majd a procedurális makrónkkal">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-37/src/main.rs}}
@@ -217,17 +225,17 @@ programmer to write code like Listing 20-37 using our crate.
 
 </Listing>
 
-This code will print `Hello, Macro! My name is Pancakes!` when we’re done. The
-first step is to make a new library crate, like this:
+Ez a kód a `Hello, Macro! My name is Pancakes!` szöveget fogja kiírni, ha
+elkészültünk. Az első lépés egy új library crate létrehozása, így:
 
 ```console
 $ cargo new hello_macro --lib
 ```
 
-Next, in Listing 20-38, we’ll define the `HelloMacro` trait and its associated
-function.
+Ezután a 20-38. listában definiáljuk a `HelloMacro` trait-et és az asszociált
+függvényét.
 
-<Listing file-name="src/lib.rs" number="20-38" caption="A simple trait that we will use with the `derive` macro">
+<Listing file-name="src/lib.rs" number="20-38" caption="Egyszerű trait, amelyet a `derive` makróval fogunk használni">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-38/hello_macro/src/lib.rs}}
@@ -235,10 +243,11 @@ function.
 
 </Listing>
 
-We have a trait and its function. At this point, our crate user could implement
-the trait to achieve the desired functionality, as in Listing 20-39.
+Megvan a trait és a függvénye. Ezen a ponton a crate-ünk felhasználója
+implementálhatná a trait-et a kívánt működés eléréséhez, ahogy a 20-39.
+listában látható.
 
-<Listing number="20-39" file-name="src/main.rs" caption="How it would look if users wrote a manual implementation of the `HelloMacro` trait">
+<Listing number="20-39" file-name="src/main.rs" caption="Így nézne ki, ha a felhasználók kézzel implementálnák a `HelloMacro` trait-et">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-39/pancakes/src/main.rs}}
@@ -246,41 +255,42 @@ the trait to achieve the desired functionality, as in Listing 20-39.
 
 </Listing>
 
-However, they would need to write the implementation block for each type they
-wanted to use with `hello_macro`; we want to spare them from having to do this
-work.
+Ehhez azonban minden olyan típushoz meg kellene írniuk az implementációs
+blokkot, amelyet a `hello_macro`-val akarnak használni; mi szeretnénk
+megkímélni őket ettől a munkától.
 
-Additionally, we can’t yet provide the `hello_macro` function with default
-implementation that will print the name of the type the trait is implemented
-on: Rust doesn’t have reflection capabilities, so it can’t look up the type’s
-name at runtime. We need a macro to generate code at compile time.
+Ráadásul egyelőre nem tudjuk a `hello_macro` függvényt olyan alapértelmezett
+implementációval ellátni, amely kiírja annak a típusnak a nevét, amelyre a
+trait implementálva van: a Rustban nincs reflexió, így futásidőben nem tudja
+megnézni a típus nevét. Makróra van szükségünk, amely fordítási időben generál
+kódot.
 
-The next step is to define the procedural macro. At the time of this writing,
-procedural macros need to be in their own crate. Eventually, this restriction
-might be lifted. The convention for structuring crates and macro crates is as
-follows: For a crate named `foo`, a custom `derive` procedural macro crate is
-called `foo_derive`. Let’s start a new crate called `hello_macro_derive` inside
-our `hello_macro` project:
+A következő lépés a procedurális makró definiálása. Jelen sorok írásakor a
+procedurális makróknak saját crate-ben kell lenniük. Ez a megkötés idővel
+talán megszűnik. A crate-ek és a makró-crate-ek elnevezésének konvenciója a
+következő: egy `foo` nevű crate-hez az egyedi `derive` procedurális makró
+crate neve `foo_derive`. Hozzunk létre egy `hello_macro_derive` nevű új
+crate-et a `hello_macro` projektünkön belül:
 
 ```console
 $ cargo new hello_macro_derive --lib
 ```
 
-Our two crates are tightly related, so we create the procedural macro crate
-within the directory of our `hello_macro` crate. If we change the trait
-definition in `hello_macro`, we’ll have to change the implementation of the
-procedural macro in `hello_macro_derive` as well. The two crates will need to
-be published separately, and programmers using these crates will need to add
-both as dependencies and bring them both into scope. We could instead have the
-`hello_macro` crate use `hello_macro_derive` as a dependency and re-export the
-procedural macro code. However, the way we’ve structured the project makes it
-possible for programmers to use `hello_macro` even if they don’t want the
-`derive` functionality.
+A két crate-ünk szorosan összefügg, ezért a procedurális makró crate-jét a
+`hello_macro` crate könyvtárán belül hozzuk létre. Ha megváltoztatjuk a
+trait-definíciót a `hello_macro`-ban, a `hello_macro_derive` procedurális
+makrójának implementációját is módosítanunk kell. A két crate-et külön kell
+majd publikálni, és az ezeket használó programozóknak mindkettőt fel kell
+venniük függőségként, és mindkettőt hatókörbe kell hozniuk. Megtehetnénk azt
+is, hogy a `hello_macro` crate függőségként használja a `hello_macro_derive`-t,
+és újraexportálja a procedurális makró kódját. A projekt általunk választott
+felépítése viszont lehetővé teszi, hogy a programozók akkor is használhassák a
+`hello_macro`-t, ha nem kérnek a `derive` funkcionalitásból.
 
-We need to declare the `hello_macro_derive` crate as a procedural macro crate.
-We’ll also need functionality from the `syn` and `quote` crates, as you’ll see
-in a moment, so we need to add them as dependencies. Add the following to the
-_Cargo.toml_ file for `hello_macro_derive`:
+Deklarálnunk kell, hogy a `hello_macro_derive` crate procedurális makró crate.
+Szükségünk lesz emellett a `syn` és a `quote` crate képességeire is, ahogy azt
+mindjárt látni fogod, ezért ezeket fel kell vennünk függőségként. Add hozzá a
+következőt a `hello_macro_derive` _Cargo.toml_ fájljához:
 
 <Listing file-name="hello_macro_derive/Cargo.toml">
 
@@ -290,11 +300,12 @@ _Cargo.toml_ file for `hello_macro_derive`:
 
 </Listing>
 
-To start defining the procedural macro, place the code in Listing 20-40 into
-your _src/lib.rs_ file for the `hello_macro_derive` crate. Note that this code
-won’t compile until we add a definition for the `impl_hello_macro` function.
+A procedurális makró definiálásának megkezdéséhez másold a 20-40. lista kódját
+a `hello_macro_derive` crate _src/lib.rs_ fájljába. Vedd figyelembe, hogy ez a
+kód addig nem fordul le, amíg meg nem adjuk az `impl_hello_macro` függvény
+definícióját.
 
-<Listing number="20-40" file-name="hello_macro_derive/src/lib.rs" caption="Code that most procedural macro crates will require in order to process Rust code">
+<Listing number="20-40" file-name="hello_macro_derive/src/lib.rs" caption="Kód, amelyre a legtöbb procedurális makró crate-nek szüksége lesz a Rust-kód feldolgozásához">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-40/hello_macro/hello_macro_derive/src/lib.rs}}
@@ -302,41 +313,42 @@ won’t compile until we add a definition for the `impl_hello_macro` function.
 
 </Listing>
 
-Notice that we’ve split the code into the `hello_macro_derive` function, which
-is responsible for parsing the `TokenStream`, and the `impl_hello_macro`
-function, which is responsible for transforming the syntax tree: This makes
-writing a procedural macro more convenient. The code in the outer function
-(`hello_macro_derive` in this case) will be the same for almost every
-procedural macro crate you see or create. The code you specify in the body of
-the inner function (`impl_hello_macro` in this case) will be different
-depending on your procedural macro’s purpose.
+Vedd észre, hogy két részre osztottuk a kódot: a `hello_macro_derive`
+függvényre, amely a `TokenStream` értelmezéséért felel, és az
+`impl_hello_macro` függvényre, amely a szintaxisfa átalakításáért — ez
+kényelmesebbé teszi a procedurális makró írását. A külső függvényben (itt a
+`hello_macro_derive`-ban) lévő kód szinte minden procedurális makró crate-ben
+ugyanaz lesz, amelyet valaha látsz vagy készítesz. A belső függvény (itt az
+`impl_hello_macro`) törzsében megadott kód viszont a procedurális makród
+céljától függően más és más lesz.
 
-We’ve introduced three new crates: `proc_macro`, [`syn`][syn]<!-- ignore -->,
-and [`quote`][quote]<!-- ignore -->. The `proc_macro` crate comes with Rust,
-so we didn’t need to add that to the dependencies in _Cargo.toml_. The
-`proc_macro` crate is the compiler’s API that allows us to read and manipulate
-Rust code from our code.
+Három új crate-et vezettünk be: a `proc_macro`-t, a [`syn`][syn]<!-- ignore -->
+crate-et és a [`quote`][quote]<!-- ignore --> crate-et. A `proc_macro` crate a
+Rusttal együtt érkezik, ezért nem kellett felvennünk a _Cargo.toml_
+függőségei közé. A `proc_macro` crate a fordító API-ja, amely lehetővé teszi,
+hogy a kódunkból olvassuk és manipuláljuk a Rust-kódot.
 
-The `syn` crate parses Rust code from a string into a data structure that we
-can perform operations on. The `quote` crate turns `syn` data structures back
-into Rust code. These crates make it much simpler to parse any sort of Rust
-code we might want to handle: Writing a full parser for Rust code is no simple
-task.
+A `syn` crate egy sztringből álló Rust-kódot olyan adatszerkezetté alakít,
+amelyen műveleteket végezhetünk. A `quote` crate a `syn` adatszerkezeteit
+alakítja vissza Rust-kóddá. Ezek a crate-ek sokkal egyszerűbbé teszik bármilyen
+kezelni kívánt Rust-kód értelmezését: a Rust-kódhoz teljes értékű elemzőt írni
+nem kis feladat.
 
-The `hello_macro_derive` function will be called when a user of our library
-specifies `#[derive(HelloMacro)]` on a type. This is possible because we’ve
-annotated the `hello_macro_derive` function here with `proc_macro_derive` and
-specified the name `HelloMacro`, which matches our trait name; this is the
-convention most procedural macros follow.
+A `hello_macro_derive` függvény akkor hívódik meg, amikor a könyvtárunk egy
+felhasználója `#[derive(HelloMacro)]`-t ír egy típusra. Ez azért lehetséges,
+mert itt a `hello_macro_derive` függvényt a `proc_macro_derive` annotációval
+láttuk el, és megadtuk a `HelloMacro` nevet, amely megegyezik a trait-ünk
+nevével; ezt a konvenciót követi a legtöbb procedurális makró.
 
-The `hello_macro_derive` function first converts the `input` from a
-`TokenStream` to a data structure that we can then interpret and perform
-operations on. This is where `syn` comes into play. The `parse` function in
-`syn` takes a `TokenStream` and returns a `DeriveInput` struct representing the
-parsed Rust code. Listing 20-41 shows the relevant parts of the `DeriveInput`
-struct we get from parsing the `struct Pancakes;` string.
+A `hello_macro_derive` függvény először átalakítja az `input`-ot
+`TokenStream`-ből olyan adatszerkezetté, amelyet aztán értelmezhetünk, és
+amelyen műveleteket végezhetünk. Itt lép színre a `syn`. A `syn` `parse`
+függvénye egy `TokenStream`-et vesz át, és egy `DeriveInput` structot ad
+vissza, amely az értelmezett Rust-kódot reprezentálja. A 20-41. lista annak a
+`DeriveInput` structnak a lényeges részeit mutatja, amelyet a `struct
+Pancakes;` sztring értelmezésekor kapunk.
 
-<Listing number="20-41" caption="The `DeriveInput` instance we get when parsing the code that has the macro’s attribute in Listing 20-37">
+<Listing number="20-41" caption="A `DeriveInput` példány, amelyet a 20-37. listában a makró attribútumával ellátott kód értelmezésekor kapunk">
 
 ```rust,ignore
 DeriveInput {
@@ -360,31 +372,33 @@ DeriveInput {
 
 </Listing>
 
-The fields of this struct show that the Rust code we’ve parsed is a unit struct
-with the `ident` (_identifier_, meaning the name) of `Pancakes`. There are more
-fields on this struct for describing all sorts of Rust code; check the [`syn`
-documentation for `DeriveInput`][syn-docs] for more information.
+Ennek a structnak a mezői azt mutatják, hogy az általunk értelmezett Rust-kód
+egy unit struct, amelynek `ident`-je (_azonosítója_, vagyis a neve)
+`Pancakes`. Ennek a structnak további mezői is vannak mindenféle Rust-kód
+leírására; további információért nézd meg a [`syn` dokumentációját a
+`DeriveInput`-ról][syn-docs].
 
-Soon we’ll define the `impl_hello_macro` function, which is where we’ll build
-the new Rust code we want to include. But before we do, note that the output
-for our `derive` macro is also a `TokenStream`. The returned `TokenStream` is
-added to the code that our crate users write, so when they compile their crate,
-they’ll get the extra functionality that we provide in the modified
-`TokenStream`.
+Hamarosan definiáljuk az `impl_hello_macro` függvényt, amelyben felépítjük a
+beilleszteni kívánt új Rust-kódot. Előtte azonban vedd észre, hogy a `derive`
+makrónk kimenete is `TokenStream`. A visszaadott `TokenStream` hozzáadódik
+ahhoz a kódhoz, amelyet a crate-ünk felhasználói írnak, így amikor lefordítják
+a crate-jüket, megkapják azt az extra funkcionalitást, amelyet a módosított
+`TokenStream`-ben biztosítunk.
 
-You might have noticed that we’re calling `unwrap` to cause the
-`hello_macro_derive` function to panic if the call to the `syn::parse` function
-fails here. It’s necessary for our procedural macro to panic on errors because
-`proc_macro_derive` functions must return `TokenStream` rather than `Result` to
-conform to the procedural macro API. We’ve simplified this example by using
-`unwrap`; in production code, you should provide more specific error messages
-about what went wrong by using `panic!` or `expect`.
+Talán észrevetted, hogy `unwrap`-et hívunk, hogy a `hello_macro_derive`
+függvény panicot váltson ki, ha a `syn::parse` függvény hívása itt meghiúsul. A
+procedurális makrónknak azért kell hibák esetén panicot kiváltania, mert a
+`proc_macro_derive` függvényeknek `Result` helyett `TokenStream`-et kell
+visszaadniuk, hogy megfeleljenek a procedurális makrók API-jának. Ezt a példát
+az `unwrap` használatával egyszerűsítettük le; éles kódban a `panic!` vagy az
+`expect` használatával konkrétabb hibaüzeneteket kell adnod arról, mi ment
+félre.
 
-Now that we have the code to turn the annotated Rust code from a `TokenStream`
-into a `DeriveInput` instance, let’s generate the code that implements the
-`HelloMacro` trait on the annotated type, as shown in Listing 20-42.
+Most, hogy megvan a kód, amely az annotált Rust-kódot `TokenStream`-ből
+`DeriveInput` példánnyá alakítja, generáljuk le azt a kódot, amely az annotált
+típusra implementálja a `HelloMacro` trait-et, ahogy a 20-42. listában látható.
 
-<Listing number="20-42" file-name="hello_macro_derive/src/lib.rs" caption="Implementing the `HelloMacro` trait using the parsed Rust code">
+<Listing number="20-42" file-name="hello_macro_derive/src/lib.rs" caption="A `HelloMacro` trait implementálása az értelmezett Rust-kód alapján">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-42/hello_macro/hello_macro_derive/src/lib.rs:here}}
@@ -392,134 +406,137 @@ into a `DeriveInput` instance, let’s generate the code that implements the
 
 </Listing>
 
-We get an `Ident` struct instance containing the name (identifier) of the
-annotated type using `ast.ident`. The struct in Listing 20-41 shows that when
-we run the `impl_hello_macro` function on the code in Listing 20-37, the
-`ident` we get will have the `ident` field with a value of `"Pancakes"`. Thus,
-the `name` variable in Listing 20-42 will contain an `Ident` struct instance
-that, when printed, will be the string `"Pancakes"`, the name of the struct in
-Listing 20-37.
+Az `ast.ident` segítségével egy `Ident` struct példányt kapunk, amely az
+annotált típus nevét (azonosítóját) tartalmazza. A 20-41. listában lévő struct
+mutatja, hogy amikor az `impl_hello_macro` függvényt a 20-37. lista kódján
+futtatjuk, a kapott `ident` `ident` mezőjének értéke `"Pancakes"` lesz. Így a
+20-42. listában a `name` változó olyan `Ident` struct példányt fog
+tartalmazni, amely kiírva a `"Pancakes"` sztring lesz — a 20-37. listában
+szereplő struct neve.
 
-The `quote!` macro lets us define the Rust code that we want to return. The
-compiler expects something different from the direct result of the `quote!`
-macro’s execution, so we need to convert it to a `TokenStream`. We do this by
-calling the `into` method, which consumes this intermediate representation and
-returns a value of the required `TokenStream` type.
+A `quote!` makró lehetővé teszi, hogy megadjuk a visszaadni kívánt Rust-kódot.
+A fordító nem pontosan azt várja, ami a `quote!` makró futtatásának közvetlen
+eredménye, ezért `TokenStream`-mé kell alakítanunk. Ezt az `into` metódus
+hívásával tesszük meg, amely felemészti ezt a köztes reprezentációt, és a
+megkövetelt `TokenStream` típusú értéket adja vissza.
 
-The `quote!` macro also provides some very cool templating mechanics: We can
-enter `#name`, and `quote!` will replace it with the value in the variable
-`name`. You can even do some repetition similar to the way regular macros work.
-Check out [the `quote` crate’s docs][quote-docs] for a thorough introduction.
+A `quote!` makró néhány nagyon menő sablonozási lehetőséget is biztosít:
+beírhatjuk, hogy `#name`, és a `quote!` behelyettesíti a `name` változóban lévő
+értéket. Még ismétlést is végezhetsz vele, hasonlóan ahhoz, ahogyan a
+közönséges makrók működnek. Alapos bevezetésért nézd meg [a `quote` crate
+dokumentációját][quote-docs].
 
-We want our procedural macro to generate an implementation of our `HelloMacro`
-trait for the type the user annotated, which we can get by using `#name`. The
-trait implementation has the one function `hello_macro`, whose body contains the
-functionality we want to provide: printing `Hello, Macro! My name is` and then
-the name of the annotated type.
+Azt szeretnénk, hogy a procedurális makrónk generálja le a `HelloMacro`
+trait-ünk implementációját arra a típusra, amelyet a felhasználó annotált; ezt
+a `#name`-mel érhetjük el. A trait-implementációban egyetlen függvény van, a
+`hello_macro`, amelynek törzse tartalmazza a biztosítani kívánt működést: a
+`Hello, Macro! My name is` szöveg, majd az annotált típus nevének kiírását.
 
-The `stringify!` macro used here is built into Rust. It takes a Rust
-expression, such as `1 + 2`, and at compile time turns the expression into a
-string literal, such as `"1 + 2"`. This is different from `format!` or
-`println!`, which are macros that evaluate the expression and then turn the
-result into a `String`. There is a possibility that the `#name` input might be
-an expression to print literally, so we use `stringify!`. Using `stringify!`
-also saves an allocation by converting `#name` to a string literal at compile
-time.
+Az itt használt `stringify!` makró a Rust beépített makrója. Egy Rust
+kifejezést vesz át, például az `1 + 2`-t, és fordítási időben sztringliterállá
+alakítja, például `"1 + 2"`-vé. Ez különbözik a `format!`-tól és a
+`println!`-től, amelyek kiértékelik a kifejezést, majd az eredményt `String`-gé
+alakítják. Elképzelhető, hogy a `#name` bemenet olyan kifejezés, amelyet szó
+szerint kell kiírni, ezért használjuk a `stringify!`-t. A `stringify!`
+használata ráadásul megspórol egy memóriafoglalást is azzal, hogy a `#name`-et
+fordítási időben sztringliterállá alakítja.
 
-At this point, `cargo build` should complete successfully in both `hello_macro`
-and `hello_macro_derive`. Let’s hook up these crates to the code in Listing
-20-37 to see the procedural macro in action! Create a new binary project in
-your _projects_ directory using `cargo new pancakes`. We need to add
-`hello_macro` and `hello_macro_derive` as dependencies in the `pancakes`
-crate’s _Cargo.toml_. If you’re publishing your versions of `hello_macro` and
-`hello_macro_derive` to [crates.io](https://crates.io/)<!-- ignore -->, they
-would be regular dependencies; if not, you can specify them as `path`
-dependencies as follows:
+Ezen a ponton a `cargo build`-nek sikeresen le kell futnia mind a
+`hello_macro`, mind a `hello_macro_derive` esetében. Kössük össze ezeket a
+crate-eket a 20-37. lista kódjával, hogy működés közben lássuk a procedurális
+makrót! Hozz létre egy új binary projektet a _projects_ könyvtáradban a
+`cargo new pancakes` paranccsal. Fel kell vennünk a `hello_macro`-t és a
+`hello_macro_derive`-t függőségként a `pancakes` crate _Cargo.toml_ fájljába.
+Ha a `hello_macro` és a `hello_macro_derive` saját verzióidat publikálod a
+[crates.io](https://crates.io/)<!-- ignore --> oldalra, akkor közönséges
+függőségek lennének; ha nem, `path` függőségként adhatod meg őket az alábbi
+módon:
 
 ```toml
 {{#include ../listings/ch20-advanced-features/no-listing-21-pancakes/pancakes/Cargo.toml:6:8}}
 ```
 
-Put the code in Listing 20-37 into _src/main.rs_, and run `cargo run`: It
-should print `Hello, Macro! My name is Pancakes!`. The implementation of the
-`HelloMacro` trait from the procedural macro was included without the
-`pancakes` crate needing to implement it; the `#[derive(HelloMacro)]` added the
-trait implementation.
+Másold a 20-37. lista kódját a _src/main.rs_ fájlba, és futtasd a `cargo run`
+parancsot: a `Hello, Macro! My name is Pancakes!` szöveget kell kiírnia. A
+`HelloMacro` trait implementációja a procedurális makróból került be anélkül,
+hogy a `pancakes` crate-nek implementálnia kellett volna; a
+`#[derive(HelloMacro)]` adta hozzá a trait-implementációt.
 
-Next, let’s explore how the other kinds of procedural macros differ from custom
-`derive` macros.
+Ezután nézzük meg, miben különböznek a procedurális makrók többi fajtái az
+egyedi `derive` makróktól.
 
-### Attribute-Like Macros
+### Attribútumszerű makrók
 
-Attribute-like macros are similar to custom `derive` macros, but instead of
-generating code for the `derive` attribute, they allow you to create new
-attributes. They’re also more flexible: `derive` only works for structs and
-enums; attributes can be applied to other items as well, such as functions.
-Here’s an example of using an attribute-like macro. Say you have an attribute
-named `route` that annotates functions when using a web application framework:
+Az attribútumszerű makrók hasonlítanak az egyedi `derive` makrókra, de ahelyett,
+hogy a `derive` attribútumhoz generálnának kódot, új attribútumok
+létrehozását teszik lehetővé. Rugalmasabbak is: a `derive` csak structoknál és
+enumoknál működik, az attribútumok viszont más elemekre, például függvényekre
+is alkalmazhatók. Íme egy példa attribútumszerű makró használatára. Tegyük fel,
+hogy van egy `route` nevű attribútumod, amely egy webalkalmazás-keretrendszer
+használatakor függvényeket annotál:
 
 ```rust,ignore
 #[route(GET, "/")]
 fn index() {
 ```
 
-This `#[route]` attribute would be defined by the framework as a procedural
-macro. The signature of the macro definition function would look like this:
+Ezt a `#[route]` attribútumot a keretrendszer definiálná procedurális
+makróként. A makródefiníciós függvény szignatúrája így nézne ki:
 
 ```rust,ignore
 #[proc_macro_attribute]
 pub fn route(attr: TokenStream, item: TokenStream) -> TokenStream {
 ```
 
-Here, we have two parameters of type `TokenStream`. The first is for the
-contents of the attribute: the `GET, "/"` part. The second is the body of the
-item the attribute is attached to: in this case, `fn index() {}` and the rest
-of the function’s body.
+Itt két `TokenStream` típusú paraméterünk van. Az első az attribútum
+tartalmáért felel: ez a `GET, "/"` rész. A második annak az elemnek a törzse,
+amelyhez az attribútum tartozik: ebben az esetben az `fn index() {}` és a
+függvény törzsének többi része.
 
-Other than that, attribute-like macros work the same way as custom `derive`
-macros: You create a crate with the `proc-macro` crate type and implement a
-function that generates the code you want!
+Ezen túl az attribútumszerű makrók ugyanúgy működnek, mint az egyedi `derive`
+makrók: létrehozol egy `proc-macro` crate-típusú crate-et, és implementálsz egy
+függvényt, amely legenerálja a kívánt kódot!
 
-### Function-Like Macros
+### Függvényszerű makrók
 
-Function-like macros define macros that look like function calls. Similarly to
-`macro_rules!` macros, they’re more flexible than functions; for example, they
-can take an unknown number of arguments. However, `macro_rules!` macros can
-only be defined using the match-like syntax we discussed in the [“Declarative
-Macros for General Metaprogramming”][decl]<!-- ignore --> section earlier.
-Function-like macros take a `TokenStream` parameter, and their definition
-manipulates that `TokenStream` using Rust code as the other two types of
-procedural macros do. An example of a function-like macro is an `sql!` macro
-that might be called like so:
+A függvényszerű makrók olyan makrókat definiálnak, amelyek függvényhívásnak
+látszanak. A `macro_rules!` makrókhoz hasonlóan rugalmasabbak a függvényeknél;
+például előre nem ismert számú argumentumot fogadhatnak. A `macro_rules!`
+makrókat viszont csak a korábbi [„Deklaratív makrók az általános
+metaprogramozáshoz”][decl]<!-- ignore --> című szakaszban tárgyalt,
+`match`-szerű szintaxissal lehet definiálni. A függvényszerű makrók egy
+`TokenStream` paramétert kapnak, és a definíciójuk Rust-kóddal manipulálja ezt
+a `TokenStream`-et, ahogy a procedurális makrók másik két fajtája is teszi.
+Függvényszerű makróra példa egy `sql!` makró, amelyet így lehetne meghívni:
 
 ```rust,ignore
 let sql = sql!(SELECT * FROM posts WHERE id=1);
 ```
 
-This macro would parse the SQL statement inside it and check that it’s
-syntactically correct, which is much more complex processing than a
-`macro_rules!` macro can do. The `sql!` macro would be defined like this:
+Ez a makró értelmezné a benne lévő SQL-utasítást, és ellenőrizné, hogy
+szintaktikailag helyes-e; ez sokkal összetettebb feldolgozás annál, mint amire
+egy `macro_rules!` makró képes. Az `sql!` makrót így definiálnánk:
 
 ```rust,ignore
 #[proc_macro]
 pub fn sql(input: TokenStream) -> TokenStream {
 ```
 
-This definition is similar to the custom `derive` macro’s signature: We receive
-the tokens that are inside the parentheses and return the code we wanted to
-generate.
+Ez a definíció hasonlít az egyedi `derive` makró szignatúrájára: megkapjuk a
+zárójelek között lévő tokeneket, és visszaadjuk azt a kódot, amelyet
+generálni akartunk.
 
-## Summary
+## Összefoglalás
 
-Whew! Now you have some Rust features in your toolbox that you likely won’t use
-often, but you’ll know they’re available in very particular circumstances.
-We’ve introduced several complex topics so that when you encounter them in
-error message suggestions or in other people’s code, you’ll be able to
-recognize these concepts and syntax. Use this chapter as a reference to guide
-you to solutions.
+Hűha! Most már van néhány olyan Rust-képesség az eszköztáradban, amelyet
+valószínűleg nem fogsz gyakran használni, de tudni fogod, hogy nagyon
+sajátos helyzetekben rendelkezésre állnak. Több összetett témát is bemutattunk,
+hogy amikor hibaüzenetek javaslataiban vagy mások kódjában találkozol velük,
+felismerd ezeket a fogalmakat és szintaktikai elemeket. Használd ezt a
+fejezetet referenciaként, amely elvezet a megoldásokhoz.
 
-Next, we’ll put everything we’ve discussed throughout the book into practice
-and do one more project!
+Következőnek mindazt, amiről a könyv során szó volt, a gyakorlatba ültetjük, és
+készítünk még egy projektet!
 
 [ref]: ../reference/macros-by-example.html
 [tlborm]: https://veykril.github.io/tlborm/

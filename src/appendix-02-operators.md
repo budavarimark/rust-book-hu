@@ -1,206 +1,212 @@
-## Appendix B: Operators and Symbols
+## B függelék: Operátorok és szimbólumok
 
-This appendix contains a glossary of Rust’s syntax, including operators and
-other symbols that appear by themselves or in the context of paths, generics,
-trait bounds, macros, attributes, comments, tuples, and brackets.
+Ez a függelék a Rust szintaxisának szótárát tartalmazza, beleértve az
+operátorokat és azokat az egyéb szimbólumokat, amelyek önmagukban, illetve
+útvonalak, generikusok, trait boundok, makrók, attribútumok, kommentek, tuple-ök
+és zárójelek környezetében fordulnak elő.
 
-### Operators
+### Operátorok
 
-Table B-1 contains the operators in Rust, an example of how the operator would
-appear in context, a short explanation, and whether that operator is
-overloadable. If an operator is overloadable, the relevant trait to use to
-overload that operator is listed.
+A B-1. táblázat a Rust operátorait tartalmazza, egy példát arra, hogyan jelenik
+meg az operátor a kódban, egy rövid magyarázatot, valamint azt, hogy az adott
+operátor túlterhelhető-e. Ha egy operátor túlterhelhető, a táblázat felsorolja a
+túlterheléshez használandó trait-et.
 
-<span class="caption">Table B-1: Operators</span>
+<span class="caption">B-1. táblázat: Operátorok</span>
 
-| Operator                  | Example                                                 | Explanation                                                           | Overloadable?  |
-| ------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------- | -------------- |
-| `!`                       | `ident!(...)`, `ident!{...}`, `ident![...]`             | Macro expansion                                                       |                |
-| `!`                       | `!expr`                                                 | Bitwise or logical complement                                         | `Not`          |
-| `!=`                      | `expr != expr`                                          | Nonequality comparison                                                | `PartialEq`    |
-| `%`                       | `expr % expr`                                           | Arithmetic remainder                                                  | `Rem`          |
-| `%=`                      | `var %= expr`                                           | Arithmetic remainder and assignment                                   | `RemAssign`    |
-| `&`                       | `&expr`, `&mut expr`                                    | Borrow                                                                |                |
-| `&`                       | `&type`, `&mut type`, `&'a type`, `&'a mut type`        | Borrowed pointer type                                                 |                |
-| `&`                       | `expr & expr`                                           | Bitwise AND                                                           | `BitAnd`       |
-| `&=`                      | `var &= expr`                                           | Bitwise AND and assignment                                            | `BitAndAssign` |
-| `&&`                      | `expr && expr`                                          | Short-circuiting logical AND                                          |                |
-| `*`                       | `expr * expr`                                           | Arithmetic multiplication                                             | `Mul`          |
-| `*=`                      | `var *= expr`                                           | Arithmetic multiplication and assignment                              | `MulAssign`    |
-| `*`                       | `*expr`                                                 | Dereference                                                           | `Deref`        |
-| `*`                       | `*const type`, `*mut type`                              | Raw pointer                                                           |                |
-| `+`                       | `trait + trait`, `'a + trait`                           | Compound type constraint                                              |                |
-| `+`                       | `expr + expr`                                           | Arithmetic addition                                                   | `Add`          |
-| `+=`                      | `var += expr`                                           | Arithmetic addition and assignment                                    | `AddAssign`    |
-| `,`                       | `expr, expr`                                            | Argument and element separator                                        |                |
-| `-`                       | `- expr`                                                | Arithmetic negation                                                   | `Neg`          |
-| `-`                       | `expr - expr`                                           | Arithmetic subtraction                                                | `Sub`          |
-| `-=`                      | `var -= expr`                                           | Arithmetic subtraction and assignment                                 | `SubAssign`    |
-| `->`                      | `fn(...) -> type`, <code>&vert;...&vert; -> type</code> | Function and closure return type                                      |                |
-| `.`                       | `expr.ident`                                            | Field access                                                          |                |
-| `.`                       | `expr.ident(expr, ...)`                                 | Method call                                                           |                |
-| `.`                       | `expr.0`, `expr.1`, and so on                           | Tuple indexing                                                        |                |
-| `..`                      | `..`, `expr..`, `..expr`, `expr..expr`                  | Right-exclusive range literal                                         | `PartialOrd`   |
-| `..=`                     | `..=expr`, `expr..=expr`                                | Right-inclusive range literal                                         | `PartialOrd`   |
-| `..`                      | `..expr`                                                | Struct literal update syntax                                          |                |
-| `..`                      | `variant(x, ..)`, `struct_type { x, .. }`               | “And the rest” pattern binding                                        |                |
-| `...`                     | `expr...expr`                                           | (Deprecated, use `..=` instead) In a pattern: inclusive range pattern |                |
-| `/`                       | `expr / expr`                                           | Arithmetic division                                                   | `Div`          |
-| `/=`                      | `var /= expr`                                           | Arithmetic division and assignment                                    | `DivAssign`    |
-| `:`                       | `pat: type`, `ident: type`                              | Constraints                                                           |                |
-| `:`                       | `ident: expr`                                           | Struct field initializer                                              |                |
-| `:`                       | `'a: loop {...}`                                        | Loop label                                                            |                |
-| `;`                       | `expr;`                                                 | Statement and item terminator                                         |                |
-| `;`                       | `[...; len]`                                            | Part of fixed-size array syntax                                       |                |
-| `<<`                      | `expr << expr`                                          | Left-shift                                                            | `Shl`          |
-| `<<=`                     | `var <<= expr`                                          | Left-shift and assignment                                             | `ShlAssign`    |
-| `<`                       | `expr < expr`                                           | Less than comparison                                                  | `PartialOrd`   |
-| `<=`                      | `expr <= expr`                                          | Less than or equal to comparison                                      | `PartialOrd`   |
-| `=`                       | `var = expr`, `ident = type`                            | Assignment/equivalence                                                |                |
-| `==`                      | `expr == expr`                                          | Equality comparison                                                   | `PartialEq`    |
-| `=>`                      | `pat => expr`                                           | Part of match arm syntax                                              |                |
-| `>`                       | `expr > expr`                                           | Greater than comparison                                               | `PartialOrd`   |
-| `>=`                      | `expr >= expr`                                          | Greater than or equal to comparison                                   | `PartialOrd`   |
-| `>>`                      | `expr >> expr`                                          | Right-shift                                                           | `Shr`          |
-| `>>=`                     | `var >>= expr`                                          | Right-shift and assignment                                            | `ShrAssign`    |
-| `@`                       | `ident @ pat`                                           | Pattern binding                                                       |                |
-| `^`                       | `expr ^ expr`                                           | Bitwise exclusive OR                                                  | `BitXor`       |
-| `^=`                      | `var ^= expr`                                           | Bitwise exclusive OR and assignment                                   | `BitXorAssign` |
-| <code>&vert;</code>       | <code>pat &vert; pat</code>                             | Pattern alternatives                                                  |                |
-| <code>&vert;</code>       | <code>expr &vert; expr</code>                           | Bitwise OR                                                            | `BitOr`        |
-| <code>&vert;=</code>      | <code>var &vert;= expr</code>                           | Bitwise OR and assignment                                             | `BitOrAssign`  |
-| <code>&vert;&vert;</code> | <code>expr &vert;&vert; expr</code>                     | Short-circuiting logical OR                                           |                |
-| `?`                       | `expr?`                                                 | Error propagation                                                     |                |
+| Operátor                  | Példa                                                   | Magyarázat                                                                        | Túlterhelhető? |
+| ------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------- |
+| `!`                       | `ident!(...)`, `ident!{...}`, `ident![...]`             | Makrókifejtés                                                                     |                |
+| `!`                       | `!expr`                                                 | Bitenkénti vagy logikai komplemens                                                | `Not`          |
+| `!=`                      | `expr != expr`                                          | Nem egyenlő összehasonlítás                                                       | `PartialEq`    |
+| `%`                       | `expr % expr`                                           | Aritmetikai maradék                                                               | `Rem`          |
+| `%=`                      | `var %= expr`                                           | Aritmetikai maradék és értékadás                                                  | `RemAssign`    |
+| `&`                       | `&expr`, `&mut expr`                                    | Borrow                                                                            |                |
+| `&`                       | `&type`, `&mut type`, `&'a type`, `&'a mut type`        | Borrow-olt pointertípus                                                           |                |
+| `&`                       | `expr & expr`                                           | Bitenkénti ÉS                                                                     | `BitAnd`       |
+| `&=`                      | `var &= expr`                                           | Bitenkénti ÉS és értékadás                                                        | `BitAndAssign` |
+| `&&`                      | `expr && expr`                                          | Rövidzáras logikai ÉS                                                             |                |
+| `*`                       | `expr * expr`                                           | Aritmetikai szorzás                                                               | `Mul`          |
+| `*=`                      | `var *= expr`                                           | Aritmetikai szorzás és értékadás                                                  | `MulAssign`    |
+| `*`                       | `*expr`                                                 | Dereferálás                                                                       | `Deref`        |
+| `*`                       | `*const type`, `*mut type`                              | Nyers pointer                                                                     |                |
+| `+`                       | `trait + trait`, `'a + trait`                           | Összetett típusmegszorítás                                                        |                |
+| `+`                       | `expr + expr`                                           | Aritmetikai összeadás                                                             | `Add`          |
+| `+=`                      | `var += expr`                                           | Aritmetikai összeadás és értékadás                                                | `AddAssign`    |
+| `,`                       | `expr, expr`                                            | Argumentum- és elemelválasztó                                                     |                |
+| `-`                       | `- expr`                                                | Aritmetikai negálás                                                               | `Neg`          |
+| `-`                       | `expr - expr`                                           | Aritmetikai kivonás                                                               | `Sub`          |
+| `-=`                      | `var -= expr`                                           | Aritmetikai kivonás és értékadás                                                  | `SubAssign`    |
+| `->`                      | `fn(...) -> type`, <code>&vert;...&vert; -> type</code> | Függvény és closure visszatérési típusa                                           |                |
+| `.`                       | `expr.ident`                                            | Mezőhozzáférés                                                                    |                |
+| `.`                       | `expr.ident(expr, ...)`                                 | Metódushívás                                                                      |                |
+| `.`                       | `expr.0`, `expr.1` és így tovább                        | Tuple-indexelés                                                                   |                |
+| `..`                      | `..`, `expr..`, `..expr`, `expr..expr`                  | Jobbról kizáró tartományliterál                                                   | `PartialOrd`   |
+| `..=`                     | `..=expr`, `expr..=expr`                                | Jobbról záró tartományliterál                                                     | `PartialOrd`   |
+| `..`                      | `..expr`                                                | Struct-literál frissítő szintaxisa                                                |                |
+| `..`                      | `variant(x, ..)`, `struct_type { x, .. }`               | „És a többi” mintakötés                                                           |                |
+| `...`                     | `expr...expr`                                           | (Elavult, helyette `..=` használandó) Mintában: záró tartományminta                |                |
+| `/`                       | `expr / expr`                                           | Aritmetikai osztás                                                                | `Div`          |
+| `/=`                      | `var /= expr`                                           | Aritmetikai osztás és értékadás                                                   | `DivAssign`    |
+| `:`                       | `pat: type`, `ident: type`                              | Megszorítások                                                                     |                |
+| `:`                       | `ident: expr`                                           | Struct-mező inicializálása                                                        |                |
+| `:`                       | `'a: loop {...}`                                        | Cikluscímke                                                                       |                |
+| `;`                       | `expr;`                                                 | Utasítás- és elemlezáró                                                           |                |
+| `;`                       | `[...; len]`                                            | A fix méretű tömb szintaxisának része                                             |                |
+| `<<`                      | `expr << expr`                                          | Balra léptetés                                                                    | `Shl`          |
+| `<<=`                     | `var <<= expr`                                          | Balra léptetés és értékadás                                                       | `ShlAssign`    |
+| `<`                       | `expr < expr`                                           | Kisebb mint összehasonlítás                                                       | `PartialOrd`   |
+| `<=`                      | `expr <= expr`                                          | Kisebb vagy egyenlő összehasonlítás                                               | `PartialOrd`   |
+| `=`                       | `var = expr`, `ident = type`                            | Értékadás/ekvivalencia                                                            |                |
+| `==`                      | `expr == expr`                                          | Egyenlőség-összehasonlítás                                                        | `PartialEq`    |
+| `=>`                      | `pat => expr`                                           | A `match`-ág szintaxisának része                                                  |                |
+| `>`                       | `expr > expr`                                           | Nagyobb mint összehasonlítás                                                      | `PartialOrd`   |
+| `>=`                      | `expr >= expr`                                          | Nagyobb vagy egyenlő összehasonlítás                                              | `PartialOrd`   |
+| `>>`                      | `expr >> expr`                                          | Jobbra léptetés                                                                   | `Shr`          |
+| `>>=`                     | `var >>= expr`                                          | Jobbra léptetés és értékadás                                                      | `ShrAssign`    |
+| `@`                       | `ident @ pat`                                           | Mintakötés                                                                        |                |
+| `^`                       | `expr ^ expr`                                           | Bitenkénti kizáró VAGY                                                            | `BitXor`       |
+| `^=`                      | `var ^= expr`                                           | Bitenkénti kizáró VAGY és értékadás                                               | `BitXorAssign` |
+| <code>&vert;</code>       | <code>pat &vert; pat</code>                             | Mintaalternatívák                                                                 |                |
+| <code>&vert;</code>       | <code>expr &vert; expr</code>                           | Bitenkénti VAGY                                                                   | `BitOr`        |
+| <code>&vert;=</code>      | <code>var &vert;= expr</code>                           | Bitenkénti VAGY és értékadás                                                      | `BitOrAssign`  |
+| <code>&vert;&vert;</code> | <code>expr &vert;&vert; expr</code>                     | Rövidzáras logikai VAGY                                                           |                |
+| `?`                       | `expr?`                                                 | Hibaterjesztés                                                                    |                |
 
-### Non-operator Symbols
+### Nem operátor szimbólumok
 
-The following tables contain all symbols that don’t function as operators; that
-is, they don’t behave like a function or method call.
+Az alábbi táblázatok az összes olyan szimbólumot tartalmazzák, amely nem
+operátorként működik; vagyis nem úgy viselkedik, mint egy függvény- vagy
+metódushívás.
 
-Table B-2 shows symbols that appear on their own and are valid in a variety of
-locations.
+A B-2. táblázat azokat a szimbólumokat mutatja, amelyek önmagukban jelennek meg,
+és sokféle helyen érvényesek.
 
-<span class="caption">Table B-2: Stand-alone Syntax</span>
+<span class="caption">B-2. táblázat: Önálló szintaxis</span>
 
-| Symbol                                                                 | Explanation                                                            |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `'ident`                                                               | Named lifetime or loop label                                           |
-| Digits immediately followed by `u8`, `i32`, `f64`, `usize`, and so on  | Numeric literal of specific type                                       |
-| `"..."`                                                                | String literal                                                         |
-| `r"..."`, `r#"..."#`, `r##"..."##`, and so on                          | Raw string literal; escape characters not processed                    |
-| `b"..."`                                                               | Byte string literal; constructs an array of bytes instead of a string  |
-| `br"..."`, `br#"..."#`, `br##"..."##`, and so on                       | Raw byte string literal; combination of raw and byte string literal    |
-| `'...'`                                                                | Character literal                                                      |
-| `b'...'`                                                               | ASCII byte literal                                                     |
-| <code>&vert;...&vert; expr</code>                                      | Closure                                                                |
-| `!`                                                                    | Always-empty bottom type for diverging functions                       |
-| `_`                                                                    | “Ignored” pattern binding; also used to make integer literals readable |
+| Szimbólum                                                                       | Magyarázat                                                                          |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `'ident`                                                                        | Nevesített lifetime vagy cikluscímke                                                |
+| Számjegyek, amelyeket közvetlenül `u8`, `i32`, `f64`, `usize` és így tovább követ | Adott típusú numerikus literál                                                       |
+| `"..."`                                                                         | String literál                                                                      |
+| `r"..."`, `r#"..."#`, `r##"..."##` és így tovább                                | Nyers string literál; az escape-karakterek nincsenek feldolgozva                     |
+| `b"..."`                                                                        | Bájtstring literál; string helyett bájtokból álló tömböt hoz létre                    |
+| `br"..."`, `br#"..."#`, `br##"..."##` és így tovább                             | Nyers bájtstring literál; a nyers és a bájtstring literál kombinációja                |
+| `'...'`                                                                         | Karakterliterál                                                                      |
+| `b'...'`                                                                        | ASCII bájtliterál                                                                    |
+| <code>&vert;...&vert; expr</code>                                               | Closure                                                                              |
+| `!`                                                                             | Mindig üres alsó típus (bottom type) a divergáló függvényekhez                        |
+| `_`                                                                             | „Figyelmen kívül hagyott” mintakötés; egészliterálok olvashatóbbá tételére is szolgál |
 
-Table B-3 shows symbols that appear in the context of a path through the module
-hierarchy to an item.
+A B-3. táblázat azokat a szimbólumokat mutatja, amelyek a modulhierarchián
+keresztül egy elemhez vezető útvonal környezetében jelennek meg.
 
-<span class="caption">Table B-3: Path-Related Syntax</span>
+<span class="caption">B-3. táblázat: Útvonalakhoz kapcsolódó szintaxis</span>
 
-| Symbol                                  | Explanation                                                                                                  |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------|
-| `ident::ident`                          | Namespace path                                                                                               |
-| `::path`                                | Path relative to the crate root (that is, an explicitly absolute path)                                       |
-| `self::path`                            | Path relative to the current module (that is, an explicitly relative path)                                   |
-| `super::path`                           | Path relative to the parent of the current module                                                            |
-| `type::ident`, `<type as trait>::ident` | Associated constants, functions, and types                                                                   |
-| `<type>::...`                           | Associated item for a type that cannot be directly named (for example, `<&T>::...`, `<[T]>::...`, and so on) |
-| `trait::method(...)`                    | Disambiguating a method call by naming the trait that defines it                                             |
-| `type::method(...)`                     | Disambiguating a method call by naming the type for which it’s defined                                       |
-| `<type as trait>::method(...)`          | Disambiguating a method call by naming the trait and type                                                    |
+| Szimbólum                               | Magyarázat                                                                                                        |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------|
+| `ident::ident`                          | Névtér-útvonal                                                                                                    |
+| `::path`                                | A crate gyökeréhez képesti útvonal (vagyis explicit módon abszolút útvonal)                                       |
+| `self::path`                            | Az aktuális modulhoz képesti útvonal (vagyis explicit módon relatív útvonal)                                      |
+| `super::path`                           | Az aktuális modul szülőjéhez képesti útvonal                                                                      |
+| `type::ident`, `<type as trait>::ident` | Asszociált konstansok, függvények és típusok                                                                      |
+| `<type>::...`                           | Asszociált elem olyan típushoz, amelyet nem lehet közvetlenül megnevezni (például `<&T>::...`, `<[T]>::...` stb.) |
+| `trait::method(...)`                    | Metódushívás egyértelműsítése az azt definiáló trait megnevezésével                                               |
+| `type::method(...)`                     | Metódushívás egyértelműsítése annak a típusnak a megnevezésével, amelyre definiálva van                           |
+| `<type as trait>::method(...)`          | Metódushívás egyértelműsítése a trait és a típus megnevezésével                                                   |
 
-Table B-4 shows symbols that appear in the context of using generic type
-parameters.
+A B-4. táblázat azokat a szimbólumokat mutatja, amelyek a generikus
+típusparaméterek használatának környezetében jelennek meg.
 
-<span class="caption">Table B-4: Generics</span>
+<span class="caption">B-4. táblázat: Generikusok</span>
 
-| Symbol                         | Explanation                                                                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `path<...>`                    | Specifies parameters to a generic type in a type (for example, `Vec<u8>`)                                                                           |
-| `path::<...>`, `method::<...>` | Specifies parameters to a generic type, function, or method in an expression; often referred to as _turbofish_ (for example, `"42".parse::<i32>()`) |
-| `fn ident<...> ...`            | Define generic function                                                                                                                             |
-| `struct ident<...> ...`        | Define generic structure                                                                                                                            |
-| `enum ident<...> ...`          | Define generic enumeration                                                                                                                          |
-| `impl<...> ...`                | Define generic implementation                                                                                                                       |
-| `for<...> type`                | Higher ranked lifetime bounds                                                                                                                       |
-| `type<ident=type>`             | A generic type where one or more associated types have specific assignments (for example, `Iterator<Item=T>`)                                       |
+| Szimbólum                      | Magyarázat                                                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `path<...>`                    | Egy típuson belüli generikus típus paramétereit adja meg (például `Vec<u8>`)                                                                                |
+| `path::<...>`, `method::<...>` | Egy kifejezésben adja meg egy generikus típus, függvény vagy metódus paramétereit; gyakran _turbofish_ néven emlegetik (például `"42".parse::<i32>()`)       |
+| `fn ident<...> ...`            | Generikus függvény definiálása                                                                                                                              |
+| `struct ident<...> ...`        | Generikus struktúra definiálása                                                                                                                             |
+| `enum ident<...> ...`          | Generikus felsorolás definiálása                                                                                                                            |
+| `impl<...> ...`                | Generikus implementáció definiálása                                                                                                                         |
+| `for<...> type`                | Magasabb rendű lifetime boundok                                                                                                                             |
+| `type<ident=type>`             | Olyan generikus típus, amelyben egy vagy több asszociált típus konkrét értéket kap (például `Iterator<Item=T>`)                                              |
 
-Table B-5 shows symbols that appear in the context of constraining generic type
-parameters with trait bounds.
+A B-5. táblázat azokat a szimbólumokat mutatja, amelyek a generikus
+típusparaméterek trait boundokkal való megszorítása környezetében jelennek meg.
 
-<span class="caption">Table B-5: Trait Bound Constraints</span>
+<span class="caption">B-5. táblázat: Trait bound megszorítások</span>
 
-| Symbol                        | Explanation                                                                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `T: U`                        | Generic parameter `T` constrained to types that implement `U`                                                                              |
-| `T: 'a`                       | Generic type `T` must outlive lifetime `'a` (meaning the type cannot transitively contain any references with lifetimes shorter than `'a`) |
-| `T: 'static`                  | Generic type `T` contains no borrowed references other than `'static` ones                                                                 |
-| `'b: 'a`                      | Generic lifetime `'b` must outlive lifetime `'a`                                                                                           |
-| `T: ?Sized`                   | Allow generic type parameter to be a dynamically sized type                                                                                |
-| `'a + trait`, `trait + trait` | Compound type constraint                                                                                                                   |
+| Szimbólum                     | Magyarázat                                                                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `T: U`                        | A `T` generikus paraméter olyan típusokra van megszorítva, amelyek implementálják az `U`-t                                                         |
+| `T: 'a`                       | A `T` generikus típusnak túl kell élnie az `'a` lifetime-ot (vagyis a típus tranzitívan nem tartalmazhat `'a`-nál rövidebb lifetime-ú referenciát) |
+| `T: 'static`                  | A `T` generikus típus a `'static`-okon kívül nem tartalmaz borrow-olt referenciát                                                                  |
+| `'b: 'a`                      | A `'b` generikus lifetime-nak túl kell élnie az `'a` lifetime-ot                                                                                   |
+| `T: ?Sized`                   | Megengedi, hogy a generikus típusparaméter dinamikusan méretezett típus legyen                                                                     |
+| `'a + trait`, `trait + trait` | Összetett típusmegszorítás                                                                                                                        |
 
-Table B-6 shows symbols that appear in the context of calling or defining
-macros and specifying attributes on an item.
+A B-6. táblázat azokat a szimbólumokat mutatja, amelyek makrók hívása vagy
+definiálása, illetve egy elem attribútumainak megadása környezetében jelennek
+meg.
 
-<span class="caption">Table B-6: Macros and Attributes</span>
+<span class="caption">B-6. táblázat: Makrók és attribútumok</span>
 
-| Symbol                                      | Explanation        |
-| ------------------------------------------- | ------------------ |
-| `#[meta]`                                   | Outer attribute    |
-| `#![meta]`                                  | Inner attribute    |
-| `$ident`                                    | Macro substitution |
-| `$ident:kind`                               | Macro metavariable |
-| `$(...)...`                                 | Macro repetition   |
-| `ident!(...)`, `ident!{...}`, `ident![...]` | Macro invocation   |
+| Szimbólum                                   | Magyarázat          |
+| ------------------------------------------- | ------------------- |
+| `#[meta]`                                   | Külső attribútum    |
+| `#![meta]`                                  | Belső attribútum    |
+| `$ident`                                    | Makróhelyettesítés  |
+| `$ident:kind`                               | Makró-metaváltozó   |
+| `$(...)...`                                 | Makróismétlés       |
+| `ident!(...)`, `ident!{...}`, `ident![...]` | Makróhívás          |
 
-Table B-7 shows symbols that create comments.
+A B-7. táblázat a kommenteket létrehozó szimbólumokat mutatja.
 
-<span class="caption">Table B-7: Comments</span>
+<span class="caption">B-7. táblázat: Kommentek</span>
 
-| Symbol     | Explanation             |
-| ---------- | ----------------------- |
-| `//`       | Line comment            |
-| `//!`      | Inner line doc comment  |
-| `///`      | Outer line doc comment  |
-| `/*...*/`  | Block comment           |
-| `/*!...*/` | Inner block doc comment |
-| `/**...*/` | Outer block doc comment |
+| Szimbólum  | Magyarázat                            |
+| ---------- | ------------------------------------- |
+| `//`       | Soros komment                         |
+| `//!`      | Belső soros dokumentációs komment      |
+| `///`      | Külső soros dokumentációs komment      |
+| `/*...*/`  | Blokk-komment                          |
+| `/*!...*/` | Belső blokk dokumentációs komment       |
+| `/**...*/` | Külső blokk dokumentációs komment       |
 
-Table B-8 shows the contexts in which parentheses are used.
+A B-8. táblázat azokat a környezeteket mutatja, amelyekben kerek zárójelet
+használunk.
 
-<span class="caption">Table B-8: Parentheses</span>
+<span class="caption">B-8. táblázat: Kerek zárójelek</span>
 
-| Symbol                   | Explanation                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| `()`                     | Empty tuple (aka unit), both literal and type                                               |
-| `(expr)`                 | Parenthesized expression                                                                    |
-| `(expr,)`                | Single-element tuple expression                                                             |
-| `(type,)`                | Single-element tuple type                                                                   |
-| `(expr, ...)`            | Tuple expression                                                                            |
-| `(type, ...)`            | Tuple type                                                                                  |
-| `expr(expr, ...)`        | Function call expression; also used to initialize tuple `struct`s and tuple `enum` variants |
+| Szimbólum                | Magyarázat                                                                                              |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `()`                     | Üres tuple (más néven unit), literálként és típusként egyaránt                                          |
+| `(expr)`                 | Zárójelezett kifejezés                                                                                  |
+| `(expr,)`                | Egyelemű tuple-kifejezés                                                                                |
+| `(type,)`                | Egyelemű tuple-típus                                                                                    |
+| `(expr, ...)`            | Tuple-kifejezés                                                                                         |
+| `(type, ...)`            | Tuple-típus                                                                                             |
+| `expr(expr, ...)`        | Függvényhívás-kifejezés; tuple `struct`-ok és tuple `enum` variánsok inicializálására is használatos    |
 
-Table B-9 shows the contexts in which curly brackets are used.
+A B-9. táblázat azokat a környezeteket mutatja, amelyekben kapcsos zárójelet
+használunk.
 
-<span class="caption">Table B-9: Curly Brackets</span>
+<span class="caption">B-9. táblázat: Kapcsos zárójelek</span>
 
-| Context      | Explanation      |
-| ------------ | ---------------- |
-| `{...}`      | Block expression |
-| `Type {...}` | Struct literal   |
+| Környezet    | Magyarázat        |
+| ------------ | ----------------- |
+| `{...}`      | Blokk-kifejezés   |
+| `Type {...}` | Struct-literál    |
 
-Table B-10 shows the contexts in which square brackets are used.
+A B-10. táblázat azokat a környezeteket mutatja, amelyekben szögletes zárójelet
+használunk.
 
-<span class="caption">Table B-10: Square Brackets</span>
+<span class="caption">B-10. táblázat: Szögletes zárójelek</span>
 
-| Context                                            | Explanation                                                                                                                   |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `[...]`                                            | Array literal                                                                                                                 |
-| `[expr; len]`                                      | Array literal containing `len` copies of `expr`                                                                               |
-| `[type; len]`                                      | Array type containing `len` instances of `type`                                                                               |
-| `expr[expr]`                                       | Collection indexing; overloadable (`Index`, `IndexMut`)                                                                       |
-| `expr[..]`, `expr[a..]`, `expr[..b]`, `expr[a..b]` | Collection indexing pretending to be collection slicing, using `Range`, `RangeFrom`, `RangeTo`, or `RangeFull` as the “index” |
+| Környezet                                          | Magyarázat                                                                                                                                         |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[...]`                                            | Tömbliterál                                                                                                                                        |
+| `[expr; len]`                                      | Tömbliterál, amely az `expr` `len` darab másolatát tartalmazza                                                                                     |
+| `[type; len]`                                      | Tömbtípus, amely a `type` `len` darab példányát tartalmazza                                                                                        |
+| `expr[expr]`                                       | Kollekció indexelése; túlterhelhető (`Index`, `IndexMut`)                                                                                          |
+| `expr[..]`, `expr[a..]`, `expr[..b]`, `expr[a..b]` | Kollekció indexelése, amely kollekció-slice-olásnak álcázza magát, „indexként” a `Range`, `RangeFrom`, `RangeTo` vagy `RangeFull` használatával    |

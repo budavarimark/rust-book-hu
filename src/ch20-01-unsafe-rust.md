@@ -1,100 +1,108 @@
 ## Unsafe Rust
 
-All the code we’ve discussed so far has had Rust’s memory safety guarantees
-enforced at compile time. However, Rust has a second language hidden inside it
-that doesn’t enforce these memory safety guarantees: It’s called _unsafe Rust_
-and works just like regular Rust but gives us extra superpowers.
+Az eddig tárgyalt kód mindegyikére érvényesek voltak a Rust fordítási időben
+kikényszerített memóriabiztonsági garanciái. A Rustban azonban egy második
+nyelv is rejtőzik, amely nem kényszeríti ki ezeket a memóriabiztonsági
+garanciákat: ezt hívjuk _unsafe Rust_-nak, és pontosan úgy működik, mint a
+szokásos Rust, csak extra szupererőket ad nekünk.
 
-Unsafe Rust exists because, by nature, static analysis is conservative. When
-the compiler tries to determine whether or not code upholds the guarantees,
-it’s better for it to reject some valid programs than to accept some invalid
-programs. Although the code _might_ be okay, if the Rust compiler doesn’t have
-enough information to be confident, it will reject the code. In these cases,
-you can use unsafe code to tell the compiler, “Trust me, I know what I’m
-doing.” Be warned, however, that you use unsafe Rust at your own risk: If you
-use unsafe code incorrectly, problems can occur due to memory unsafety, such as
-null pointer dereferencing.
+Az unsafe Rust azért létezik, mert a statikus analízis természeténél fogva
+konzervatív. Amikor a fordító megpróbálja eldönteni, hogy egy kód betartja-e a
+garanciákat, jobb, ha inkább elutasít néhány érvényes programot, mint hogy
+elfogadjon néhány érvénytelent. Bár a kód _lehet_, hogy rendben van, ha a Rust
+fordítójának nincs elég információja ahhoz, hogy biztos legyen a dolgában,
+elutasítja a kódot. Ilyen esetekben unsafe kóddal mondhatod a fordítónak, hogy
+„bízz bennem, tudom, mit csinálok”. Vigyázz azonban: az unsafe Rustot a saját
+felelősségedre használod. Ha helytelenül használsz unsafe kódot, problémák
+adódhatnak a memóriabiztonság sérüléséből, például null pointer
+dereferálásából.
 
-Another reason Rust has an unsafe alter ego is that the underlying computer
-hardware is inherently unsafe. If Rust didn’t let you do unsafe operations, you
-couldn’t do certain tasks. Rust needs to allow you to do low-level systems
-programming, such as directly interacting with the operating system or even
-writing your own operating system. Working with low-level systems programming
-is one of the goals of the language. Let’s explore what we can do with unsafe
-Rust and how to do it.
+A Rust másik oka arra, hogy legyen egy unsafe alteregója, az, hogy a mögöttes
+számítógépes hardver eleve nem biztonságos. Ha a Rust nem engedne unsafe
+műveleteket, bizonyos feladatokat nem tudnál elvégezni. A Rustnak lehetővé kell
+tennie az alacsony szintű rendszerprogramozást, például az operációs
+rendszerrel való közvetlen interakciót, vagy akár a saját operációs rendszered
+megírását. Az alacsony szintű rendszerprogramozás támogatása a nyelv egyik
+célja. Nézzük meg, mit tehetünk az unsafe Rusttal, és hogyan.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="unsafe-superpowers"></a>
 
-### Performing Unsafe Superpowers
+### Az unsafe szupererők használata
 
-To switch to unsafe Rust, use the `unsafe` keyword and then start a new block
-that holds the unsafe code. You can take five actions in unsafe Rust that you
-can’t in safe Rust, which we call _unsafe superpowers_. Those superpowers
-include the ability to:
+Ahhoz, hogy átválts unsafe Rustra, használd az `unsafe` kulcsszót, majd nyiss
+egy új blokkot, amely az unsafe kódot tartalmazza. Az unsafe Rustban öt olyan
+műveletet végezhetsz el, amit a safe Rustban nem; ezeket nevezzük _unsafe
+szupererőknek_. Ezek a szupererők a következő képességeket foglalják magukban:
 
-1. Dereference a raw pointer.
-1. Call an unsafe function or method.
-1. Access or modify a mutable static variable.
-1. Implement an unsafe trait.
-1. Access fields of `union`s.
+1. Nyers pointer dereferálása.
+1. Unsafe függvény vagy metódus hívása.
+1. Módosítható statikus változó elérése vagy módosítása.
+1. Unsafe trait implementálása.
+1. `union`-ök mezőinek elérése.
 
-It’s important to understand that `unsafe` doesn’t turn off the borrow checker
-or disable any of Rust’s other safety checks: If you use a reference in unsafe
-code, it will still be checked. The `unsafe` keyword only gives you access to
-these five features that are then not checked by the compiler for memory
-safety. You’ll still get some degree of safety inside an unsafe block.
+Fontos megérteni, hogy az `unsafe` nem kapcsolja ki a borrow checkert, és nem
+tiltja le a Rust többi biztonsági ellenőrzését sem: ha unsafe kódban használsz
+referenciát, azt a fordító továbbra is ellenőrzi. Az `unsafe` kulcsszó csak
+ehhez az öt képességhez ad hozzáférést, amelyeket a fordító nem ellenőriz
+memóriabiztonság szempontjából. Egy unsafe blokkon belül is kapsz tehát némi
+biztonságot.
 
-In addition, `unsafe` does not mean the code inside the block is necessarily
-dangerous or that it will definitely have memory safety problems: The intent is
-that as the programmer, you’ll ensure that the code inside an `unsafe` block
-will access memory in a valid way.
+Ráadásul az `unsafe` nem jelenti azt, hogy a blokkban lévő kód szükségszerűen
+veszélyes, vagy hogy biztosan memóriabiztonsági gondjai lesznek: a szándék az,
+hogy programozóként te gondoskodj arról, hogy az `unsafe` blokkban lévő kód
+érvényes módon férjen hozzá a memóriához.
 
-People are fallible and mistakes will happen, but by requiring these five
-unsafe operations to be inside blocks annotated with `unsafe`, you’ll know that
-any errors related to memory safety must be within an `unsafe` block. Keep
-`unsafe` blocks small; you’ll be thankful later when you investigate memory
-bugs.
+Az emberek hibáznak, és a hibák elő fognak fordulni, de azzal, hogy ennek az öt
+unsafe műveletnek `unsafe`-fel jelölt blokkokon belül kell lennie, tudni fogod,
+hogy a memóriabiztonsághoz kapcsolódó hibák csakis egy `unsafe` blokkon belül
+lehetnek. Tartsd kicsiben az `unsafe` blokkokat; hálás leszel érte később,
+amikor memóriahibák után nyomozol.
 
-To isolate unsafe code as much as possible, it’s best to enclose such code
-within a safe abstraction and provide a safe API, which we’ll discuss later in
-the chapter when we examine unsafe functions and methods. Parts of the standard
-library are implemented as safe abstractions over unsafe code that has been
-audited. Wrapping unsafe code in a safe abstraction prevents uses of `unsafe`
-from leaking out into all the places that you or your users might want to use
-the functionality implemented with `unsafe` code, because using a safe
-abstraction is safe.
+Ahhoz, hogy az unsafe kódot a lehető legjobban elszigeteld, a legjobb, ha egy
+biztonságos absztrakcióba zárod, és biztonságos API-t adsz hozzá; erről később
+a fejezetben, az unsafe függvények és metódusok tárgyalásánál lesz szó. A
+standard könyvtár egyes részei auditált unsafe kód fölé épített biztonságos
+absztrakciók. Ha az unsafe kódot biztonságos absztrakcióba csomagolod, azzal
+megakadályozod, hogy az `unsafe` használata kiszivárogjon mindazokra a
+helyekre, ahol te vagy a felhasználóid az `unsafe` kóddal megvalósított
+funkcionalitást használni szeretnétek, hiszen egy biztonságos absztrakció
+használata biztonságos.
 
-Let’s look at each of the five unsafe superpowers in turn. We’ll also look at
-some abstractions that provide a safe interface to unsafe code.
+Nézzük meg sorban mind az öt unsafe szupererőt. Megvizsgálunk néhány olyan
+absztrakciót is, amely biztonságos felületet ad unsafe kódhoz.
 
-### Dereferencing a Raw Pointer
+### Nyers pointer dereferálása
 
-In Chapter 4, in the [“Dangling References”][dangling-references]<!-- ignore
---> section, we mentioned that the compiler ensures that references are always
-valid. Unsafe Rust has two new types called _raw pointers_ that are similar to
-references. As with references, raw pointers can be immutable or mutable and
-are written as `*const T` and `*mut T`, respectively. The asterisk isn’t the
-dereference operator; it’s part of the type name. In the context of raw
-pointers, _immutable_ means that the pointer can’t be directly assigned to
-after being dereferenced.
+A 4. fejezet [„Dangling referenciák”][dangling-references]<!-- ignore --> című
+szakaszában megemlítettük, hogy a fordító gondoskodik arról, hogy a
+referenciák mindig érvényesek legyenek. Az unsafe Rustnak két új típusa van,
+a _nyers pointerek_, amelyek hasonlítanak a referenciákra. A referenciákhoz
+hasonlóan a nyers pointerek is lehetnek nem módosíthatók vagy módosíthatók, és
+`*const T`, illetve `*mut T` alakban írjuk őket. A csillag itt nem a
+dereferáló operátor, hanem a típusnév része. A nyers pointerek kontextusában a
+_nem módosítható_ azt jelenti, hogy a pointernek dereferálás után nem lehet
+közvetlenül értéket adni.
 
-Different from references and smart pointers, raw pointers:
+A referenciáktól és a smart pointerektől eltérően a nyers pointerek:
 
-- Are allowed to ignore the borrowing rules by having both immutable and
-  mutable pointers or multiple mutable pointers to the same location
-- Aren’t guaranteed to point to valid memory
-- Are allowed to be null
-- Don’t implement any automatic cleanup
+- Figyelmen kívül hagyhatják a borrowing szabályait: lehet egyszerre nem
+  módosítható és módosítható pointer, vagy több módosítható pointer is ugyanarra
+  a helyre
+- Nem garantáltan mutatnak érvényes memóriára
+- Lehetnek nullák
+- Nem valósítanak meg semmilyen automatikus takarítást
 
-By opting out of having Rust enforce these guarantees, you can give up
-guaranteed safety in exchange for greater performance or the ability to
-interface with another language or hardware where Rust’s guarantees don’t apply.
+Ha lemondasz arról, hogy a Rust kikényszerítse ezeket a garanciákat, a
+garantált biztonságot cseréled nagyobb teljesítményre, vagy arra a képességre,
+hogy egy másik nyelvvel vagy hardverrel dolgozz együtt, ahol a Rust garanciái
+nem érvényesek.
 
-Listing 20-1 shows how to create an immutable and a mutable raw pointer.
+A 20-1. lista mutatja, hogyan hozhatunk létre egy nem módosítható és egy
+módosítható nyers pointert.
 
-<Listing number="20-1" caption="Creating raw pointers with the raw borrow operators">
+<Listing number="20-1" caption="Nyers pointerek létrehozása a nyers borrow operátorokkal">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-01/src/main.rs:here}}
@@ -102,27 +110,27 @@ Listing 20-1 shows how to create an immutable and a mutable raw pointer.
 
 </Listing>
 
-Notice that we don’t include the `unsafe` keyword in this code. We can create
-raw pointers in safe code; we just can’t dereference raw pointers outside an
-unsafe block, as you’ll see in a bit.
+Figyeld meg, hogy ebben a kódban nem szerepel az `unsafe` kulcsszó. Nyers
+pointereket biztonságos kódban is létrehozhatunk; csak dereferálni nem tudjuk
+őket unsafe blokkon kívül, ahogy azt mindjárt látni fogod.
 
-We’ve created raw pointers by using the raw borrow operators: `&raw const num`
-creates a `*const i32` immutable raw pointer, and `&raw mut num` creates a `*mut
-i32` mutable raw pointer. Because we created them directly from a local
-variable, we know these particular raw pointers are valid, but we can’t make
-that assumption about just any raw pointer.
+A nyers pointereket a nyers borrow operátorokkal hoztuk létre: a `&raw const
+num` egy `*const i32` típusú, nem módosítható nyers pointert hoz létre, a `&raw
+mut num` pedig egy `*mut i32` típusú, módosíthatót. Mivel közvetlenül egy
+lokális változóból hoztuk létre őket, tudjuk, hogy ezek a konkrét nyers
+pointerek érvényesek, de ezt nem feltételezhetjük akármelyik nyers pointerről.
 
-To demonstrate this, next we’ll create a raw pointer whose validity we can’t be
-so certain of, using the keyword `as` to cast a value instead of using the raw
-borrow operator. Listing 20-2 shows how to create a raw pointer to an arbitrary
-location in memory. Trying to use arbitrary memory is undefined: There might be
-data at that address or there might not, the compiler might optimize the code
-so that there is no memory access, or the program might terminate with a
-segmentation fault. Usually, there is no good reason to write code like this,
-especially in cases where you can use a raw borrow operator instead, but it is
-possible.
+Hogy ezt bemutassuk, most olyan nyers pointert hozunk létre, amelynek az
+érvényességében nem lehetünk ennyire biztosak: a nyers borrow operátor helyett
+az `as` kulcsszóval alakítunk át egy értéket. A 20-2. lista azt mutatja,
+hogyan hozhatunk létre nyers pointert egy tetszőleges memóriahelyre. A
+tetszőleges memória használata nem definiált: lehet, hogy van adat azon a
+címen, lehet, hogy nincs; a fordító optimalizálhatja úgy a kódot, hogy ne
+történjen memóriahozzáférés; vagy a program leállhat egy szegmentálási hibával.
+Általában nincs jó ok ilyen kód írására, különösen ott, ahol helyette nyers
+borrow operátort is használhatnál, de lehetséges.
 
-<Listing number="20-2" caption="Creating a raw pointer to an arbitrary memory address">
+<Listing number="20-2" caption="Nyers pointer létrehozása tetszőleges memóriacímre">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-02/src/main.rs:here}}
@@ -130,11 +138,12 @@ possible.
 
 </Listing>
 
-Recall that we can create raw pointers in safe code, but we can’t dereference
-raw pointers and read the data being pointed to. In Listing 20-3, we use the
-dereference operator `*` on a raw pointer that requires an `unsafe` block.
+Emlékezz: nyers pointereket biztonságos kódban is létrehozhatunk, de nem
+dereferálhatjuk őket, és nem olvashatjuk ki a mutatott adatot. A 20-3. listában
+a `*` dereferáló operátort használjuk egy nyers pointeren, ami `unsafe` blokkot
+igényel.
 
-<Listing number="20-3" caption="Dereferencing raw pointers within an `unsafe` block">
+<Listing number="20-3" caption="Nyers pointerek dereferálása `unsafe` blokkon belül">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-03/src/main.rs:here}}
@@ -142,70 +151,72 @@ dereference operator `*` on a raw pointer that requires an `unsafe` block.
 
 </Listing>
 
-Creating a pointer does no harm; it’s only when we try to access the value that
-it points at that we might end up dealing with an invalid value.
+Egy pointer létrehozása nem árt senkinek; csak akkor kerülhetünk érvénytelen
+érték közelébe, amikor megpróbáljuk elérni azt az értéket, amelyre mutat.
 
-Note also that in Listings 20-1 and 20-3, we created `*const i32` and `*mut
-i32` raw pointers that both pointed to the same memory location, where `num` is
-stored. If we instead tried to create an immutable and a mutable reference to
-`num`, the code would not have compiled because Rust’s ownership rules don’t
-allow a mutable reference at the same time as any immutable references. With
-raw pointers, we can create a mutable pointer and an immutable pointer to the
-same location and change data through the mutable pointer, potentially creating
-a data race. Be careful!
+Vedd észre azt is, hogy a 20-1. és a 20-3. listában olyan `*const i32` és `*mut
+i32` nyers pointereket hoztunk létre, amelyek ugyanarra a memóriahelyre
+mutattak, oda, ahol a `num` tárolódik. Ha ehelyett egy nem módosítható és egy
+módosítható referenciát próbáltunk volna létrehozni a `num`-ra, a kód nem
+fordult volna le, mert a Rust ownership-szabályai nem engednek meg egy
+módosítható referenciát egyidejűleg bármilyen nem módosítható referenciával.
+Nyers pointerekkel létrehozhatunk egy módosítható és egy nem módosítható
+pointert ugyanarra a helyre, és a módosíthatón keresztül megváltoztathatjuk az
+adatot, ami akár versenyhelyzethez is vezethet. Légy óvatos!
 
-With all of these dangers, why would you ever use raw pointers? One major use
-case is when interfacing with C code, as you’ll see in the next section.
-Another case is when building up safe abstractions that the borrow checker
-doesn’t understand. We’ll introduce unsafe functions and then look at an
-example of a safe abstraction that uses unsafe code.
+Ennyi veszély mellett miért használnál valaha is nyers pointert? Az egyik fő
+felhasználási eset a C kóddal való együttműködés, ahogy a következő szakaszban
+látni fogod. A másik eset az olyan biztonságos absztrakciók építése, amelyeket
+a borrow checker nem ért. Bemutatjuk az unsafe függvényeket, majd megnézünk egy
+példát egy unsafe kódot használó biztonságos absztrakcióra.
 
-### Calling an Unsafe Function or Method
+### Unsafe függvény vagy metódus hívása
 
-The second type of operation you can perform in an unsafe block is calling
-unsafe functions. Unsafe functions and methods look exactly like regular
-functions and methods, but they have an extra `unsafe` before the rest of the
-definition. The `unsafe` keyword in this context indicates the function has
-requirements we need to uphold when we call this function, because Rust can’t
-guarantee we’ve met these requirements. By calling an unsafe function within an
-`unsafe` block, we’re saying that we’ve read this function’s documentation and
-we take responsibility for upholding the function’s contracts.
+A második típusú művelet, amelyet unsafe blokkban végezhetsz, az unsafe
+függvények hívása. Az unsafe függvények és metódusok pontosan úgy néznek ki,
+mint a szokásosak, csak a definíció többi része előtt szerepel egy `unsafe`. Az
+`unsafe` kulcsszó ebben a kontextusban azt jelzi, hogy a függvénynek vannak
+követelményei, amelyeket a híváskor be kell tartanunk, mert a Rust nem tudja
+garantálni, hogy ezeket teljesítettük. Azzal, hogy egy unsafe függvényt
+`unsafe` blokkon belül hívunk meg, azt mondjuk, hogy elolvastuk a függvény
+dokumentációját, és vállaljuk a felelősséget a függvény szerződésének
+betartásáért.
 
-Here is an unsafe function named `dangerous` that doesn’t do anything in its
-body:
+Íme egy `dangerous` nevű unsafe függvény, amelynek a törzse nem csinál semmit:
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/no-listing-01-unsafe-fn/src/main.rs:here}}
 ```
 
-We must call the `dangerous` function within a separate `unsafe` block. If we
-try to call `dangerous` without the `unsafe` block, we’ll get an error:
+A `dangerous` függvényt egy külön `unsafe` blokkon belül kell meghívnunk. Ha
+`unsafe` blokk nélkül próbáljuk meghívni a `dangerous` függvényt, hibát kapunk:
 
 ```console
 {{#include ../listings/ch20-advanced-features/output-only-01-missing-unsafe/output.txt}}
 ```
 
-With the `unsafe` block, we’re asserting to Rust that we’ve read the function’s
-documentation, we understand how to use it properly, and we’ve verified that
-we’re fulfilling the contract of the function.
+Az `unsafe` blokkal azt állítjuk a Rustnak, hogy elolvastuk a függvény
+dokumentációját, értjük, hogyan kell helyesen használni, és meggyőződtünk
+arról, hogy teljesítjük a függvény szerződését.
 
-To perform unsafe operations in the body of an `unsafe` function, you still
-need to use an `unsafe` block, just as within a regular function, and the
-compiler will warn you if you forget. This helps us keep `unsafe` blocks as
-small as possible, as unsafe operations may not be needed across the whole
-function body.
+Ahhoz, hogy egy `unsafe` függvény törzsében unsafe műveleteket végezz,
+továbbra is `unsafe` blokkot kell használnod, éppúgy, mint egy szokásos
+függvényen belül, és a fordító figyelmeztet, ha elfelejted. Ez segít abban,
+hogy az `unsafe` blokkok a lehető legkisebbek maradjanak, hiszen unsafe
+műveletekre nem feltétlenül van szükség a teljes függvénytörzsben.
 
-#### Creating a Safe Abstraction over Unsafe Code
+#### Biztonságos absztrakció készítése unsafe kód fölé
 
-Just because a function contains unsafe code doesn’t mean we need to mark the
-entire function as unsafe. In fact, wrapping unsafe code in a safe function is
-a common abstraction. As an example, let’s study the `split_at_mut` function
-from the standard library, which requires some unsafe code. We’ll explore how
-we might implement it. This safe method is defined on mutable slices: It takes
-one slice and makes it two by splitting the slice at the index given as an
-argument. Listing 20-4 shows how to use `split_at_mut`.
+Attól, hogy egy függvény unsafe kódot tartalmaz, még nem kell az egész
+függvényt unsafe-nek jelölnünk. Sőt, az unsafe kód biztonságos függvénybe
+csomagolása gyakori absztrakció. Példaként vizsgáljuk meg a standard könyvtár
+`split_at_mut` függvényét, amelyhez unsafe kódra van szükség. Nézzük meg,
+hogyan implementálhatnánk. Ezt a biztonságos metódust módosítható slice-okon
+definiálják: egy slice-ot vesz át, és kettőt csinál belőle úgy, hogy az
+argumentumként megadott indexnél kettévágja. A 20-4. lista mutatja a
+`split_at_mut` használatát.
 
-<Listing number="20-4" caption="Using the safe `split_at_mut` function">
+<Listing number="20-4" caption="A biztonságos `split_at_mut` függvény használata">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-04/src/main.rs:here}}
@@ -213,12 +224,12 @@ argument. Listing 20-4 shows how to use `split_at_mut`.
 
 </Listing>
 
-We can’t implement this function using only safe Rust. An attempt might look
-something like Listing 20-5, which won’t compile. For simplicity, we’ll
-implement `split_at_mut` as a function rather than a method and only for slices
-of `i32` values rather than for a generic type `T`.
+Ezt a függvényt nem tudjuk kizárólag safe Rusttal implementálni. Egy próbálkozás
+körülbelül úgy nézhet ki, mint a 20-5. lista, amely nem fordul le. Az
+egyszerűség kedvéért a `split_at_mut`-ot metódus helyett függvényként, és
+generikus `T` típus helyett csak `i32` értékek slice-aira implementáljuk.
 
-<Listing number="20-5" caption="An attempted implementation of `split_at_mut` using only safe Rust">
+<Listing number="20-5" caption="Kísérlet a `split_at_mut` implementálására kizárólag safe Rusttal">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-05/src/main.rs:here}}
@@ -226,32 +237,33 @@ of `i32` values rather than for a generic type `T`.
 
 </Listing>
 
-This function first gets the total length of the slice. Then, it asserts that
-the index given as a parameter is within the slice by checking whether it’s
-less than or equal to the length. The assertion means that if we pass an index
-that is greater than the length to split the slice at, the function will panic
-before it attempts to use that index.
+Ez a függvény először lekéri a slice teljes hosszát. Ezután állítást tesz arra,
+hogy a paraméterként kapott index a slice-on belül van, méghozzá úgy, hogy
+ellenőrzi, kisebb-e vagy egyenlő-e a hossznál. Az állítás azt jelenti, hogy ha
+a hossznál nagyobb indexet adunk át vágási pontnak, a függvény panicot vált ki,
+mielőtt megpróbálná használni azt az indexet.
 
-Then, we return two mutable slices in a tuple: one from the start of the
-original slice to the `mid` index and another from `mid` to the end of the
-slice.
+Ezután két módosítható slice-ot adunk vissza egy tuple-ben: az egyik az eredeti
+slice elejétől a `mid` indexig tart, a másik a `mid`-től a slice végéig.
 
-When we try to compile the code in Listing 20-5, we’ll get an error:
+Amikor megpróbáljuk lefordítani a 20-5. listában lévő kódot, hibát kapunk:
 
 ```console
 {{#include ../listings/ch20-advanced-features/listing-20-05/output.txt}}
 ```
 
-Rust’s borrow checker can’t understand that we’re borrowing different parts of
-the slice; it only knows that we’re borrowing from the same slice twice.
-Borrowing different parts of a slice is fundamentally okay because the two
-slices aren’t overlapping, but Rust isn’t smart enough to know this. When we
-know code is okay, but Rust doesn’t, it’s time to reach for unsafe code.
+A Rust borrow checkere nem tudja megérteni, hogy a slice különböző részeit
+kölcsönözzük ki; csak annyit lát, hogy kétszer kölcsönzünk ugyanabból a
+slice-ból. Egy slice különböző részeinek kölcsönzése alapvetően rendben van,
+hiszen a két slice nem fed át, de a Rust nem elég okos ahhoz, hogy ezt tudja.
+Amikor mi tudjuk, hogy a kód rendben van, a Rust viszont nem, akkor jött el az
+unsafe kód ideje.
 
-Listing 20-6 shows how to use an `unsafe` block, a raw pointer, and some calls
-to unsafe functions to make the implementation of `split_at_mut` work.
+A 20-6. lista mutatja, hogyan használhatunk `unsafe` blokkot, nyers pointert és
+néhány unsafe függvényhívást ahhoz, hogy a `split_at_mut` implementációja
+működjön.
 
-<Listing number="20-6" caption="Using unsafe code in the implementation of the `split_at_mut` function">
+<Listing number="20-6" caption="Unsafe kód használata a `split_at_mut` függvény implementációjában">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-06/src/main.rs:here}}
@@ -259,42 +271,43 @@ to unsafe functions to make the implementation of `split_at_mut` work.
 
 </Listing>
 
-Recall from [“The Slice Type”][the-slice-type]<!-- ignore --> section in
-Chapter 4 that a slice is a pointer to some data and the length of the slice.
-We use the `len` method to get the length of a slice and the `as_mut_ptr`
-method to access the raw pointer of a slice. In this case, because we have a
-mutable slice to `i32` values, `as_mut_ptr` returns a raw pointer with the type
-`*mut i32`, which we’ve stored in the variable `ptr`.
+Emlékezz vissza a 4. fejezet [„A slice típus”][the-slice-type]<!-- ignore -->
+című szakaszára: a slice egy pointer valamilyen adatra, plusz a slice hossza. A
+slice hosszát a `len` metódussal kapjuk meg, a slice nyers pointerét pedig az
+`as_mut_ptr` metódussal érjük el. Ebben az esetben, mivel `i32` értékekre
+mutató módosítható slice-unk van, az `as_mut_ptr` egy `*mut i32` típusú nyers
+pointert ad vissza, amelyet a `ptr` változóban tárolunk.
 
-We keep the assertion that the `mid` index is within the slice. Then, we get to
-the unsafe code: The `slice::from_raw_parts_mut` function takes a raw pointer
-and a length, and it creates a slice. We use this function to create a slice
-that starts from `ptr` and is `mid` items long. Then, we call the `add` method
-on `ptr` with `mid` as an argument to get a raw pointer that starts at `mid`,
-and we create a slice using that pointer and the remaining number of items
-after `mid` as the length.
+Megtartjuk azt az állítást, hogy a `mid` index a slice-on belül van. Ezután
+következik az unsafe kód: a `slice::from_raw_parts_mut` függvény egy nyers
+pointert és egy hosszt vesz át, és létrehoz belőlük egy slice-ot. Ezzel a
+függvénnyel hozunk létre egy olyan slice-ot, amely a `ptr`-től indul, és `mid`
+elem hosszú. Ezután meghívjuk a `ptr`-en az `add` metódust `mid` argumentummal,
+hogy kapjunk egy `mid`-nél kezdődő nyers pointert, majd ezzel a pointerrel és a
+`mid` utáni elemek számával mint hosszal létrehozzuk a másik slice-ot.
 
-The function `slice::from_raw_parts_mut` is unsafe because it takes a raw
-pointer and must trust that this pointer is valid. The `add` method on raw
-pointers is also unsafe because it must trust that the offset location is also
-a valid pointer. Therefore, we had to put an `unsafe` block around our calls to
-`slice::from_raw_parts_mut` and `add` so that we could call them. By looking at
-the code and by adding the assertion that `mid` must be less than or equal to
-`len`, we can tell that all the raw pointers used within the `unsafe` block
-will be valid pointers to data within the slice. This is an acceptable and
-appropriate use of `unsafe`.
+A `slice::from_raw_parts_mut` függvény unsafe, mert nyers pointert vesz át, és
+meg kell bíznia abban, hogy ez a pointer érvényes. A nyers pointerek `add`
+metódusa szintén unsafe, mert meg kell bíznia abban, hogy az eltolt hely is
+érvényes pointer. Ezért az `unsafe` blokkot a `slice::from_raw_parts_mut` és az
+`add` hívásai köré kellett tennünk, hogy meghívhassuk őket. A kód
+átnézésével, és azzal az állítással, hogy a `mid`-nek kisebbnek vagy egyenlőnek
+kell lennie a `len`-nél, meg tudjuk állapítani, hogy az `unsafe` blokkban
+használt összes nyers pointer a slice-on belüli adatra mutató, érvényes pointer
+lesz. Ez az `unsafe` elfogadható és helyénvaló használata.
 
-Note that we don’t need to mark the resultant `split_at_mut` function as
-`unsafe`, and we can call this function from safe Rust. We’ve created a safe
-abstraction to the unsafe code with an implementation of the function that uses
-`unsafe` code in a safe way, because it creates only valid pointers from the
-data this function has access to.
+Vedd észre, hogy az így kapott `split_at_mut` függvényt nem kell `unsafe`-nek
+jelölnünk, és safe Rustból is meghívhatjuk. Biztonságos absztrakciót
+készítettünk az unsafe kód fölé a függvény olyan implementációjával, amely
+biztonságos módon használ `unsafe` kódot, hiszen csakis érvényes pointereket
+hoz létre abból az adatból, amelyhez a függvény hozzáfér.
 
-In contrast, the use of `slice::from_raw_parts_mut` in Listing 20-7 would
-likely crash when the slice is used. This code takes an arbitrary memory
-location and creates a slice 10,000 items long.
+Ezzel szemben a `slice::from_raw_parts_mut` 20-7. listában látható használata
+nagy valószínűséggel összeomlana a slice használatakor. Ez a kód egy
+tetszőleges memóriahelyet vesz, és 10 000 elem hosszú slice-ot hoz létre
+belőle.
 
-<Listing number="20-7" caption="Creating a slice from an arbitrary memory location">
+<Listing number="20-7" caption="Slice létrehozása tetszőleges memóriahelyről">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-07/src/main.rs:here}}
@@ -302,26 +315,27 @@ location and creates a slice 10,000 items long.
 
 </Listing>
 
-We don’t own the memory at this arbitrary location, and there is no guarantee
-that the slice this code creates contains valid `i32` values. Attempting to use
-`values` as though it’s a valid slice results in undefined behavior.
+Nem mi birtokoljuk a memóriát ezen a tetszőleges helyen, és semmi sem
+garantálja, hogy az itt létrehozott slice érvényes `i32` értékeket tartalmaz.
+Ha a `values`-t úgy próbáljuk használni, mintha érvényes slice lenne, az nem
+definiált viselkedéshez vezet.
 
-#### Using `extern` Functions to Call External Code
+#### Külső kód hívása `extern` függvényekkel
 
-Sometimes your Rust code might need to interact with code written in another
-language. For this, Rust has the keyword `extern` that facilitates the creation
-and use of a _Foreign Function Interface (FFI)_, which is a way for a
-programming language to define functions and enable a different (foreign)
-programming language to call those functions.
+Néha a Rust kódodnak más nyelven írt kóddal kell együttműködnie. Ehhez a
+Rustnak van egy `extern` kulcsszava, amely megkönnyíti egy _Foreign Function
+Interface (FFI)_ létrehozását és használatát; ez az a mód, ahogyan egy
+programozási nyelv függvényeket definiálhat, és lehetővé teheti, hogy egy másik
+(idegen) programozási nyelv meghívja ezeket a függvényeket.
 
-Listing 20-8 demonstrates how to set up an integration with the `abs` function
-from the C standard library. Functions declared within `extern` blocks are
-generally unsafe to call from Rust code, so `extern` blocks must also be marked
-`unsafe`. The reason is that other languages don’t enforce Rust’s rules and
-guarantees, and Rust can’t check them, so responsibility falls on the
-programmer to ensure safety.
+A 20-8. lista bemutatja, hogyan állíthatunk be integrációt a C standard
+könyvtárának `abs` függvényével. Az `extern` blokkokban deklarált függvények
+Rust kódból általában unsafe módon hívhatók, ezért az `extern` blokkokat is
+`unsafe`-nek kell jelölni. Ennek oka, hogy más nyelvek nem kényszerítik ki a
+Rust szabályait és garanciáit, a Rust pedig nem tudja ellenőrizni őket, így a
+biztonság szavatolása a programozó felelőssége.
 
-<Listing number="20-8" file-name="src/main.rs" caption="Declaring and calling an `extern` function defined in another language">
+<Listing number="20-8" file-name="src/main.rs" caption="Egy másik nyelvben definiált `extern` függvény deklarálása és hívása">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-08/src/main.rs}}
@@ -329,22 +343,23 @@ programmer to ensure safety.
 
 </Listing>
 
-Within the `unsafe extern "C"` block, we list the names and signatures of
-external functions from another language we want to call. The `"C"` part
-defines which _application binary interface (ABI)_ the external function uses:
-The ABI defines how to call the function at the assembly level. The `"C"` ABI
-is the most common and follows the C programming language’s ABI. Information
-about all the ABIs Rust supports is available in [the Rust Reference][ABI].
+Az `unsafe extern "C"` blokkon belül felsoroljuk azoknak a másik nyelvből
+származó külső függvényeknek a nevét és szignatúráját, amelyeket meg akarunk
+hívni. A `"C"` rész azt adja meg, melyik _application binary interface-t (ABI)_
+használja a külső függvény: az ABI határozza meg, hogyan kell a függvényt
+assembly szinten meghívni. A `"C"` ABI a leggyakoribb, és a C programozási
+nyelv ABI-ját követi. A Rust által támogatott összes ABI-ról [a Rust
+referenciájában][ABI] találsz információt.
 
-Every item declared within an `unsafe extern` block is implicitly unsafe.
-However, some FFI functions *are* safe to call. For example, the `abs` function
-from C’s standard library does not have any memory safety considerations, and we
-know it can be called with any `i32`. In cases like this, we can use the `safe`
-keyword to say that this specific function is safe to call even though it is in
-an `unsafe extern` block. Once we make that change, calling it no longer
-requires an `unsafe` block, as shown in Listing 20-9.
+Az `unsafe extern` blokkban deklarált minden elem implicit módon unsafe.
+Néhány FFI-függvény azonban *biztonságosan* hívható. Például a C standard
+könyvtárának `abs` függvényénél nincsenek memóriabiztonsági megfontolások, és
+tudjuk, hogy bármilyen `i32` értékkel meghívható. Ilyen esetekben a `safe`
+kulcsszóval jelezhetjük, hogy ez a konkrét függvény biztonságosan hívható, még
+ha `unsafe extern` blokkban van is. Ha ezt a változtatást megtesszük, a hívása
+többé nem igényel `unsafe` blokkot, ahogy a 20-9. listában látható.
 
-<Listing number="20-9" file-name="src/main.rs" caption="Explicitly marking a function as `safe` within an `unsafe extern` block and calling it safely">
+<Listing number="20-9" file-name="src/main.rs" caption="Egy függvény kifejezett `safe` jelölése `unsafe extern` blokkon belül, majd biztonságos hívása">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-09/src/main.rs}}
@@ -352,28 +367,31 @@ requires an `unsafe` block, as shown in Listing 20-9.
 
 </Listing>
 
-Marking a function as `safe` does not inherently make it safe! Instead, it is
-like a promise you are making to Rust that it is safe. It is still your
-responsibility to make sure that promise is kept!
+Attól, hogy egy függvényt `safe`-nek jelölsz, az még önmagában nem lesz
+biztonságos! Ez inkább egy ígéret, amelyet a Rustnak teszel, hogy az adott
+függvény biztonságos. Az továbbra is a te felelősséged, hogy ez az ígéret
+teljesüljön is!
 
-#### Calling Rust Functions from Other Languages
+#### Rust függvények hívása más nyelvekből
 
-We can also use `extern` to create an interface that allows other languages to
-call Rust functions. Instead of creating a whole `extern` block, we add the
-`extern` keyword and specify the ABI to use just before the `fn` keyword for
-the relevant function. We also need to add an `#[unsafe(no_mangle)]` annotation
-to tell the Rust compiler not to mangle the name of this function. _Mangling_
-is when a compiler changes the name we’ve given a function to a different name
-that contains more information for other parts of the compilation process to
-consume but is less human readable. Every programming language compiler mangles
-names slightly differently, so for a Rust function to be nameable by other
-languages, we must disable the Rust compiler’s name mangling. This is unsafe
-because there might be name collisions across libraries without the built-in
-mangling, so it is our responsibility to make sure the name we choose is safe
-to export without mangling.
+Az `extern`-t arra is használhatjuk, hogy olyan felületet hozzunk létre, amely
+lehetővé teszi más nyelvek számára Rust függvények hívását. Egész `extern`
+blokk létrehozása helyett közvetlenül az adott függvény `fn` kulcsszava elé
+írjuk az `extern` kulcsszót, és megadjuk a használandó ABI-t. Egy
+`#[unsafe(no_mangle)]` annotációt is hozzá kell adnunk, amellyel megmondjuk a
+Rust fordítójának, hogy ne torzítsa el ennek a függvénynek a nevét. A
+_névtorzításról (mangling)_ akkor beszélünk, amikor a fordító a függvénynek
+adott nevet egy másik névre cseréli, amely több információt tartalmaz a
+fordítási folyamat többi része számára, de kevésbé olvasható ember számára.
+Minden programozási nyelv fordítója kicsit másképp torzítja a neveket, ezért
+ahhoz, hogy egy Rust függvényt más nyelvek néven tudjanak szólítani, ki kell
+kapcsolnunk a Rust fordítójának névtorzítását. Ez unsafe, mert a beépített
+torzítás nélkül a könyvtárak között névütközések lehetnek, így a mi
+felelősségünk, hogy a választott név torzítás nélkül is biztonságosan
+exportálható legyen.
 
-In the following example, we make the `call_from_c` function accessible from C
-code, after it’s compiled to a shared library and linked from C:
+A következő példában a `call_from_c` függvényt tesszük elérhetővé C kód
+számára, miután megosztott könyvtárrá fordítottuk és C-ből belinkeltük:
 
 ```
 #[unsafe(no_mangle)]
@@ -382,21 +400,21 @@ pub extern "C" fn call_from_c() {
 }
 ```
 
-This usage of `extern` requires `unsafe` only in the attribute, not on the
-`extern` block.
+Az `extern` ilyen használatához csak az attribútumban van szükség `unsafe`-re,
+magán az `extern` blokkon nem.
 
-### Accessing or Modifying a Mutable Static Variable
+### Módosítható statikus változó elérése vagy módosítása
 
-In this book, we’ve not yet talked about global variables, which Rust does
-support but which can be problematic with Rust’s ownership rules. If two
-threads are accessing the same mutable global variable, it can cause a data
-race.
+Ebben a könyvben eddig nem beszéltünk a globális változókról, amelyeket a Rust
+támogat ugyan, de amelyek problémásak lehetnek a Rust ownership-szabályai
+mellett. Ha két szál ugyanahhoz a módosítható globális változóhoz fér hozzá, az
+versenyhelyzetet okozhat.
 
-In Rust, global variables are called _static_ variables. Listing 20-10 shows an
-example declaration and use of a static variable with a string slice as a
-value.
+A Rustban a globális változókat _statikus_ (static) változóknak hívjuk. A
+20-10. lista egy statikus változó deklarálására és használatára mutat példát,
+ahol az érték egy string slice.
 
-<Listing number="20-10" file-name="src/main.rs" caption="Defining and using an immutable static variable">
+<Listing number="20-10" file-name="src/main.rs" caption="Nem módosítható statikus változó definiálása és használata">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-10/src/main.rs}}
@@ -404,22 +422,23 @@ value.
 
 </Listing>
 
-Static variables are similar to constants, which we discussed in the
-[“Declaring Constants”][constants]<!-- ignore --> section in Chapter 3. The
-names of static variables are in `SCREAMING_SNAKE_CASE` by convention. Static
-variables can only store references with the `'static` lifetime, which means
-the Rust compiler can figure out the lifetime and we aren’t required to
-annotate it explicitly. Accessing an immutable static variable is safe.
+A statikus változók hasonlítanak a konstansokra, amelyekről a 3. fejezet
+[„Konstansok deklarálása”][constants]<!-- ignore --> című szakaszában
+beszéltünk. A statikus változók nevét megállapodás szerint
+`SCREAMING_SNAKE_CASE` alakban írjuk. A statikus változók csak `'static`
+lifetime-mal rendelkező referenciákat tárolhatnak, ami azt jelenti, hogy a Rust
+fordítója ki tudja következtetni a lifetime-ot, és nem kell kifejezetten
+annotálnunk. Egy nem módosítható statikus változó elérése biztonságos.
 
-A subtle difference between constants and immutable static variables is that
-values in a static variable have a fixed address in memory. Using the value
-will always access the same data. Constants, on the other hand, are allowed to
-duplicate their data whenever they’re used. Another difference is that static
-variables can be mutable. Accessing and modifying mutable static variables is
-_unsafe_. Listing 20-11 shows how to declare, access, and modify a mutable
-static variable named `COUNTER`.
+A konstansok és a nem módosítható statikus változók között finom különbség,
+hogy a statikus változóban lévő értéknek rögzített címe van a memóriában. Az
+érték használata mindig ugyanahhoz az adathoz fér hozzá. A konstansok ezzel
+szemben minden használatkor duplikálhatják az adatukat. További különbség, hogy
+a statikus változók lehetnek módosíthatók. A módosítható statikus változók
+elérése és módosítása _unsafe_. A 20-11. lista azt mutatja, hogyan lehet egy
+`COUNTER` nevű módosítható statikus változót deklarálni, elérni és módosítani.
 
-<Listing number="20-11" file-name="src/main.rs" caption="Reading from or writing to a mutable static variable is unsafe.">
+<Listing number="20-11" file-name="src/main.rs" caption="Módosítható statikus változó olvasása vagy írása unsafe művelet.">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-11/src/main.rs}}
@@ -427,46 +446,48 @@ static variable named `COUNTER`.
 
 </Listing>
 
-As with regular variables, we specify mutability using the `mut` keyword. Any
-code that reads or writes from `COUNTER` must be within an `unsafe` block. The
-code in Listing 20-11 compiles and prints `COUNTER: 3` as we would expect
-because it’s single threaded. Having multiple threads access `COUNTER` would
-likely result in data races, so it is undefined behavior. Therefore, we need to
-mark the entire function as `unsafe` and document the safety limitation so that
-anyone calling the function knows what they are and are not allowed to do
-safely.
+A szokásos változókhoz hasonlóan a módosíthatóságot a `mut` kulcsszóval adjuk
+meg. Minden kódnak, amely a `COUNTER`-ből olvas vagy abba ír, `unsafe` blokkon
+belül kell lennie. A 20-11. listában lévő kód lefordul, és a várt módon
+`COUNTER: 3`-at ír ki, mert egyszálú. Ha több szál férne hozzá a `COUNTER`-hez,
+az nagy valószínűséggel versenyhelyzethez vezetne, tehát nem definiált
+viselkedés lenne. Ezért az egész függvényt `unsafe`-nek kell jelölnünk, és
+dokumentálnunk kell a biztonsági korlátozást, hogy aki meghívja a függvényt,
+tudja, mit tehet és mit nem biztonságosan.
 
-Whenever we write an unsafe function, it is idiomatic to write a comment
-starting with `SAFETY` and explaining what the caller needs to do to call the
-function safely. Likewise, whenever we perform an unsafe operation, it is
-idiomatic to write a comment starting with `SAFETY` to explain how the safety
-rules are upheld.
+Amikor unsafe függvényt írunk, idiomatikus egy `SAFETY` szóval kezdődő
+kommentet írni, amely elmagyarázza, mit kell tennie a hívónak ahhoz, hogy
+biztonságosan hívja meg a függvényt. Hasonlóképp, amikor unsafe műveletet
+végzünk, idiomatikus egy `SAFETY` szóval kezdődő kommentet írni arról, hogyan
+teljesülnek a biztonsági szabályok.
 
-Additionally, the compiler will deny by default any attempt to create
-references to a mutable static variable through a compiler lint. You must
-either explicitly opt out of that lint’s protections by adding an
-`#[allow(static_mut_refs)]` annotation or access the mutable static variable
-via a raw pointer created with one of the raw borrow operators. That includes
-cases where the reference is created invisibly, as when it is used in the
-`println!` in this code listing. Requiring references to static mutable
-variables to be created via raw pointers helps make the safety requirements for
-using them more obvious.
+Ezenfelül a fordító alapértelmezés szerint egy fordítói lint segítségével
+elutasít minden olyan kísérletet, amely módosítható statikus változóra
+referenciát hozna létre. Vagy kifejezetten le kell mondanod ennek a lintnek a
+védelméről egy `#[allow(static_mut_refs)]` annotációval, vagy a valamelyik
+nyers borrow operátorral létrehozott nyers pointeren keresztül kell elérned a
+módosítható statikus változót. Ez azokra az esetekre is vonatkozik, amikor a
+referencia láthatatlanul jön létre, például amikor a `println!` használja ebben
+a kódlistában. Az, hogy a módosítható statikus változókra mutató referenciákat
+nyers pointereken keresztül kell létrehozni, segít nyilvánvalóbbá tenni a
+használatukhoz tartozó biztonsági követelményeket.
 
-With mutable data that is globally accessible, it’s difficult to ensure that
-there are no data races, which is why Rust considers mutable static variables
-to be unsafe. Where possible, it’s preferable to use the concurrency techniques
-and thread-safe smart pointers we discussed in Chapter 16 so that the compiler
-checks that data access from different threads is done safely.
+Globálisan elérhető, módosítható adat mellett nehéz biztosítani, hogy ne
+legyenek versenyhelyzetek; ezért tekinti a Rust a módosítható statikus
+változókat unsafe-nek. Ahol lehet, érdemesebb a 16. fejezetben tárgyalt
+konkurenciakezelési technikákat és szálbiztos smart pointereket használni, hogy
+a fordító ellenőrizze: a különböző szálakból történő adathozzáférés
+biztonságosan zajlik.
 
-### Implementing an Unsafe Trait
+### Unsafe trait implementálása
 
-We can use `unsafe` to implement an unsafe trait. A trait is unsafe when at
-least one of its methods has some invariant that the compiler can’t verify. We
-declare that a trait is `unsafe` by adding the `unsafe` keyword before `trait`
-and marking the implementation of the trait as `unsafe` too, as shown in
-Listing 20-12.
+Az `unsafe` használható unsafe trait implementálására is. Egy trait akkor
+unsafe, ha legalább az egyik metódusának van olyan invariánsa, amelyet a
+fordító nem tud ellenőrizni. Egy traitet úgy nyilvánítunk `unsafe`-nek, hogy a
+`trait` elé írjuk az `unsafe` kulcsszót, és a trait implementációját is
+`unsafe`-nek jelöljük, ahogy a 20-12. listában látható.
 
-<Listing number="20-12" caption="Defining and implementing an unsafe trait">
+<Listing number="20-12" caption="Unsafe trait definiálása és implementálása">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-12/src/main.rs:here}}
@@ -474,91 +495,96 @@ Listing 20-12.
 
 </Listing>
 
-By using `unsafe impl`, we’re promising that we’ll uphold the invariants that
-the compiler can’t verify.
+Az `unsafe impl` használatával megígérjük, hogy betartjuk azokat az
+invariánsokat, amelyeket a fordító nem tud ellenőrizni.
 
-As an example, recall the `Send` and `Sync` marker traits we discussed in the
-[“Extensible Concurrency with `Send` and `Sync`”][send-and-sync]<!-- ignore -->
-section in Chapter 16: The compiler implements these traits automatically if
-our types are composed entirely of other types that implement `Send` and
-`Sync`. If we implement a type that contains a type that does not implement
-`Send` or `Sync`, such as raw pointers, and we want to mark that type as `Send`
-or `Sync`, we must use `unsafe`. Rust can’t verify that our type upholds the
-guarantees that it can be safely sent across threads or accessed from multiple
-threads; therefore, we need to do those checks manually and indicate as such
-with `unsafe`.
+Példaként emlékezz vissza a `Send` és `Sync` jelölő trait-ekre, amelyekről a
+16. fejezet [„Bővíthető konkurencia a `Send` és a `Sync`
+segítségével”][send-and-sync]<!-- ignore --> című szakaszában beszéltünk: a
+fordító automatikusan implementálja ezeket a trait-eket, ha a típusaink
+kizárólag olyan más típusokból állnak, amelyek implementálják a `Send`-et és a
+`Sync`-et. Ha olyan típust implementálunk, amely tartalmaz egy `Send`-et vagy
+`Sync`-et nem implementáló típust, például nyers pointereket, és ezt a típust
+`Send`-nek vagy `Sync`-nek szeretnénk jelölni, akkor `unsafe`-et kell
+használnunk. A Rust nem tudja ellenőrizni, hogy a típusunk teljesíti-e azokat a
+garanciákat, amelyek szerint biztonságosan átküldhető szálak között vagy több
+szálból is elérhető; ezért ezeket az ellenőrzéseket nekünk kell kézzel
+elvégeznünk, és ezt `unsafe`-fel jeleznünk.
 
-### Accessing Fields of a Union
+### Union mezőinek elérése
 
-The final action that works only with `unsafe` is accessing fields of a union.
-A *union* is similar to a `struct`, but only one declared field is used in a
-particular instance at one time. Unions are primarily used to interface with
-unions in C code. Accessing union fields is unsafe because Rust can’t guarantee
-the type of the data currently being stored in the union instance. You can
-learn more about unions in [the Rust Reference][unions].
+Az utolsó művelet, amely csak `unsafe`-fel működik, egy union mezőinek elérése.
+A *union* hasonlít a `struct`-ra, azzal a különbséggel, hogy egy adott
+példányban egyszerre csak egy deklarált mezőt használunk. A unionokat
+elsősorban arra használjuk, hogy C kódban lévő unionokkal működjünk együtt. A
+union mezőinek elérése unsafe, mert a Rust nem tudja garantálni, hogy éppen
+milyen típusú adat van tárolva a union példányában. A unionokról többet [a Rust
+referenciájában][unions] tudhatsz meg.
 
-### Using Miri to Check Unsafe Code
+### A Miri használata unsafe kód ellenőrzésére
 
-When writing unsafe code, you might want to check that what you have written
-actually is safe and correct. One of the best ways to do that is to use Miri,
-an official Rust tool for detecting undefined behavior. Whereas the borrow
-checker is a _static_ tool that works at compile time, Miri is a _dynamic_
-tool that works at runtime. It checks your code by running your program, or
-its test suite, and detecting when you violate the rules it understands about
-how Rust should work.
+Amikor unsafe kódot írsz, érdemes ellenőrizned, hogy amit írtál, valóban
+biztonságos és helyes-e. Ennek az egyik legjobb módja a Miri használata, amely
+a Rust hivatalos eszköze a nem definiált viselkedés felderítésére. Míg a borrow
+checker _statikus_ eszköz, amely fordítási időben dolgozik, a Miri _dinamikus_
+eszköz, amely futásidőben működik. Úgy ellenőrzi a kódodat, hogy lefuttatja a
+programodat vagy a tesztkészletét, és észleli, ha megsérted azokat a
+szabályokat, amelyeket a Rust működéséről ismer.
 
-Using Miri requires a nightly build of Rust (which we talk about more in
-[Appendix G: How Rust is Made and “Nightly Rust”][nightly]<!-- ignore -->). You
-can install both a nightly version of Rust and the Miri tool by typing `rustup
-+nightly component add miri`. This does not change what version of Rust your
-project uses; it only adds the tool to your system so you can use it when you
-want to. You can run Miri on a project by typing `cargo +nightly miri run` or
-`cargo +nightly miri test`.
+A Miri használatához a Rust nightly buildjére van szükség (erről bővebben a
+[G. függelékben: Hogyan készül a Rust, és a „Nightly Rust”][nightly]<!-- ignore
+--> olvashatsz). A Rust nightly verzióját és a Miri eszközt is telepítheted a
+`rustup +nightly component add miri` beírásával. Ez nem változtatja meg, hogy a
+projekted melyik Rust-verziót használja; csak hozzáadja az eszközt a
+rendszeredhez, hogy használhasd, amikor akarod. A Mirit egy projekten a `cargo
++nightly miri run` vagy a `cargo +nightly miri test` beírásával futtathatod.
 
-For an example of how helpful this can be, consider what happens when we run it
-against Listing 20-7.
+Hogy lásd, mennyire hasznos tud lenni, nézzük meg, mi történik, amikor a 20-7.
+listára futtatjuk.
 
 ```console
 {{#include ../listings/ch20-advanced-features/listing-20-07/output.txt}}
 ```
 
-Miri correctly warns us that we’re casting an integer to a pointer, which might
-be a problem, but Miri can’t determine whether a problem exists because it
-doesn’t know how the pointer originated. Then, Miri returns an error where
-Listing 20-7 has undefined behavior because we have a dangling pointer. Thanks
-to Miri, we now know there is a risk of undefined behavior, and we can think
-about how to make the code safe. In some cases, Miri can even make
-recommendations about how to fix errors.
+A Miri helyesen figyelmeztet arra, hogy egész számot alakítunk pointerré, ami
+gond lehet, de a Miri nem tudja eldönteni, hogy tényleg gond van-e, mert nem
+tudja, honnan származik a pointer. Ezután a Miri hibát jelez, mert a 20-7.
+listában nem definiált viselkedés van: dangling pointerünk van. A Mirinek
+köszönhetően most már tudjuk, hogy fennáll a nem definiált viselkedés
+kockázata, és elgondolkodhatunk azon, hogyan tegyük biztonságossá a kódot.
+Egyes esetekben a Miri még javaslatot is tud tenni a hibák javítására.
 
-Miri doesn’t catch everything you might get wrong when writing unsafe code.
-Miri is a dynamic analysis tool, so it only catches problems with code that
-actually gets run. That means you will need to use it in conjunction with good
-testing techniques to increase your confidence about the unsafe code you have
-written. Miri also does not cover every possible way your code can be unsound.
+A Miri nem kap el mindent, amit unsafe kód írásakor elronthatsz. A Miri
+dinamikus analízist végző eszköz, így csak azzal a kóddal kapcsolatos
+problémákat találja meg, amely ténylegesen lefut. Ez azt jelenti, hogy jó
+tesztelési technikákkal együtt kell használnod, hogy magabiztosabb legyél az
+általad írt unsafe kódban. A Miri arra sem terjed ki, ahogyan a kódod
+mindenféle módon helytelenné (unsound) válhat.
 
-Put another way: If Miri _does_ catch a problem, you know there’s a bug, but
-just because Miri _doesn’t_ catch a bug doesn’t mean there isn’t a problem. It
-can catch a lot, though. Try running it on the other examples of unsafe code in
-this chapter and see what it says!
+Másképp fogalmazva: ha a Miri _talál_ egy problémát, akkor tudod, hogy van egy
+bug; de attól, hogy a Miri _nem_ talál bugot, még lehet, hogy van probléma.
+Azért sokat el tud kapni. Próbáld ki a fejezet többi unsafe kódpéldáján is, és
+nézd meg, mit mond!
 
-You can learn more about Miri at [its GitHub repository][miri].
+A Miriről többet [a GitHub-repójában][miri] tudhatsz meg.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="when-to-use-unsafe-code"></a>
 
-### Using Unsafe Code Correctly
+### Az unsafe kód helyes használata
 
-Using `unsafe` to use one of the five superpowers just discussed isn’t wrong or
-even frowned upon, but it is trickier to get `unsafe` code correct because the
-compiler can’t help uphold memory safety. When you have a reason to use
-`unsafe` code, you can do so, and having the explicit `unsafe` annotation makes
-it easier to track down the source of problems when they occur. Whenever you
-write unsafe code, you can use Miri to help you be more confident that the code
-you have written upholds Rust’s rules.
+Az `unsafe` használata az imént tárgyalt öt szupererő valamelyikéhez nem hiba,
+és nem is nézik rossz szemmel, de nehezebb az `unsafe` kódot helyesen megírni,
+mert a fordító nem tud segíteni a memóriabiztonság betartásában. Ha okod van
+`unsafe` kód használatára, használd; a kifejezett `unsafe` annotáció pedig
+megkönnyíti a problémák forrásának megtalálását, amikor előfordulnak. Amikor
+unsafe kódot írsz, a Mirivel növelheted a magabiztosságodat abban, hogy a
+megírt kód betartja a Rust szabályait.
 
-For a much deeper exploration of how to work effectively with unsafe Rust, read
-Rust’s official guide for `unsafe`, [The Rustonomicon][nomicon].
+Ha sokkal mélyebben szeretnél elmerülni abban, hogyan lehet hatékonyan dolgozni
+az unsafe Rusttal, olvasd el a Rust hivatalos `unsafe`-útmutatóját, [a
+Rustonomicont][nomicon].
 
 [dangling-references]: ch04-02-references-and-borrowing.html#dangling-references
 [ABI]: ../reference/items/external-blocks.html#abi

@@ -71,12 +71,12 @@ még ha nem is tudatosult benned! Formálisabban a `let` utasítás így néz ki
 <code>let <em>PATTERN</em> = <em>EXPRESSION</em>;</code>
 </pre>
 
-Az olyan utasításokban, mint a `let x = 5;`, ahol a PATTERN helyén egy változónév
-áll, a változónév csupán a minta egy különösen egyszerű formája. A Rust
-összeveti a kifejezést a mintával, és értéket ad a benne talált neveknek. A `let
-x = 5;` példában tehát az `x` egy olyan minta, amelynek jelentése: „kösd az `x`
-változóhoz azt, ami ide illeszkedik”. Mivel az `x` név maga a teljes minta, ez a
-minta gyakorlatilag azt jelenti: „kösd az `x` változóhoz az egészet, bármi
+Az olyan utasításokban, mint a `let x = 5;`, ahol a PATTERN helyén egy
+változónév áll, a változónév csupán a minta egy különösen egyszerű formája. A
+Rust összeveti a kifejezést a mintával, és értéket ad a benne talált neveknek. A
+`let x = 5;` példában tehát az `x` egy olyan minta, amelynek jelentése: „kösd az
+`x` változóhoz azt, ami ide illeszkedik”. Mivel az `x` név maga a teljes minta,
+ez a minta gyakorlatilag azt jelenti: „kösd az `x` változóhoz az egészet, bármi
 legyen is az érték”.
 
 Hogy a `let` mintaillesztő természete jobban látsszon, nézzük meg a 19-1.
@@ -117,11 +117,11 @@ Ha megpróbáljuk lefordítani ezt a kódot, a következő típushibát kapjuk:
 ```
 
 A hiba javításához a tuple egy vagy több értékét figyelmen kívül hagyhatnánk a
-`_` vagy a `..` használatával, ahogy azt az [„Értékek figyelmen kívül hagyása egy
-mintában”][ignoring-values-in-a-pattern]<!-- ignore --> szakaszban látni fogod.
+`_` vagy a `..` használatával, ahogy azt az [„Értékek figyelmen kívül
+hagyása egy mintában”][ignoring-values-in-a-pattern]<!-- ignore --> szakaszban látni fogod.
 Ha a gond az, hogy túl sok változó van a mintában, a megoldás az, hogy a típusok
-összeillesztéséhez változókat távolítunk el, amíg a változók száma meg nem egyezik
-a tuple elemeinek számával.
+összeillesztéséhez változókat távolítunk el, amíg a változók száma meg nem
+egyezik a tuple elemeinek számával.
 
 ### Feltételes `if let` kifejezések
 
@@ -150,20 +150,21 @@ kapná meg.
 
 </Listing>
 
-Ha a felhasználó megad egy kedvenc színt, azt használjuk háttérszínként. Ha nincs
-megadva kedvenc szín, és ma kedd van, a háttérszín zöld lesz. Egyébként ha a
-felhasználó szövegként adja meg az életkorát, és azt sikerül számmá alakítanunk,
-a szín a szám értékétől függően lila vagy narancssárga lesz. Ha e feltételek
-egyike sem teljesül, a háttérszín kék lesz.
+Ha a felhasználó megad egy kedvenc színt, azt használjuk háttérszínként. Ha
+nincs megadva kedvenc szín, és ma kedd van, a háttérszín zöld lesz. Egyébként ha
+a felhasználó szövegként adja meg az életkorát, és azt sikerül számmá
+alakítanunk, a szín a szám értékétől függően lila vagy narancssárga lesz. Ha e
+feltételek egyike sem teljesül, a háttérszín kék lesz.
 
 Ez a feltételes szerkezet lehetővé teszi, hogy összetett követelményeket
 támogassunk. Az itt szereplő beégetett értékekkel ez a példa a `Using purple as
 the background color` szöveget írja ki.
 
-Láthatod, hogy az `if let` is bevezethet olyan új változókat, amelyek árnyékolják
-(shadowing) a meglévőket, ugyanúgy, ahogy a `match`-ágak: az `if let Ok(age) =
-age` sor egy új `age` változót vezet be, amely az `Ok` variánsban lévő értéket
-tartalmazza, és shadowingolja a meglévő `age` változót. Ez azt jelenti, hogy az
+Láthatod, hogy az `if let` is bevezethet olyan új változókat, amelyek
+árnyékolják (shadowing) a meglévőket, ugyanúgy, ahogy a `match`-ágak: az `if let
+Ok(age) = age` sor egy új `age` változót vezet be, amely az `Ok` variánsban lévő
+értéket tartalmazza, és shadowingolja a meglévő `age` változót. Ez azt jelenti,
+hogy az
 `if age > 30` feltételt ezen a blokkon belülre kell tennünk: nem vonhatjuk össze
 ezt a két feltételt `if let Ok(age) = age && age > 30` alakba. Az új `age`,
 amelyet a 30-hoz akarunk hasonlítani, csak akkor válik érvényessé, amikor a
@@ -221,7 +222,8 @@ A 19-5. listában szereplő kód a következőt írja ki:
 ```
 
 Az `enumerate` metódussal alakítjuk át az iterátort úgy, hogy az egy értéket és
-az érték indexét adja vissza egy tuple-be csomagolva. Az első előállított érték a
+az érték indexét adja vissza egy tuple-be csomagolva. Az első előállított érték
+a
 `(0, 'a')` tuple. Amikor ezt az értéket az `(index, value)` mintára illesztjük,
 az index `0` lesz, a value pedig `'a'`, és ez adja a kimenet első sorát.
 
