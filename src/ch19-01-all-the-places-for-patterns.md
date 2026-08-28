@@ -1,15 +1,16 @@
-## All the Places Patterns Can Be Used
+## Minden hely, ahol mintákat használhatunk
 
-Patterns pop up in a number of places in Rust, and you’ve been using them a lot
-without realizing it! This section discusses all the places where patterns are
-valid.
+A minták a Rustban számos helyen felbukkannak, és te már eddig is sokat
+használtad őket anélkül, hogy tudtál volna róla! Ez a szakasz azokat a helyeket
+veszi sorra, ahol a minták érvényesek.
 
-### `match` Arms
+### `match`-ágak
 
-As discussed in Chapter 6, we use patterns in the arms of `match` expressions.
-Formally, `match` expressions are defined as the keyword `match`, a value to
-match on, and one or more match arms that consist of a pattern and an
-expression to run if the value matches that arm’s pattern, like this:
+Ahogy a 6. fejezetben szó volt róla, a `match` kifejezések ágaiban mintákat
+használunk. Formálisan a `match` kifejezés a `match` kulcsszóból, egy
+illesztendő értékből, valamint egy vagy több `match`-ágból áll; egy ág egy
+mintából és egy kifejezésből tevődik össze, amely akkor fut le, ha az érték
+illeszkedik az ág mintájára – így:
 
 <!--
   Manually formatted rather than using Markdown intentionally: Markdown does not
@@ -22,8 +23,8 @@ expression to run if the value matches that arm’s pattern, like this:
     <em>PATTERN</em> => <em>EXPRESSION</em>,
 }</code></pre>
 
-For example, here’s the `match` expression from Listing 6-5 that matches on an
-`Option<i32>` value in the variable `x`:
+Például itt van a 6-5. listából származó `match` kifejezés, amely az `x`
+változóban lévő `Option<i32>` értékre illeszt:
 
 ```rust,ignore
 match x {
@@ -32,35 +33,34 @@ match x {
 }
 ```
 
-The patterns in this `match` expression are the `None` and `Some(i)` to the
-left of each arrow.
+Ebben a `match` kifejezésben a minták a nyilaktól balra álló `None` és
+`Some(i)`.
 
-One requirement for `match` expressions is that they need to be exhaustive in
-the sense that all possibilities for the value in the `match` expression must
-be accounted for. One way to ensure that you’ve covered every possibility is to
-have a catch-all pattern for the last arm: For example, a variable name
-matching any value can never fail and thus covers every remaining case.
+A `match` kifejezésekkel szemben az egyik követelmény, hogy kimerítők legyenek,
+vagyis a `match` kifejezésben szereplő érték minden lehetőségét le kell fedniük.
+Az egyik módja annak, hogy minden lehetőséget lefedj, ha az utolsó ágban egy
+mindent elkapó mintát használsz: például egy bármilyen értékre illeszkedő
+változónév soha nem hiúsulhat meg, így lefedi az összes megmaradt esetet.
 
-The particular pattern `_` will match anything, but it never binds to a
-variable, so it’s often used in the last match arm. The `_` pattern can be
-useful when you want to ignore any value not specified, for example. We’ll
-cover the `_` pattern in more detail in [“Ignoring Values in a
-Pattern”][ignoring-values-in-a-pattern]<!-- ignore --> later in this chapter.
+A `_` minta bármire illeszkedik, de soha nem köt hozzá változót, ezért gyakran
+az utolsó `match`-ágban szerepel. A `_` minta például akkor hasznos, ha minden
+nem részletezett értéket figyelmen kívül szeretnél hagyni. A `_` mintával
+részletesebben az [„Értékek figyelmen kívül hagyása egy
+mintában”][ignoring-values-in-a-pattern]<!-- ignore --> szakaszban foglalkozunk
+a fejezet későbbi részében.
 
-### `let` Statements
+### `let` utasítások
 
-Prior to this chapter, we had only explicitly discussed using patterns with
-`match` and `if let`, but in fact, we’ve used patterns in other places as well,
-including in `let` statements. For example, consider this straightforward
-variable assignment with `let`:
+E fejezet előtt csak a `match` és az `if let` melletti mintahasználatról esett
+kifejezetten szó, valójában azonban máshol is használtunk mintákat, például a
+`let` utasításokban. Nézd meg például ezt az egyszerű értékadást `let`-tel:
 
 ```rust
 let x = 5;
 ```
 
-Every time you’ve used a `let` statement like this you’ve been using patterns,
-although you might not have realized it! More formally, a `let` statement looks
-like this:
+Minden alkalommal, amikor egy ilyen `let` utasítást írtál, mintát használtál,
+még ha nem is tudatosult benned! Formálisabban a `let` utasítás így néz ki:
 
 <!--
   Manually formatted rather than using Markdown intentionally: Markdown does not
@@ -71,18 +71,19 @@ like this:
 <code>let <em>PATTERN</em> = <em>EXPRESSION</em>;</code>
 </pre>
 
-In statements like `let x = 5;` with a variable name in the PATTERN slot, the
-variable name is just a particularly simple form of a pattern. Rust compares
-the expression against the pattern and assigns any names it finds. So, in the
-`let x = 5;` example, `x` is a pattern that means “bind what matches here to
-the variable `x`.” Because the name `x` is the whole pattern, this pattern
-effectively means “bind everything to the variable `x`, whatever the value is.”
+Az olyan utasításokban, mint a `let x = 5;`, ahol a PATTERN helyén egy változónév
+áll, a változónév csupán a minta egy különösen egyszerű formája. A Rust
+összeveti a kifejezést a mintával, és értéket ad a benne talált neveknek. A `let
+x = 5;` példában tehát az `x` egy olyan minta, amelynek jelentése: „kösd az `x`
+változóhoz azt, ami ide illeszkedik”. Mivel az `x` név maga a teljes minta, ez a
+minta gyakorlatilag azt jelenti: „kösd az `x` változóhoz az egészet, bármi
+legyen is az érték”.
 
-To see the pattern-matching aspect of `let` more clearly, consider Listing
-19-1, which uses a pattern with `let` to destructure a tuple.
+Hogy a `let` mintaillesztő természete jobban látsszon, nézzük meg a 19-1.
+listát, amely egy mintát használ a `let`-tel egy tuple destrukturálására.
 
 
-<Listing number="19-1" caption="Using a pattern to destructure a tuple and create three variables at once">
+<Listing number="19-1" caption="Minta használata egy tuple destrukturálására és három változó egyidejű létrehozására">
 
 ```rust
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-01/src/main.rs:here}}
@@ -90,18 +91,18 @@ To see the pattern-matching aspect of `let` more clearly, consider Listing
 
 </Listing>
 
-Here, we match a tuple against a pattern. Rust compares the value `(1, 2, 3)`
-to the pattern `(x, y, z)` and sees that the value matches the pattern—that is,
-it sees that the number of elements is the same in both—so Rust binds `1` to
-`x`, `2` to `y`, and `3` to `z`. You can think of this tuple pattern as nesting
-three individual variable patterns inside it.
+Itt egy tuple-t illesztünk egy mintára. A Rust összeveti az `(1, 2, 3)` értéket
+az `(x, y, z)` mintával, és látja, hogy az érték illeszkedik a mintára – vagyis
+azt látja, hogy az elemek száma mindkettőben ugyanannyi –, ezért az `1`-et az
+`x`-hez, a `2`-t az `y`-hoz, a `3`-at pedig a `z`-hez köti. Ezt a tuple-mintát
+úgy is felfoghatod, mint amely három különálló változómintát ágyaz be magába.
 
-If the number of elements in the pattern doesn’t match the number of elements
-in the tuple, the overall type won’t match and we’ll get a compiler error. For
-example, Listing 19-2 shows an attempt to destructure a tuple with three
-elements into two variables, which won’t work.
+Ha a mintában lévő elemek száma nem egyezik meg a tuple elemeinek számával, a
+teljes típus nem fog illeszkedni, és fordítási hibát kapunk. A 19-2. lista
+például azt mutatja be, hogyan próbálunk meg egy háromelemű tuple-t két
+változóba destrukturálni – ez nem működik.
 
-<Listing number="19-2" caption="Incorrectly constructing a pattern whose variables don’t match the number of elements in the tuple">
+<Listing number="19-2" caption="Hibásan megalkotott minta, amelynek változói nem felelnek meg a tuple elemszámának">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-02/src/main.rs:here}}
@@ -109,38 +110,39 @@ elements into two variables, which won’t work.
 
 </Listing>
 
-Attempting to compile this code results in this type error:
+Ha megpróbáljuk lefordítani ezt a kódot, a következő típushibát kapjuk:
 
 ```console
 {{#include ../listings/ch19-patterns-and-matching/listing-19-02/output.txt}}
 ```
 
-To fix the error, we could ignore one or more of the values in the tuple using
-`_` or `..`, as you’ll see in the [“Ignoring Values in a
-Pattern”][ignoring-values-in-a-pattern]<!-- ignore --> section. If the problem
-is that we have too many variables in the pattern, the solution is to make the
-types match by removing variables so that the number of variables equals the
-number of elements in the tuple.
+A hiba javításához a tuple egy vagy több értékét figyelmen kívül hagyhatnánk a
+`_` vagy a `..` használatával, ahogy azt az [„Értékek figyelmen kívül hagyása egy
+mintában”][ignoring-values-in-a-pattern]<!-- ignore --> szakaszban látni fogod.
+Ha a gond az, hogy túl sok változó van a mintában, a megoldás az, hogy a típusok
+összeillesztéséhez változókat távolítunk el, amíg a változók száma meg nem egyezik
+a tuple elemeinek számával.
 
-### Conditional `if let` Expressions
+### Feltételes `if let` kifejezések
 
-In Chapter 6, we discussed how to use `if let` expressions mainly as a shorter
-way to write the equivalent of a `match` that only matches one case.
-Optionally, `if let` can have a corresponding `else` containing code to run if
-the pattern in the `if let` doesn’t match.
+A 6. fejezetben arról volt szó, hogyan használhatjuk az `if let` kifejezéseket
+elsősorban egy olyan `match` rövidebb leírására, amely csak egyetlen esetre
+illeszt. Az `if let` mellé opcionálisan `else` ág is kerülhet, amely olyan kódot
+tartalmaz, ami akkor fut le, ha az `if let`-ben lévő minta nem illeszkedik.
 
-Listing 19-3 shows that it’s also possible to mix and match `if let`, `else
-if`, and `else if let` expressions. Doing so gives us more flexibility than a
-`match` expression in which we can express only one value to compare with the
-patterns. Also, Rust doesn’t require that the conditions in a series of `if
-let`, `else if`, and `else if let` arms relate to each other.
+A 19-3. lista azt mutatja, hogy az `if let`, az `else if` és az `else if let`
+kifejezéseket tetszés szerint vegyíthetjük is. Ez nagyobb rugalmasságot ad, mint
+egy `match` kifejezés, amelyben csak egyetlen értéket adhatunk meg a mintákkal
+való összevetésre. Ráadásul a Rust nem követeli meg, hogy az egymást követő `if
+let`, `else if` és `else if let` ágak feltételei bármilyen kapcsolatban legyenek
+egymással.
 
-The code in Listing 19-3 determines what color to make your background based on
-a series of checks for several conditions. For this example, we’ve created
-variables with hardcoded values that a real program might receive from user
-input.
+A 19-3. listában szereplő kód több feltétel ellenőrzése alapján dönti el, milyen
+színű legyen a háttér. Ebben a példában olyan változókat hoztunk létre, amelyek
+beégetett értékeket tartalmaznak; egy valódi program ezeket a felhasználótól
+kapná meg.
 
-<Listing number="19-3" file-name="src/main.rs" caption="Mixing `if let`, `else if`, `else if let`, and `else`">
+<Listing number="19-3" file-name="src/main.rs" caption="Az `if let`, `else if`, `else if let` és `else` vegyítése">
 
 ```rust
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-03/src/main.rs}}
@@ -148,38 +150,38 @@ input.
 
 </Listing>
 
-If the user specifies a favorite color, that color is used as the background.
-If no favorite color is specified and today is Tuesday, the background color is
-green. Otherwise, if the user specifies their age as a string and we can parse
-it as a number successfully, the color is either purple or orange depending on
-the value of the number. If none of these conditions apply, the background
-color is blue.
+Ha a felhasználó megad egy kedvenc színt, azt használjuk háttérszínként. Ha nincs
+megadva kedvenc szín, és ma kedd van, a háttérszín zöld lesz. Egyébként ha a
+felhasználó szövegként adja meg az életkorát, és azt sikerül számmá alakítanunk,
+a szín a szám értékétől függően lila vagy narancssárga lesz. Ha e feltételek
+egyike sem teljesül, a háttérszín kék lesz.
 
-This conditional structure lets us support complex requirements. With the
-hardcoded values we have here, this example will print `Using purple as the
-background color`.
+Ez a feltételes szerkezet lehetővé teszi, hogy összetett követelményeket
+támogassunk. Az itt szereplő beégetett értékekkel ez a példa a `Using purple as
+the background color` szöveget írja ki.
 
-You can see that `if let` can also introduce new variables that shadow existing
-variables in the same way that `match` arms can: The line `if let Ok(age) = age`
-introduces a new `age` variable that contains the value inside the `Ok` variant,
-shadowing the existing `age` variable. This means we need to place the `if age >
-30` condition within that block: We can’t combine these two conditions into `if
-let Ok(age) = age && age > 30`. The new `age` we want to compare to 30 isn’t
-valid until the new scope starts with the curly bracket.
+Láthatod, hogy az `if let` is bevezethet olyan új változókat, amelyek árnyékolják
+(shadowing) a meglévőket, ugyanúgy, ahogy a `match`-ágak: az `if let Ok(age) =
+age` sor egy új `age` változót vezet be, amely az `Ok` variánsban lévő értéket
+tartalmazza, és shadowingolja a meglévő `age` változót. Ez azt jelenti, hogy az
+`if age > 30` feltételt ezen a blokkon belülre kell tennünk: nem vonhatjuk össze
+ezt a két feltételt `if let Ok(age) = age && age > 30` alakba. Az új `age`,
+amelyet a 30-hoz akarunk hasonlítani, csak akkor válik érvényessé, amikor a
+kapcsos zárójellel elkezdődik az új hatókör.
 
-The downside of using `if let` expressions is that the compiler doesn’t check
-for exhaustiveness, whereas with `match` expressions it does. If we omitted the
-last `else` block and therefore missed handling some cases, the compiler would
-not alert us to the possible logic bug.
+Az `if let` kifejezések hátránya, hogy a fordító nem ellenőrzi a kimerítőséget,
+míg a `match` kifejezéseknél igen. Ha elhagynánk az utolsó `else` blokkot, és
+ezzel néhány esetet kezeletlenül hagynánk, a fordító nem figyelmeztetne minket a
+lehetséges logikai hibára.
 
-### `while let` Conditional Loops
+### `while let` feltételes ciklusok
 
-Similar in construction to `if let`, the `while let` conditional loop allows a
-`while` loop to run for as long as a pattern continues to match. In Listing
-19-4, we show a `while let` loop that waits on messages sent between threads,
-but in this case checking a `Result` instead of an `Option`.
+Az `if let`-hez hasonló felépítésű `while let` feltételes ciklus lehetővé teszi,
+hogy egy `while` ciklus addig fusson, amíg egy minta illeszkedik. A 19-4.
+listában egy olyan `while let` ciklust mutatunk be, amely szálak között küldött
+üzenetekre vár, de ezúttal `Option` helyett `Result` értéket vizsgál.
 
-<Listing number="19-4" caption="Using a `while let` loop to print values for as long as `rx.recv()` returns `Ok`">
+<Listing number="19-4" caption="`while let` ciklus használata értékek kiírására mindaddig, amíg az `rx.recv()` `Ok` értéket ad vissza">
 
 ```rust
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-04/src/main.rs:here}}
@@ -187,23 +189,23 @@ but in this case checking a `Result` instead of an `Option`.
 
 </Listing>
 
-This example prints `1`, `2`, and then `3`. The `recv` method takes the first
-message out of the receiver side of the channel and returns an `Ok(value)`. When
-we first saw `recv` back in Chapter 16, we unwrapped the error directly, or
-we interacted with it as an iterator using a `for` loop. As Listing 19-4 shows,
-though, we can also use `while let`, because the `recv` method returns an `Ok`
-each time a message arrives, as long as the sender exists, and then produces an
-`Err` once the sender side disconnects.
+Ez a példa az `1`, `2`, majd a `3` értéket írja ki. A `recv` metódus kiveszi az
+első üzenetet a csatorna fogadó oldaláról, és egy `Ok(value)` értéket ad vissza.
+Amikor a 16. fejezetben először találkoztunk a `recv` metódussal, közvetlenül
+kicsomagoltuk a hibát, vagy iterátorként dolgoztunk vele egy `for` ciklusban.
+Ahogy azonban a 19-4. lista mutatja, `while let`-et is használhatunk, mert a
+`recv` metódus minden beérkező üzenetnél `Ok` értéket ad vissza, amíg a küldő
+létezik, majd `Err` értéket ad, ha a küldő oldal lecsatlakozott.
 
-### `for` Loops
+### `for` ciklusok
 
-In a `for` loop, the value that directly follows the keyword `for` is a
-pattern. For example, in `for x in y`, the `x` is the pattern. Listing 19-5
-demonstrates how to use a pattern in a `for` loop to destructure, or break
-apart, a tuple as part of the `for` loop.
+Egy `for` ciklusban a `for` kulcsszót közvetlenül követő érték egy minta. A `for
+x in y` esetében például az `x` a minta. A 19-5. lista azt mutatja be, hogyan
+használhatunk mintát egy `for` ciklusban egy tuple destrukturálására, vagyis
+szétbontására a `for` ciklus részeként.
 
 
-<Listing number="19-5" caption="Using a pattern in a `for` loop to destructure a tuple">
+<Listing number="19-5" caption="Minta használata egy `for` ciklusban egy tuple destrukturálására">
 
 ```rust
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-05/src/main.rs:here}}
@@ -211,27 +213,26 @@ apart, a tuple as part of the `for` loop.
 
 </Listing>
 
-The code in Listing 19-5 will print the following:
+A 19-5. listában szereplő kód a következőt írja ki:
 
 
 ```console
 {{#include ../listings/ch19-patterns-and-matching/listing-19-05/output.txt}}
 ```
 
-We adapt an iterator using the `enumerate` method so that it produces a value
-and the index for that value, placed into a tuple. The first value produced is
-the tuple `(0, 'a')`. When this value is matched to the pattern `(index,
-value)`, index will be `0` and value will be `'a'`, printing the first line of
-the output.
+Az `enumerate` metódussal alakítjuk át az iterátort úgy, hogy az egy értéket és
+az érték indexét adja vissza egy tuple-be csomagolva. Az első előállított érték a
+`(0, 'a')` tuple. Amikor ezt az értéket az `(index, value)` mintára illesztjük,
+az index `0` lesz, a value pedig `'a'`, és ez adja a kimenet első sorát.
 
 
-### Function Parameters
+### Függvényparaméterek
 
-Function parameters can also be patterns. The code in Listing 19-6, which
-declares a function named `foo` that takes one parameter named `x` of type
-`i32`, should by now look familiar.
+A függvényparaméterek is lehetnek minták. A 19-6. listában szereplő kód, amely
+egy `foo` nevű függvényt deklarál egyetlen `i32` típusú, `x` nevű paraméterrel,
+mostanra már ismerősnek tűnik.
 
-<Listing number="19-6" caption="A function signature using patterns in the parameters">
+<Listing number="19-6" caption="Mintákat használó függvényszignatúra a paraméterekben">
 
 ```rust
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-06/src/main.rs:here}}
@@ -239,11 +240,11 @@ declares a function named `foo` that takes one parameter named `x` of type
 
 </Listing>
 
-The `x` part is a pattern! As we did with `let`, we could match a tuple in a
-function’s arguments to the pattern. Listing 19-7 splits the values in a tuple
-as we pass it to a function.
+Az `x` rész egy minta! Ahogy a `let`-nél tettük, a függvény argumentumaiban is
+illeszthetnénk egy tuple-t a mintára. A 19-7. lista egy tuple értékeit bontja
+szét, miközben átadjuk azt egy függvénynek.
 
-<Listing number="19-7" file-name="src/main.rs" caption="A function with parameters that destructure a tuple">
+<Listing number="19-7" file-name="src/main.rs" caption="Függvény, amelynek paraméterei destrukturálnak egy tuple-t">
 
 ```rust
 {{#rustdoc_include ../listings/ch19-patterns-and-matching/listing-19-07/src/main.rs}}
@@ -251,16 +252,17 @@ as we pass it to a function.
 
 </Listing>
 
-This code prints `Current location: (3, 5)`. The values `&(3, 5)` match the
-pattern `&(x, y)`, so `x` is the value `3` and `y` is the value `5`.
+Ez a kód a `Current location: (3, 5)` szöveget írja ki. A `&(3, 5)` érték
+illeszkedik a `&(x, y)` mintára, így az `x` a `3` érték, az `y` pedig az `5`
+lesz.
 
-We can also use patterns in closure parameter lists in the same way as in
-function parameter lists because closures are similar to functions, as
-discussed in Chapter 13.
+Closure-ök paraméterlistájában ugyanúgy használhatunk mintákat, mint a
+függvények paraméterlistájában, hiszen a closure-ök hasonlítanak a
+függvényekre, ahogy azt a 13. fejezetben tárgyaltuk.
 
-At this point, you’ve seen several ways to use patterns, but patterns don’t
-work the same in every place we can use them. In some places, the patterns must
-be irrefutable; in other circumstances, they can be refutable. We’ll discuss
-these two concepts next.
+Ezen a ponton már többféle mintahasználatot láttál, de a minták nem mindenütt
+működnek egyformán. Bizonyos helyeken a mintáknak cáfolhatatlannak kell lenniük;
+más körülmények között lehetnek cáfolhatók is. A következőkben ezt a két
+fogalmat tárgyaljuk.
 
 [ignoring-values-in-a-pattern]: ch19-03-pattern-syntax.html#ignoring-values-in-a-pattern

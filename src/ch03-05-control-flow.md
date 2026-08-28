@@ -223,9 +223,10 @@ hogy a kód épp hol tartott a ciklusban, amikor megkapta a megszakítási jelz�
 Szerencsére a Rust kóddal is lehetőséget ad a ciklusból való kilépésre. A
 `break` kulcsszót elhelyezheted a cikluson belül, hogy megmondd a programnak,
 mikor hagyja abba a ciklus végrehajtását. Emlékezz vissza, hogy ezt tettük a
-kitalálós játékban a 2. fejezet [„Kilépés helyes tipp után”][quitting-after-a-correct-guess]<!-- ignore
---> című szakaszában, hogy kilépjünk a programból, amikor a felhasználó a
-helyes szám kitalálásával megnyerte a játékot.
+kitalálós játékban a 2. fejezet [„Kilépés helyes
+tipp után”][quitting-after-a-correct-guess]<!-- ignore --> című szakaszában,
+hogy kilépjünk a programból, amikor a felhasználó a helyes szám kitalálásával
+megnyerte a játékot.
 
 A kitalálós játékban a `continue` kulcsszót is használtuk, amely egy ciklusban
 azt mondja a programnak, hogy hagyja ki a ciklus adott iterációjának hátralévő

@@ -136,20 +136,21 @@ bevezetjük a `String` típust.
 ### A `String` típus
 
 Az ownership szabályainak szemléltetéséhez egy olyan adattípusra van szükségünk,
-amely bonyolultabb azoknál, amelyeket a 3. fejezet [„Adattípusok”][data-types]<!-- ignore -->
-című szakaszában tárgyaltunk. A korábban tárgyalt típusok ismert méretűek, a
-stack-en tárolhatók, és lekerülnek a stack-ről, amikor a hatókörük véget ér,
-továbbá gyorsan és egyszerűen másolhatók egy új, független példány
-létrehozásához, ha a kód egy másik részének ugyanazt az értéket kell használnia
-egy másik hatókörben. Mi azonban olyan adatot szeretnénk megnézni, amely a heap-en
-tárolódik, és fel akarjuk fedezni, honnan tudja a Rust, mikor kell kitakarítania
-ezt az adatot – a `String` típus pedig kiváló példa erre.
+amely bonyolultabb azoknál, amelyeket a 3. fejezet
+[„Adattípusok”][data-types]<!-- ignore --> című szakaszában tárgyaltunk. A
+korábban tárgyalt típusok ismert méretűek, a stack-en tárolhatók, és lekerülnek
+a stack-ről, amikor a hatókörük véget ér, továbbá gyorsan és egyszerűen
+másolhatók egy új, független példány létrehozásához, ha a kód egy másik részének
+ugyanazt az értéket kell használnia egy másik hatókörben. Mi azonban olyan
+adatot szeretnénk megnézni, amely a heap-en tárolódik, és fel akarjuk fedezni,
+honnan tudja a Rust, mikor kell kitakarítania ezt az adatot – a `String` típus
+pedig kiváló példa erre.
 
 A `String` típusnak azokra a részeire fogunk összpontosítani, amelyek az
 ownership-hez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
-érvényesek, akár a standard könyvtár biztosítja őket, akár te hozod létre őket. A
-`String` ownership-től független szempontjait a [8. fejezetben][ch8]<!-- ignore -->
-tárgyaljuk.
+érvényesek, akár a standard könyvtár biztosítja őket, akár te hozod létre őket.
+A `String` ownership-től független szempontjait a
+[8. fejezetben][ch8]<!-- ignore --> tárgyaljuk.
 
 A sztringliterálokat már láttuk, ahol a sztring értéke bele van égetve a
 programunkba. A sztringliterálok kényelmesek, de nem minden olyan helyzetre
@@ -168,8 +169,8 @@ let s = String::from("hello");
 A kettős kettőspont `::` operátor lehetővé teszi, hogy ezt a bizonyos `from`
 függvényt a `String` típus névterébe soroljuk ahelyett, hogy valamilyen
 `string_from`-féle nevet használnánk. Erről a szintaxisról részletesebben az 5.
-fejezet [„Metódusok”][methods]<!-- ignore --> című szakaszában lesz szó, valamint
-akkor, amikor a 7. fejezet [„Útvonalak a modulfában lévő elemekre való
+fejezet [„Metódusok”][methods]<!-- ignore --> című szakaszában lesz szó,
+valamint akkor, amikor a 7. fejezet [„Útvonalak a modulfában lévő elemekre való
 hivatkozáshoz”][paths-module-tree]<!-- ignore --> részében a modulokkal való
 névterezésről beszélünk.
 
@@ -303,8 +304,8 @@ memóriabeli adatábrázolás a 4-2. ábrán láthatóhoz hasonlóan néz ki.
 a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en."
 src="img/trpl04-02.svg" class="center" style="width: 50%;" />
 
-<span class="caption">4-2. ábra: Az `s2` változó memóriabeli ábrázolása, amely az
-`s1` pointerének, hosszának és kapacitásának másolatát tartalmazza</span>
+<span class="caption">4-2. ábra: Az `s2` változó memóriabeli ábrázolása, amely
+az `s1` pointerének, hosszának és kapacitásának másolatát tartalmazza</span>
 
 Az ábrázolás _nem_ úgy néz ki, mint a 4-3. ábra, amely azt mutatja, hogyan
 festene a memória, ha a Rust a heap-en lévő adatot is lemásolná. Ha a Rust ezt
@@ -352,8 +353,9 @@ példában azt mondanánk, hogy `s1` _move_-olva lett `s2`-be. Tehát valójába
 történik, amit a 4-4. ábra mutat.
 
 <img alt="Három táblázat: az s1 és s2 táblázatok ezeket a sztringeket ábrázolják
-a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en. Az s1 táblázat
-szürkített, mert s1 már nem érvényes; a heap-en lévő adat csak s2-n keresztül
+a stack-en, és mindkettő ugyanarra a sztringadatra mutat a heap-en. Az s1
+táblázat szürkített, mert s1 már nem érvényes; a heap-en lévő adat csak s2-n
+keresztül
 érhető el." src="img/trpl04-04.svg" class="center" style="width:
 50%;" />
 
@@ -444,10 +446,10 @@ másolás, ezért el is hagyhatjuk.
 
 A Rustban van egy speciális annotáció, a `Copy` trait, amelyet olyan típusokra
 helyezhetünk, amelyek a stack-en tárolódnak, ahogy az egész számok is (a
-trait-ekről bővebben a [10. fejezetben][traits]<!-- ignore --> lesz szó). Ha egy
-típus implementálja a `Copy` trait-et, az azt használó változók nem move-olódnak,
-hanem egyszerűen másolódnak, így egy másik változóhoz való hozzárendelés után is
-érvényesek maradnak.
+trait-ekről bővebben a [10. fejezetben][traits]<!-- ignore --> lesz szó). Ha
+egy típus implementálja a `Copy` trait-et, az azt használó változók nem
+move-olódnak, hanem egyszerűen másolódnak, így egy másik változóhoz való
+hozzárendelés után is érvényesek maradnak.
 
 A Rust nem engedi, hogy egy típust `Copy` annotációval lássunk el, ha a típus
 vagy annak bármely része implementálta a `Drop` trait-et. Ha a típusnak valami

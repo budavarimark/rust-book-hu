@@ -2,39 +2,40 @@
 
 <a id="streams"></a>
 
-## Streams: Futures in Sequence
+## Stream-ek: future-ök sorozatban
 
-Recall how we used the receiver for our async channel earlier in this chapter
-in the [“Message Passing”][17-02-messages]<!-- ignore --> section. The async
-`recv` method produces a sequence of items over time. This is an instance of a
-much more general pattern known as a _stream_. Many concepts are naturally
-represented as streams: items becoming available in a queue, chunks of data
-being pulled incrementally from the filesystem when the full data set is too
-large for the computer’s memory, or data arriving over the network over time.
-Because streams are futures, we can use them with any other kind of future and
-combine them in interesting ways. For example, we can batch up events to avoid
-triggering too many network calls, set timeouts on sequences of long-running
-operations, or throttle user interface events to avoid doing needless work.
+Emlékezz vissza, hogyan használtuk a fejezet korábbi részében, az
+[„Üzenetküldés”][17-02-messages]<!-- ignore --> szakaszban az async csatornánk
+fogadó oldalát. Az async `recv` metódus idővel elemek sorozatát állítja elő. Ez
+egy sokkal általánosabb minta egy példája, amelyet _stream_-nek nevezünk. Sok
+fogalom természetes módon írható le stream-ként: egy sorban elérhetővé váló
+elemek, a fájlrendszerből fokozatosan beolvasott adatdarabok, amikor a teljes
+adathalmaz túl nagy a számítógép memóriájához, vagy a hálózaton át idővel
+megérkező adatok. Mivel a stream-ek future-ök, bármilyen más future-rel együtt
+használhatjuk és érdekes módokon kombinálhatjuk őket. Kötegelhetjük például az
+eseményeket, hogy ne indítsunk túl sok hálózati hívást, időkorlátot szabhatunk
+hosszan futó műveletek sorozatára, vagy visszafoghatjuk a felhasználói felület
+eseményeit, hogy ne végezzünk fölösleges munkát.
 
-We saw a sequence of items back in Chapter 13, when we looked at the Iterator
-trait in [“The Iterator Trait and the `next` Method”][iterator-trait]<!--
-ignore --> section, but there are two differences between iterators and the
-async channel receiver. The first difference is time: iterators are
-synchronous, while the channel receiver is asynchronous. The second difference
-is the API. When working directly with `Iterator`, we call its synchronous
-`next` method. With the `trpl::Receiver` stream in particular, we called an
-asynchronous `recv` method instead. Otherwise, these APIs feel very similar,
-and that similarity isn’t a coincidence. A stream is like an asynchronous form
-of iteration. Whereas the `trpl::Receiver` specifically waits to receive
-messages, though, the general-purpose stream API is much broader: it provides
-the next item the way `Iterator` does, but asynchronously.
+Elemek sorozatával már a 13. fejezetben is találkoztunk, amikor az
+[„Az `Iterator` trait és a `next` metódus”][iterator-trait]<!-- ignore -->
+szakaszban az Iterator trait-et néztük meg, de két különbség is van az
+iterátorok és az async csatorna fogadó oldala között. Az első különbség az idő:
+az iterátorok szinkronok, a csatorna fogadó oldala viszont aszinkron. A második
+különbség az API. Ha közvetlenül az `Iterator`-ral dolgozunk, a szinkron `next`
+metódusát hívjuk meg. Konkrétan a `trpl::Receiver` stream esetében ehelyett egy
+aszinkron `recv` metódust hívtunk. Ettől eltekintve ezek az API-k nagyon
+hasonlónak érződnek, és ez a hasonlóság nem véletlen. A stream olyan, mint az
+iteráció aszinkron formája. Míg azonban a `trpl::Receiver` kifejezetten
+üzenetek fogadására vár, az általános célú stream API sokkal tágabb: a
+következő elemet adja, ahogy az `Iterator` teszi, csak éppen aszinkron módon.
 
-The similarity between iterators and streams in Rust means we can actually
-create a stream from any iterator. As with an iterator, we can work with a
-stream by calling its `next` method and then awaiting the output, as in Listing
-17-21, which won’t compile yet.
+Az iterátorok és a stream-ek közötti hasonlóság a Rustban azt jelenti, hogy
+bármilyen iterátorból készíthetünk stream-et. Az iterátorokhoz hasonlóan úgy
+dolgozhatunk egy stream-mel, hogy meghívjuk a `next` metódusát, majd bevárjuk a
+kimenetét, ahogy a 17-21. listában, amely még nem fordul le.
 
-<Listing number="17-21" caption="Creating a stream from an iterator and printing its values" file-name="src/main.rs">
+<Listing number="17-21" caption="Stream létrehozása egy iterátorból és az értékeinek kiírása" file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-21/src/main.rs:stream}}
@@ -42,13 +43,13 @@ stream by calling its `next` method and then awaiting the output, as in Listing
 
 </Listing>
 
-We start with an array of numbers, which we convert to an iterator and then
-call `map` on to double all the values. Then we convert the iterator into a
-stream using the `trpl::stream_from_iter` function. Next, we loop over the
-items in the stream as they arrive with the `while let` loop.
+Egy számokból álló tömbbel indulunk, amelyet iterátorrá alakítunk, majd `map`
+hívással megduplázzuk az összes értéket. Ezután a `trpl::stream_from_iter`
+függvénnyel stream-mé alakítjuk az iterátort. Végül egy `while let` ciklussal
+végigmegyünk a stream elemein, ahogy azok megérkeznek.
 
-Unfortunately, when we try to run the code, it doesn’t compile but instead
-reports that there’s no `next` method available:
+Sajnos amikor megpróbáljuk lefuttatni a kódot, nem fordul le, hanem azt jelzi,
+hogy nincs elérhető `next` metódus:
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-21
@@ -80,23 +81,24 @@ help: there is a method `try_next` with a similar name
    |                                        ~~~~~~~~
 ```
 
-As this output explains, the reason for the compiler error is that we need the
-right trait in scope to be able to use the `next` method. Given our discussion
-so far, you might reasonably expect that trait to be `Stream`, but it’s
-actually `StreamExt`. Short for _extension_, `Ext` is a common pattern in the
-Rust community for extending one trait with another.
+Ahogy ez a kimenet elmagyarázza, a fordítási hiba oka az, hogy a `next` metódus
+használatához a megfelelő trait-nek hatókörben kell lennie. Az eddigiek alapján
+joggal gondolhatnád, hogy ez a trait a `Stream`, de valójában a `StreamExt`.
+Az `Ext` az _extension_ (kiterjesztés) rövidítése, és a Rust közösségben bevett
+minta arra, hogy egy trait-et egy másikkal egészítsünk ki.
 
-The `Stream` trait defines a low-level interface that effectively combines the
-`Iterator` and `Future` traits. `StreamExt` supplies a higher-level set of APIs
-on top of `Stream`, including the `next` method as well as other utility
-methods similar to those provided by the `Iterator` trait. `Stream` and
-`StreamExt` are not yet part of Rust’s standard library, but most ecosystem
-crates use similar definitions.
+A `Stream` trait egy alacsony szintű interfészt definiál, amely lényegében az
+`Iterator` és a `Future` trait-eket ötvözi. A `StreamExt` a `Stream` tetejére
+épülő, magasabb szintű API-készletet nyújt, benne a `next` metódussal, valamint
+más segédmetódusokkal, amelyek hasonlítanak az `Iterator` trait által
+biztosítottakhoz. A `Stream` és a `StreamExt` egyelőre nem része a Rust
+standard könyvtárának, de az ökoszisztéma legtöbb crate-je hasonló
+definíciókat használ.
 
-The fix to the compiler error is to add a `use` statement for
-`trpl::StreamExt`, as in Listing 17-22.
+A fordítási hiba javításához fel kell vennünk egy `use` utasítást a
+`trpl::StreamExt`-hez, ahogy a 17-22. listában látható.
 
-<Listing number="17-22" caption="Successfully using an iterator as the basis for a stream" file-name="src/main.rs">
+<Listing number="17-22" caption="Iterátor sikeres használata stream alapjaként" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-22/src/main.rs:all}}
@@ -104,9 +106,9 @@ The fix to the compiler error is to add a `use` statement for
 
 </Listing>
 
-With all those pieces put together, this code works the way we want! What’s
-more, now that we have `StreamExt` in scope, we can use all of its utility
-methods, just as with iterators.
+Ha mindezeket a darabokat összerakjuk, a kód úgy működik, ahogy szeretnénk!
+Ráadásul most, hogy a `StreamExt` hatókörben van, az összes segédmetódusát
+használhatjuk, ugyanúgy, mint az iterátoroknál.
 
 [17-02-messages]: ch17-02-concurrency-with-async.html#message-passing
 [iterator-trait]: ch13-02-iterators.html#the-iterator-trait-and-the-next-method
