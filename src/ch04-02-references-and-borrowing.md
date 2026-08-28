@@ -51,6 +51,25 @@ Az `&s1` szintaxissal olyan referenciát hozunk létre, amely _hivatkozik_ az
 értéket, a mutatott érték nem kerül eldobásra akkor, amikor a referencia
 használata véget ér.
 
+Az alábbi futásidejű ábrán az látszik, mit jelent ez a memóriában. Az `L2`
+pontban két lépésen át jutunk el a heap-en lévő `"hello"` adatig: az `s`
+referencia a stack-en lévő `s1`-re mutat, `s1` pedig a heap-en tárolt
+sztringtartalomra. Mivel `s` nem birtokolja az adatot, a `calculate_length`
+visszatérése után (`L3`) a heap-en semmi nem szabadul fel, csak a függvény
+stack-kerete tűnik el:
+
+```aquascope,interpreter,horizontal
+fn main() {
+    let s1 = String::from("hello");`[]`
+    let len = calculate_length(&s1);`[]`
+    println!("The length of '{s1}' is {len}.");
+}
+
+fn calculate_length(s: &String) -> usize {
+    `[]`s.len()
+}
+```
+
 Hasonlóképpen a függvény szignatúrája is `&` jellel jelzi, hogy az `s`
 paraméter típusa referencia. Tegyünk hozzá néhány magyarázó megjegyzést:
 
@@ -68,6 +87,24 @@ hiszen soha nem is volt ownershipünk.
 A referenciakészítés műveletét _borrowing_-nak nevezzük. Ahogy a való életben
 is: ha valaki birtokol valamit, kölcsönkérheted tőle. Amikor végeztél, vissza
 kell adnod. Nem a tiéd.
+
+A fordítási idejű ábra megmutatja, mibe kerül ez a kölcsönzés. Mivel `s1` nem
+`mut`, eleve csak **R** és **O** jogosultsága van; a `&s1` borrow idejére
+elveszíti az **O**-t, tehát amíg az `s` referencia él, `s1` nem mozgatható el és
+nem dobható el – olvasni viszont továbbra is lehet. Az `s` utolsó használata
+(a `calculate_length(s)` hívás) után `s1` visszakapja az **O** jogosultságát is:
+
+```aquascope,permissions,stepper,boundaries
+#fn main() {
+let s1 = String::from("hello");
+let s: &String = &s1;
+let len = calculate_length(s);
+println!("The length of '{s1}' is {len}.");
+#}
+#fn calculate_length(s: &String) -> usize {
+#    s.len()
+#}
+```
 
 Mi történik hát, ha megpróbálunk módosítani valamit, amit épp kölcsönvettünk?
 Próbáld ki a 4-6. listában szereplő kódot. Előre szólunk: nem fog működni!
@@ -89,6 +126,21 @@ Próbáld ki a 4-6. listában szereplő kódot. Előre szólunk: nem fog működ
 Ahogy a változók alapértelmezés szerint nem módosíthatók, úgy a referenciák
 sem. Nem módosíthatunk olyasmit, amire csak referenciánk van.
 
+Az ábra a jogosultságok nyelvén is megmutatja a hibát: a `change` függvényben a
+`*some_string` hely csak **R** jogosultságot kap, a `push_str` viszont **R**-t
+és **W**-t vár, ezért a hiányzó **W** üresen marad, és a kód nem fordul le:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+fn main() {
+    let s = String::from("hello");
+    change(&s);
+}
+
+fn change(some_string: &String) {
+    some_string.push_str(", world");
+}
+```
+
 ### Módosítható referenciák
 
 A 4-6. listában szereplő kódot néhány apró módosítással kijavíthatjuk úgy, hogy
@@ -108,6 +160,26 @@ Először `mut`-tá tesszük az `s`-t. Utána a `change` függvény hívásának
 szignatúráját pedig úgy alakítjuk, hogy a `some_string: &mut String`
 paraméterrel módosítható referenciát fogadjon. Ez nagyon világossá teszi, hogy
 a `change` függvény meg fogja változtatni a kölcsönvett értéket.
+
+Az alábbi ábrán a `&mut s` referenciát külön változóba (`r`) tettük, hogy több
+soron át lássuk a hatását. Amikor `r` létrejön, `s` mind a három jogosultságát
+(**R**, **W**, **O**) elveszíti: amíg `r` él, `s`-hez semmilyen módon nem lehet
+hozzáférni. Cserébe a `*some_string` hely a `change` belsejében megkapja a
+**W**-t, így a `push_str` módosíthat rajta. Az `r` utolsó használata után `s`
+visszakapja a jogosultságait, ezért a `println!` újra olvashatja:
+
+```aquascope,permissions,stepper,boundaries
+fn main() {
+    let mut s = String::from("hello");
+    let r = &mut s;
+    change(r);
+    println!("{s}");
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+```
 
 A módosítható referenciáknak egy nagy megkötésük van: ha van egy módosítható
 referenciád egy értékre, akkor semmilyen más referenciád nem lehet ugyanarra az
@@ -134,6 +206,20 @@ addig kell tartania, amíg a `println!`-ben fel nem használjuk, ám e módosít
 referencia létrehozása és felhasználása között megpróbáltunk létrehozni egy
 másik módosítható referenciát `r2`-ben, amely ugyanazt az adatot kölcsönzi,
 mint az `r1`.
+
+Az ábrán is jól látszik a tiltás: az `r1` létrehozása után `s`-nek egyetlen
+jogosultsága sem marad, ezért amikor a következő sor `&mut s` alakban újra
+kölcsönözné, a művelethez elvárt **R** és **W** üresen – vagyis hiányzóként –
+jelenik meg mellette:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+#fn main() {
+let mut s = String::from("hello");
+let r1 = &mut s;
+let r2 = &mut s;
+println!("{r1}, {r2}");
+#}
+```
 
 Az a megkötés, amely megakadályozza, hogy egyszerre több módosítható referencia
 mutasson ugyanarra az adatra, megengedi ugyan a módosítást, de csak nagyon
@@ -177,6 +263,21 @@ referenciák kombinálására. Ez a kód hibát eredményez:
 Hoppá! _Az sem_ lehet, hogy módosítható referenciánk legyen ugyanarra az
 értékre, amelyre nem módosítható referenciánk is van.
 
+Az ábrán végigkövetheted, miért más ez az eset: az `r1` és `r2` nem módosítható
+borrow-jai csak a **W** és az **O** jogosultságot veszik el `s`-től, az **R**-t
+nem, ezért fér meg egymás mellett a két olvasó referencia. Az `r3` sorában
+viszont a `&mut s` **W**-t is elvárna, azt pedig `s` már nem tudja megadni:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+#fn main() {
+let mut s = String::from("hello");
+let r1 = &s;
+let r2 = &s;
+let r3 = &mut s;
+println!("{r1}, {r2}, and {r3}");
+#}
+```
+
 A nem módosítható referencia használói nem számítanak arra, hogy az érték
 hirtelen megváltozik a kezük alatt! Több nem módosítható referencia viszont
 megengedett, mert aki csak olvassa az adatot, az nem tudja befolyásolni senki
@@ -197,6 +298,22 @@ létrehozása előtt van. Ezek a hatókörök nem fedik át egymást, így a kó
 megengedett: a fordító látja, hogy a referenciát a hatókör vége előtti
 valamelyik ponttól kezdve már nem használjuk.
 
+Az ábra lépésenként mutatja ugyanezt: a `println!` sora után `r1` és `r2` minden
+jogosultságát elveszíti, mert ott ér véget az élettartamuk, `s` pedig ugyanitt
+visszakapja a **W** és **O** jogosultságát – így a következő sorban már
+létrejöhet az `r3` módosítható referencia:
+
+```aquascope,permissions,stepper,boundaries
+#fn main() {
+let mut s = String::from("hello");
+let r1 = &s;
+let r2 = &s;
+println!("{r1} and {r2}");
+let r3 = &mut s;
+println!("{r3}");
+#}
+```
+
 Bár a borrowinggal kapcsolatos hibák időnként bosszantóak lehetnek, ne feledd:
 a Rust fordítója korán (futásidő helyett fordítási időben) mutat rá egy
 lehetséges hibára, és pontosan megmutatja, hol a probléma. Így neked nem kell
@@ -212,6 +329,20 @@ Rustban ezzel szemben a fordító garantálja, hogy a referenciák soha nem lesz
 dangling referenciák: ha van egy referenciád valamilyen adatra, a fordító
 gondoskodik róla, hogy az adat ne kerüljön ki a hatóköréből előbb, mint a rá
 mutató referencia.
+
+Az alábbi ábrán pontosan ez a helyzet áll elő: a `drop(s)` felszabadítaná a
+`String`-et, miközben az `s_ref` referencia még él. A `&s` borrow elveszi
+`s`-től az **O** jogosultságot, a `drop` viszont épp **O**-t várna – ezért a
+`drop(s)` sorában hiányzóként jelenik meg, és a kód nem fordul le:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+#fn main() {
+let s = String::from("hello");
+let s_ref = &s;
+drop(s);
+println!("{s_ref}");
+#}
+```
 
 Próbáljunk meg létrehozni egy dangling referenciát, hogy lássuk, a Rust hogyan
 akadályozza meg őket egy fordítási idejű hibával:
