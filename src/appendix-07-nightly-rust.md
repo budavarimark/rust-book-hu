@@ -1,50 +1,49 @@
-## Appendix G - How Rust is Made and “Nightly Rust”
+## G függelék – Hogyan készül a Rust, és mi a „nightly Rust”
 
-This appendix is about how Rust is made and how that affects you as a Rust
-developer.
+Ez a függelék arról szól, hogyan készül a Rust, és ez hogyan érint téged Rust
+fejlesztőként.
 
-### Stability Without Stagnation
+### Stabilitás megrekedés nélkül
 
-As a language, Rust cares a _lot_ about the stability of your code. We want
-Rust to be a rock-solid foundation you can build on, and if things were
-constantly changing, that would be impossible. At the same time, if we can’t
-experiment with new features, we may not find out important flaws until after
-their release, when we can no longer change things.
+A Rust mint nyelv _nagyon_ sokat törődik a kódod stabilitásával. Azt szeretnénk,
+ha a Rust sziklaszilárd alap lenne, amelyre építhetsz, és ez lehetetlen lenne,
+ha folyton változnának a dolgok. Ugyanakkor, ha nem kísérletezhetünk új nyelvi
+elemekkel, előfordulhat, hogy csak a kiadásuk után derülnek ki a fontos
+hiányosságok, amikor már nem tudunk változtatni.
 
-Our solution to this problem is what we call “stability without stagnation”,
-and our guiding principle is this: you should never have to fear upgrading to a
-new version of stable Rust. Each upgrade should be painless, but should also
-bring you new features, fewer bugs, and faster compile times.
+Erre a problémára a megoldásunk az, amit „stabilitás megrekedés nélkül”-nek
+hívunk, a vezérelvünk pedig a következő: soha ne kelljen félned attól, hogy a
+stabil Rust új verziójára frissítesz. Minden frissítés legyen fájdalommentes, de
+hozzon új képességeket, kevesebb hibát és gyorsabb fordítási időt is.
 
-### Choo, Choo! Release Channels and Riding the Trains
+### Sínen vagyunk! Kiadási csatornák és a vonatozás
 
-Rust development operates on a _train schedule_. That is, all development is
-done in the main branch of the Rust repository. Releases follow a software
-release train model, which has been used by Cisco IOS and other software
-projects. There are three _release channels_ for Rust:
+A Rust fejlesztése _vonatmenetrend_ szerint működik. Vagyis minden fejlesztés a
+Rust repository fő ágán történik. A kiadások egy szoftverkiadási vonatmodellt
+követnek, amelyet a Cisco IOS és más szoftverprojektek is használtak. A Rustnak
+három _kiadási csatornája_ van:
 
 - Nightly
 - Beta
 - Stable
 
-Most Rust developers primarily use the stable channel, but those who want to
-try out experimental new features may use nightly or beta.
+A legtöbb Rust fejlesztő elsősorban a stable csatornát használja, de aki ki
+akarja próbálni a kísérleti újdonságokat, használhatja a nightlyt vagy a betát.
 
-Here’s an example of how the development and release process works: let’s
-assume that the Rust team is working on the release of Rust 1.5. That release
-happened in December of 2015, but it will provide us with realistic version
-numbers. A new feature is added to Rust: a new commit lands on the main
-branch. Each night, a new nightly version of Rust is produced. Every day is a
-release day, and these releases are created by our release infrastructure
-automatically. So as time passes, our releases look like this, once a night:
+Íme egy példa arra, hogyan működik a fejlesztési és kiadási folyamat: tegyük
+fel, hogy a Rust csapata a Rust 1.5 kiadásán dolgozik. Ez a kiadás 2015
+decemberében történt, de valósághű verziószámokkal fog szolgálni nekünk. Egy új
+nyelvi elem kerül a Rustba: egy új commit érkezik a fő ágra. Minden éjjel
+elkészül a Rust új nightly verziója. Minden nap kiadási nap, és ezeket a
+kiadásokat automatikusan hozza létre a kiadási infrastruktúránk. Ahogy telik az
+idő, a kiadásaink így néznek ki, éjszakánként egyszer:
 
 ```text
 nightly: * - - * - - *
 ```
 
-Every six weeks, it’s time to prepare a new release! The `beta` branch of the
-Rust repository branches off from the main branch used by nightly. Now,
-there are two releases:
+Hathetente eljön az idő egy új kiadás előkészítésére! A Rust repository `beta`
+ága leágazik a nightly által használt fő ágról. Innentől két kiadás létezik:
 
 ```text
 nightly: * - - * - - *
@@ -52,9 +51,9 @@ nightly: * - - * - - *
 beta:                *
 ```
 
-Most Rust users do not use beta releases actively, but test against beta in
-their CI system to help Rust discover possible regressions. In the meantime,
-there’s still a nightly release every night:
+A legtöbb Rust-felhasználó nem használja aktívan a beta kiadásokat, de a CI
+rendszerében a beta ellen is tesztel, hogy segítsen a Rustnak felfedezni az
+esetleges regressziókat. Közben minden éjjel születik egy nightly kiadás is:
 
 ```text
 nightly: * - - * - - * - - * - - *
@@ -62,10 +61,10 @@ nightly: * - - * - - * - - * - - *
 beta:                *
 ```
 
-Let’s say a regression is found. Good thing we had some time to test the beta
-release before the regression snuck into a stable release! The fix is applied
-to the main branch, so that nightly is fixed, and then the fix is backported to
-the `beta` branch, and a new release of beta is produced:
+Tegyük fel, hogy találunk egy regressziót. Szerencsére volt időnk tesztelni a
+beta kiadást, mielőtt a regresszió bekerült volna egy stabil kiadásba! A javítás
+a fő ágra kerül, így a nightly rendbe jön, majd a javítást visszaportoljuk a
+`beta` ágra, és elkészül a beta új kiadása:
 
 ```text
 nightly: * - - * - - * - - * - - * - - *
@@ -73,8 +72,8 @@ nightly: * - - * - - * - - * - - * - - *
 beta:                * - - - - - - - - *
 ```
 
-Six weeks after the first beta was created, it’s time for a stable release! The
-`stable` branch is produced from the `beta` branch:
+Hat héttel az első beta létrehozása után eljön a stabil kiadás ideje! A `stable`
+ág a `beta` ágból készül el:
 
 ```text
 nightly: * - - * - - * - - * - - * - - * - * - *
@@ -84,10 +83,10 @@ beta:                * - - - - - - - - *
 stable:                                *
 ```
 
-Hooray! Rust 1.5 is done! However, we’ve forgotten one thing: because the six
-weeks have gone by, we also need a new beta of the _next_ version of Rust, 1.6.
-So after `stable` branches off of `beta`, the next version of `beta` branches
-off of `nightly` again:
+Hurrá! A Rust 1.5 kész! Egy dologról azonban megfeledkeztünk: mivel eltelt a hat
+hét, a Rust _következő_, 1.6-os verziójából is szükségünk van egy új betára.
+Így miután a `stable` leágazott a `beta`-ról, a `beta` következő verziója újra
+leágazik a `nightly`-ról:
 
 ```text
 nightly: * - - * - - * - - * - - * - - * - * - *
@@ -97,63 +96,64 @@ beta:                * - - - - - - - - *       *
 stable:                                *
 ```
 
-This is called the “train model” because every six weeks, a release “leaves the
-station”, but still has to take a journey through the beta channel before it
-arrives as a stable release.
+Ezt hívjuk „vonatmodellnek”, mert hathetente egy kiadás „elhagyja az
+állomást”, de még végig kell utaznia a beta csatornán, mielőtt stabil
+kiadásként megérkezik.
 
-Rust releases every six weeks, like clockwork. If you know the date of one Rust
-release, you can know the date of the next one: it’s six weeks later. A nice
-aspect of having releases scheduled every six weeks is that the next train is
-coming soon. If a feature happens to miss a particular release, there’s no need
-to worry: another one is happening in a short time! This helps reduce pressure
-to sneak possibly unpolished features in close to the release deadline.
+A Rust hathetente jelenik meg, óramű pontossággal. Ha ismered az egyik Rust
+kiadás dátumát, tudhatod a következőét is: hat héttel később lesz. A hathetente
+ütemezett kiadások egyik kellemes vonása, hogy a következő vonat már úton van.
+Ha egy újdonság véletlenül lemarad egy adott kiadásról, nem kell aggódni:
+rövidesen jön a következő! Ez segít csökkenteni azt a nyomást, hogy még a
+kiadási határidő közelében becsúsztassanak esetleg kiforratlan újdonságokat.
 
-Thanks to this process, you can always check out the next build of Rust and
-verify for yourself that it’s easy to upgrade to: if a beta release doesn’t
-work as expected, you can report it to the team and get it fixed before the
-next stable release happens! Breakage in a beta release is relatively rare, but
-`rustc` is still a piece of software, and bugs do exist.
+Ennek a folyamatnak köszönhetően bármikor kipróbálhatod a Rust következő
+buildjét, és magad ellenőrizheted, hogy könnyű lesz-e ráfrissíteni: ha egy beta
+kiadás nem a várt módon működik, jelentheted a csapatnak, és még a következő
+stabil kiadás előtt kijavíttathatod! A beta kiadásokban viszonylag ritka a
+törés, de a `rustc` is csak egy szoftver, és hibák igenis léteznek.
 
-### Maintenance time
+### Karbantartási idő
 
-The Rust project supports the most recent stable version. When a new stable
-version is released, the old version reaches its end of life (EOL). This means
-each version is supported for six weeks.
+A Rust projekt a legutóbbi stabil verziót támogatja. Amikor megjelenik egy új
+stabil verzió, a régi verzió eléri az életciklusa végét (EOL). Ez azt jelenti,
+hogy minden verzió hat hétig támogatott.
 
-### Unstable Features {#unstable-features}
+### Instabil nyelvi elemek {#unstable-features}
 
-There’s one more catch with this release model: unstable features. Rust uses a
-technique called “feature flags” to determine what features are enabled in a
-given release. If a new feature is under active development, it lands on the
-main branch, and therefore, in nightly, but behind a _feature flag_. If you, as
-a user, wish to try out the work-in-progress feature, you can, but you must be
-using a nightly release of Rust and annotate your source code with the
-appropriate flag to opt in.
+Van még egy csavar ebben a kiadási modellben: az instabil nyelvi elemek. A Rust
+a „feature flag”-eknek nevezett technikát használja annak meghatározására, hogy
+egy adott kiadásban mely képességek engedélyezettek. Ha egy új képesség aktív
+fejlesztés alatt áll, bekerül a fő ágra, és így a nightlyba is, de egy _feature
+flag_ mögé rejtve. Ha felhasználóként ki szeretnéd próbálni a fejlesztés alatt
+álló képességet, megteheted, de ehhez a Rust nightly kiadását kell használnod,
+és a forráskódodat a megfelelő flaggel kell annotálnod, hogy bekapcsold.
 
-If you’re using a beta or stable release of Rust, you can’t use any feature
-flags. This is the key that allows us to get practical use with new features
-before we declare them stable forever. Those who wish to opt into the bleeding
-edge can do so, and those who want a rock-solid experience can stick with
-stable and know that their code won’t break. Stability without stagnation.
+Ha a Rust beta vagy stable kiadását használod, nem használhatsz feature
+flageket. Ez az a kulcs, amely lehetővé teszi, hogy gyakorlati tapasztalatot
+szerezzünk az új képességekkel, mielőtt örökre stabilnak nyilvánítanánk őket.
+Aki a legújabb, kiforratlan dolgokat akarja, megteheti, aki pedig sziklaszilárd
+élményre vágyik, maradhat a stable-nél annak tudatában, hogy a kódja nem törik
+el. Stabilitás megrekedés nélkül.
 
-This book only contains information about stable features, as in-progress
-features are still changing, and surely they’ll be different between when this
-book was written and when they get enabled in stable builds. You can find
-documentation for nightly-only features online.
+Ez a könyv csak a stabil képességekről tartalmaz információt, mivel a fejlesztés
+alatt álló képességek még változnak, és biztosan mások lesznek a könyv írásának
+ideje és aközött, hogy a stabil buildekben bekapcsolják őket. A csak nightlyban
+elérhető képességek dokumentációját megtalálod az interneten.
 
-### Rustup and the Role of Rust Nightly
+### A rustup és a Rust nightly szerepe
 
-Rustup makes it easy to change between different release channels of Rust, on a
-global or per-project basis. By default, you’ll have stable Rust installed. To
-install nightly, for example:
+A rustuppal könnyű váltani a Rust különböző kiadási csatornái között, globálisan
+vagy projektenként. Alapértelmezés szerint a stabil Rust lesz telepítve. A
+nightly telepítése például így néz ki:
 
 ```console
 $ rustup toolchain install nightly
 ```
 
-You can see all of the _toolchains_ (releases of Rust and associated
-components) you have installed with `rustup` as well. Here’s an example on one
-of your authors’ Windows computer:
+A `rustup`-pal megnézheted az összes telepített _toolchain_-edet (a Rust
+kiadásait és a hozzájuk tartozó komponenseket) is. Íme egy példa az egyik
+szerzőnk Windows-os gépéről:
 
 ```powershell
 > rustup toolchain list
@@ -162,45 +162,47 @@ beta-x86_64-pc-windows-msvc
 nightly-x86_64-pc-windows-msvc
 ```
 
-As you can see, the stable toolchain is the default. Most Rust users use stable
-most of the time. You might want to use stable most of the time, but use
-nightly on a specific project, because you care about a cutting-edge feature.
-To do so, you can use `rustup override` in that project’s directory to set the
-nightly toolchain as the one `rustup` should use when you’re in that directory:
+Ahogy látod, a stable toolchain az alapértelmezett. A legtöbb Rust-felhasználó
+az idő nagy részében a stable-t használja. Lehet, hogy te is többnyire a
+stable-t szeretnéd használni, egy konkrét projektben viszont a nightlyt, mert
+fontos számodra valamilyen legfrissebb képesség. Ehhez az adott projekt
+könyvtárában használhatod a `rustup override` parancsot, hogy a nightly
+toolchaint állítsd be annak, amit a `rustup` használjon, amikor abban a
+könyvtárban vagy:
 
 ```console
 $ cd ~/projects/needs-nightly
 $ rustup override set nightly
 ```
 
-Now, every time you call `rustc` or `cargo` inside of
-_~/projects/needs-nightly_, `rustup` will make sure that you are using nightly
-Rust, rather than your default of stable Rust. This comes in handy when you
-have a lot of Rust projects!
+Mostantól, valahányszor a `rustc`-t vagy a `cargo`-t hívod a
+_~/projects/needs-nightly_ könyvtárban, a `rustup` gondoskodik róla, hogy a
+nightly Rustot használd az alapértelmezett stabil Rust helyett. Ez nagyon jól
+jön, ha sok Rust projekted van!
 
-### The RFC Process and Teams
+### Az RFC-folyamat és a csapatok
 
-So how do you learn about these new features? Rust’s development model follows
-a _Request For Comments (RFC) process_. If you’d like an improvement in Rust,
-you can write up a proposal, called an RFC.
+Hogyan szerezhetsz tudomást ezekről az új képességekről? A Rust fejlesztési
+modellje a _Request For Comments (RFC) folyamatot_ követi. Ha szeretnél egy
+fejlesztést a Rustban, megírhatsz egy javaslatot, amelyet RFC-nek hívunk.
 
-Anyone can write RFCs to improve Rust, and the proposals are reviewed and
-discussed by the Rust team, which is comprised of many topic subteams. There’s
-a full list of the teams [on Rust’s website](https://www.rust-lang.org/governance), which includes teams for
-each area of the project: language design, compiler implementation,
-infrastructure, documentation, and more. The appropriate team reads the
-proposal and the comments, writes some comments of their own, and eventually,
-there’s consensus to accept or reject the feature.
+Bárki írhat RFC-t a Rust fejlesztésére, a javaslatokat pedig a Rust csapata
+véleményezi és vitatja meg; ez a csapat sok tematikus alcsapatból áll. A
+csapatok teljes listája megtalálható [a Rust weboldalán](https://www.rust-lang.org/governance),
+és a projekt minden területéhez tartozik csapat: nyelvtervezés,
+fordítóimplementáció, infrastruktúra, dokumentáció és így tovább. Az illetékes
+csapat elolvassa a javaslatot és a hozzászólásokat, megírja a saját
+megjegyzéseit, végül pedig konszenzus születik a képesség elfogadásáról vagy
+elutasításáról.
 
-If the feature is accepted, an issue is opened on the Rust repository, and
-someone can implement it. The person who implements it very well may not be the
-person who proposed the feature in the first place! When the implementation is
-ready, it lands on the main branch behind a feature gate, as we discussed in
-the [“Unstable Features”](#unstable-features)<!-- ignore --> section.
+Ha a képességet elfogadják, megnyílik egy issue a Rust repositoryban, és valaki
+implementálhatja. Aki implementálja, könnyen lehet, hogy nem az, aki eredetileg
+javasolta! Amikor az implementáció kész, egy feature gate mögött bekerül a fő
+ágra, ahogy azt az [„Instabil nyelvi elemek”](#unstable-features)<!-- ignore -->
+szakaszban tárgyaltuk.
 
-After some time, once Rust developers who use nightly releases have been able
-to try out the new feature, team members will discuss the feature, how it’s
-worked out on nightly, and decide if it should make it into stable Rust or not.
-If the decision is to move forward, the feature gate is removed, and the
-feature is now considered stable! It rides the trains into a new stable release
-of Rust.
+Egy idő után, amikor a nightly kiadásokat használó Rust fejlesztőknek már volt
+alkalmuk kipróbálni az új képességet, a csapat tagjai megbeszélik a képességet,
+azt, hogyan vált be a nightlyban, és eldöntik, bekerüljön-e a stabil Rustba. Ha
+a döntés a továbblépés, a feature gate megszűnik, és a képesség immár stabilnak
+számít! Felszáll a vonatra, és megérkezik a Rust egy új stabil kiadásába.

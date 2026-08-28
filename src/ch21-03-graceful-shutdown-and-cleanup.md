@@ -1,17 +1,18 @@
 ## Szabályos leállítás és takarítás
 
 A 21-20. listában szereplő kód a szándékunknak megfelelően, egy thread pool
-segítségével, aszinkron módon válaszol a kérésekre. Kapunk néhány figyelmeztetést
-a `workers`, az `id` és a `thread` mezőkről, amelyeket nem használunk közvetlenül;
-ez arra emlékeztet minket, hogy semmit nem takarítunk el. Amikor a kevésbé elegáns
+segítségével, aszinkron módon válaszol a kérésekre. Kapunk néhány
+figyelmeztetést a `workers`, az `id` és a `thread` mezőkről, amelyeket nem
+használunk közvetlenül; ez arra emlékeztet minket, hogy semmit nem takarítunk
+el. Amikor a kevésbé elegáns
 <kbd>ctrl</kbd>-<kbd>C</kbd> módszerrel állítjuk le a fő szálat, azonnal minden
 más szál is leáll, még akkor is, ha éppen egy kérés kiszolgálásának közepén
 tartanak.
 
 Ezután tehát implementáljuk a `Drop` trait-et, hogy a pool minden szálán
 meghívjuk a `join`-t, így azok befejezhetik a folyamatban lévő kéréseket a
-bezárás előtt. Utána megvalósítunk egy módot arra, hogy szóljunk a szálaknak:
-ne fogadjanak több új kérést, és álljanak le. Hogy működés közben is lássuk ezt a
+bezárás előtt. Utána megvalósítunk egy módot arra, hogy szóljunk a szálaknak: ne
+fogadjanak több új kérést, és álljanak le. Hogy működés közben is lássuk ezt a
 kódot, úgy módosítjuk a szerverünket, hogy csak két kérést fogadjon, mielőtt
 szabályosan leállítja a thread poolt.
 
@@ -37,9 +38,9 @@ implementációra; ez a kód még nem egészen fog működni.
 Először végigmegyünk a thread pool `workers` elemein. A `&mut`-ot azért
 használjuk, mert a `self` egy módosítható referencia, és a `worker`-t is
 módosítani akarjuk. Minden `worker` esetén kiírunk egy üzenetet arról, hogy az
-adott `Worker` példány leáll, majd meghívjuk a `join`-t az adott `Worker` példány
-szálán. Ha a `join` hívása sikertelen, az `unwrap`-pel panicot váltunk ki a
-Rustban, és nem szabályos leállásba megyünk át.
+adott `Worker` példány leáll, majd meghívjuk a `join`-t az adott `Worker`
+példány szálán. Ha a `join` hívása sikertelen, az `unwrap`-pel panicot váltunk
+ki a Rustban, és nem szabályos leállásba megyünk át.
 
 Íme a hiba, amit a kód fordításakor kapunk:
 
@@ -104,8 +105,9 @@ implementációján, majd a `Worker` ciklusán is.
 Először a `ThreadPool` `drop` implementációját változtatjuk meg úgy, hogy
 explicit módon dropolja a `sender`-t, mielőtt megvárná a szálak befejeződését. A
 21-23. lista a `ThreadPool` változtatásait mutatja a `sender` explicit
-dropolásához. A szállal ellentétben itt _valóban_ szükségünk van egy `Option`-re,
-hogy az `Option::take`-kel ki tudjuk mozgatni a `sender`-t a `ThreadPool`-ból.
+dropolásához. A szállal ellentétben itt _valóban_ szükségünk van egy
+`Option`-re, hogy az `Option::take`-kel ki tudjuk mozgatni a `sender`-t a
+`ThreadPool`-ból.
 
 <Listing number="21-23" file-name="src/lib.rs" caption="A `sender` explicit dropolása a `Worker` szálak join-olása előtt">
 
@@ -150,9 +152,9 @@ A `take` metódus az `Iterator` trait-ben van definiálva, és legfeljebb az els
 két elemre korlátozza az iterációt. A `ThreadPool` a `main` végén kikerül a
 hatókörből, és lefut a `drop` implementáció.
 
-Indítsd el a szervert a `cargo run` paranccsal, és küldj három kérést. A harmadik
-kérésnek hibára kell futnia, a terminálodban pedig valami ehhez hasonló kimenetet
-kell látnod:
+Indítsd el a szervert a `cargo run` paranccsal, és küldj három kérést. A
+harmadik kérésnek hibára kell futnia, a terminálodban pedig valami ehhez hasonló
+kimenetet kell látnod:
 
 <!-- manual-regeneration
 cd listings/ch21-web-server/listing-21-25

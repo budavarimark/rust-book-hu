@@ -49,8 +49,8 @@ Indítsd el a szervert a `cargo run` paranccsal. Ezután nyiss két
 böngészőablakot: az egyikben a _http://127.0.0.1:7878_, a másikban a
 _http://127.0.0.1:7878/sleep_ címet. Ha néhányszor beírod a _/_ URI-t, mint
 korábban, azt látod, hogy gyorsan válaszol. Ha viszont beírod a _/sleep_
-címet, majd betöltöd a _/_ címet, azt fogod látni, hogy a _/_ megvárja, amíg a
-`sleep` letölti a teljes öt másodpercét, és csak utána töltődik be.
+címet, majd betöltöd a _/_ címet, azt fogod látni, hogy a _/_ csak azután
+töltődik be, hogy a `sleep` végigaludta a teljes öt másodpercét.
 
 Több technikával is elkerülhetnénk, hogy a kérések feltorlódjanak egy lassú
 kérés mögött, például az asynckel, ahogy azt a 17. fejezetben tettük; mi most
@@ -564,7 +564,7 @@ Amikor megpróbáljuk ellenőrizni ezt a kódot, ezt a hibát kapjuk:
 
 A kód a `receiver`-t próbálja átadni több `Worker` példánynak. Ez nem fog
 működni, ahogy arra a 16. fejezetből emlékszel: a Rust által nyújtott
-csatorna-implementáció több _producer_, egy _fogyasztó_ (consumer) elvű. Ez azt
+csatorna-implementáció több _producer_, egy _consumer_ elvű. Ez azt
 jelenti, hogy nem klónozhatjuk egyszerűen a csatorna fogyasztói végét, hogy
 javítsuk ezt a kódot. Azt sem szeretnénk, hogy egy üzenetet többször küldjünk
 el több fogyasztónak; egyetlen üzenetlistát szeretnénk több `Worker`

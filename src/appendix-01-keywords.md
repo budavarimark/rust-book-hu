@@ -115,8 +115,8 @@ error: expected identifier, found keyword `match`
 ```
 
 A hiba azt mutatja, hogy a `match` kulcsszót nem használhatod
-függvényazonosítóként. Ahhoz, hogy a `match`-et függvénynévként használd, a nyers
-azonosító szintaxisára van szükséged, így:
+függvényazonosítóként. Ahhoz, hogy a `match`-et függvénynévként használd, a
+nyers azonosító szintaxisára van szükséged, így:
 
 <span class="filename">Fájlnév: src/main.rs</span>
 
@@ -139,11 +139,12 @@ kulcsszó. Ez nagyobb szabadságot ad az azonosítónevek megválasztásában, �
 lehetővé teszi olyan nyelveken írt programokkal való integrációt is, ahol ezek a
 szavak nem kulcsszavak. Ráadásul a nyers azonosítókkal olyan könyvtárakat is
 használhatsz, amelyek más Rust editionben íródtak, mint amit a te crate-ed
-használ. Például a `try` nem kulcsszó a 2015-ös editionben, viszont az a 2018-as,
-a 2021-es és a 2024-es editionben. Ha egy olyan könyvtártól függsz, amely a
-2015-ös editionnel készült, és van benne egy `try` függvény, a nyers azonosító
-szintaxisát – ebben az esetben az `r#try`-t – kell használnod ahhoz, hogy a
-későbbi editionöket használó kódodból meghívd azt a függvényt. Az editionökről
+használ. Például a `try` nem kulcsszó a 2015-ös editionben, viszont az a
+2018-as, a 2021-es és a 2024-es editionben. Ha egy olyan könyvtártól függsz,
+amely a 2015-ös editionnel készült, és van benne egy `try` függvény, a nyers
+azonosító szintaxisát – ebben az esetben az `r#try`-t – kell használnod ahhoz,
+hogy a későbbi editionöket használó kódodból meghívd azt a függvényt. Az
+editionökről
 bővebben az [E függelékben][appendix-e]<!-- ignore --> olvashatsz.
 
 [appendix-e]: appendix-05-editions.html

@@ -34,8 +34,9 @@ rálátása, így nem tud helyetted megfelelő alapértelmezett viselkedést ny�
 
 A függelékben felsorolt származtatható trait-ek listája nem teljes körű: a
 könyvtárak a saját trait-jeikhez is implementálhatják a `derive`-ot, így azoknak
-a trait-eknek a listája, amelyekkel a `derive`-ot használhatod, valójában nyitott.
-A `derive` implementálásához procedurális makróra van szükség, amelyről a 20.
+a trait-eknek a listája, amelyekkel a `derive`-ot használhatod, valójában
+nyitott. A `derive` implementálásához procedurális makróra van szükség, amelyről
+a 20.
 fejezet [„Egyedi `derive` makrók”][custom-derive-macros]<!-- ignore --> című
 szakaszában esik szó.
 
@@ -48,9 +49,9 @@ A `Debug` trait lehetővé teszi, hogy hibakeresési céllal kiírd egy típus
 példányait, így te és a típusodat használó más programozók megvizsgálhattok egy
 példányt a program végrehajtásának adott pontján.
 
-A `Debug` trait szükséges például az `assert_eq!` makró használatához. Ez a makró
-kiírja az argumentumként megadott példányok értékeit, ha az egyenlőségi állítás
-nem teljesül, hogy a programozók láthassák, miért nem volt egyenlő a két
+A `Debug` trait szükséges például az `assert_eq!` makró használatához. Ez a
+makró kiírja az argumentumként megadott példányok értékeit, ha az egyenlőségi
+állítás nem teljesül, hogy a programozók láthassák, miért nem volt egyenlő a két
 példány.
 
 ### `PartialEq` és `Eq` az egyenlőség-összehasonlításokhoz
@@ -59,10 +60,10 @@ A `PartialEq` trait lehetővé teszi, hogy egy típus példányait egyenlőségr
 vizsgálva összehasonlítsd, és elérhetővé teszi a `==` és a `!=` operátor
 használatát.
 
-A `PartialEq` származtatása az `eq` metódust implementálja. Amikor a `PartialEq`-t
-struct-okon származtatjuk, két példány csak akkor egyenlő, ha _minden_ mező
-egyenlő, és nem egyenlők, ha _bármelyik_ mező nem egyenlő. Enumokon
-származtatva minden variáns egyenlő önmagával, és nem egyenlő a többi
+A `PartialEq` származtatása az `eq` metódust implementálja. Amikor a
+`PartialEq`-t struct-okon származtatjuk, két példány csak akkor egyenlő, ha
+_minden_ mező egyenlő, és nem egyenlők, ha _bármelyik_ mező nem egyenlő.
+Enumokon származtatva minden variáns egyenlő önmagával, és nem egyenlő a többi
 variánssal.
 
 A `PartialEq` trait szükséges például az `assert_eq!` makró használatához,
@@ -106,8 +107,9 @@ létezik érvényes rendezés. Az `Ord` trait a `cmp` metódust implementálja, 
 `Option<Ordering>` helyett `Ordering`-et ad vissza, mert érvényes rendezés
 mindig lehetséges. Az `Ord` trait-et csak olyan típusokra alkalmazhatod, amelyek
 a `PartialOrd`-ot és az `Eq`-t is implementálják (az `Eq` pedig megköveteli a
-`PartialEq`-t). Struct-okon és enumokon származtatva a `cmp` ugyanúgy viselkedik,
-ahogy a `partial_cmp` származtatott implementációja a `PartialOrd` esetén.
+`PartialEq`-t). Struct-okon és enumokon származtatva a `cmp` ugyanúgy
+viselkedik, ahogy a `partial_cmp` származtatott implementációja a `PartialOrd`
+esetén.
 
 Az `Ord`-ra például akkor van szükség, amikor értékeket tárolunk egy
 `BTreeSet<T>`-ben, egy olyan adatszerkezetben, amely az értékek rendezési
@@ -171,9 +173,9 @@ A `Hash`-re például akkor van szükség, amikor kulcsokat tárolunk egy
 
 A `Default` trait lehetővé teszi, hogy alapértelmezett értéket hozz létre egy
 típushoz. A `Default` származtatása a `default` függvényt implementálja. A
-`default` függvény származtatott implementációja meghívja a `default` függvényt a
-típus minden részén, ami azt jelenti, hogy a `Default` származtatásához a típus
-minden mezőjének vagy értékének implementálnia kell a `Default`-ot.
+`default` függvény származtatott implementációja meghívja a `default` függvényt
+a típus minden részén, ami azt jelenti, hogy a `Default` származtatásához a
+típus minden mezőjének vagy értékének implementálnia kell a `Default`-ot.
 
 A `Default::default` függvényt gyakran a struct-frissítő szintaxissal együtt
 használják, amelyről az 5. fejezet [„Példányok létrehozása struct-frissítő

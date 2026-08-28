@@ -7,12 +7,12 @@ ez!
 A Rust nyelvnek és fordítónak hathetes kiadási ciklusa van, vagyis a
 felhasználók folyamatosan kapják az új nyelvi elemeket. Más programozási nyelvek
 nagyobb változásokat adnak ki ritkábban; a Rust kisebb frissítéseket ad ki
-gyakrabban. Egy idő után ezek az apró változások összeadódnak. Kiadásról kiadásra
-azonban nehéz visszatekinteni és azt mondani: „Nahát, a Rust 1.10 és a Rust 1.31
-között a Rust sokat változott!”
+gyakrabban. Egy idő után ezek az apró változások összeadódnak. Kiadásról
+kiadásra azonban nehéz visszatekinteni és azt mondani: „Nahát, a Rust 1.10 és a
+Rust 1.31 között a Rust sokat változott!”
 
-Nagyjából háromévente a Rust csapata új Rust _editiont_ állít elő. Minden edition
-egy áttekinthető csomagba fogja össze a beérkezett újításokat, teljesen
+Nagyjából háromévente a Rust csapata új Rust _editiont_ állít elő. Minden
+edition egy áttekinthető csomagba fogja össze a beérkezett újításokat, teljesen
 frissített dokumentációval és eszközkészlettel. Az új editionök a szokásos
 hathetes kiadási folyamat részeként érkeznek.
 
