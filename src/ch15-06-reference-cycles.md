@@ -102,7 +102,7 @@ automatizált tesztekkel, kódellenőrzésekkel és más szoftverfejlesztési
 gyakorlatokkal érdemes minimalizálni.
 
 A referenciaciklusok elkerülésének egy másik megoldása az adatszerkezeteid
-átszervezése úgy, hogy egyes referenciák ownershipet fejezzenek ki, mások pedig
+átszervezése úgy, hogy egyes referenciák ownership-et fejezzenek ki, mások pedig
 ne. Ennek eredményeként lehetnek olyan ciklusaid, amelyek részben
 ownership-kapcsolatokból, részben nem ownership jellegű kapcsolatokból állnak,
 és csak az ownership-kapcsolatok befolyásolják, hogy egy érték megsemmisíthető-e.
@@ -123,7 +123,7 @@ Eddig azt mutattuk be, hogy az `Rc::clone` hívása növeli egy `Rc<T>` példán
 `strong_count`-ja 0. Létrehozhatsz gyenge (weak) referenciát is egy `Rc<T>`
 példányon belüli értékre, ha meghívod az `Rc::downgrade`-et, és átadsz neki egy
 referenciát az `Rc<T>`-re. Az *erős referenciákkal* tudod megosztani egy `Rc<T>`
-példány ownershipjét. A *gyenge referenciák* nem fejeznek ki
+példány ownership-jét. A *gyenge referenciák* nem fejeznek ki
 ownership-kapcsolatot, és a számuk nem befolyásolja, mikor tisztul meg egy
 `Rc<T>` példány. Nem okoznak referenciaciklust, mert minden olyan ciklus,
 amelyben gyenge referenciák is szerepelnek, megszakad, amint az érintett értékek
@@ -165,7 +165,7 @@ gyerekcsomópontjaikat. Létrehozunk egy `Node` nevű structot, amely a saját `
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-27/src/main.rs:here}}
 ```
 
-Azt akarjuk, hogy egy `Node` birtokolja a gyerekeit, és ezt az ownershipet
+Azt akarjuk, hogy egy `Node` birtokolja a gyerekeit, és ezt az ownership-et
 változókkal is meg akarjuk osztani, hogy a fa minden `Node`-jához közvetlenül
 hozzáférhessünk. Ehhez a `Vec<T>` elemeit `Rc<Node>` típusú értékeknek
 definiáljuk. Azt is módosítani akarjuk, hogy mely csomópontok gyerekei egy másik
