@@ -17,7 +17,7 @@ rendszerének szabályaiban, annál könnyebben fogsz természetes módon bizton
 
 Ha megérted az ownershipet, szilárd alapod lesz azoknak a képességeknek a
 megértéséhez, amelyek a Rustot egyedivé teszik. Ebben a fejezetben néhány olyan
-példán keresztül ismerkedsz meg az ownership-pel, amelyek egy nagyon gyakori
+példán keresztül ismerkedsz meg az ownershippel, amelyek egy nagyon gyakori
 adatszerkezetre összpontosítanak: a sztringekre.
 
 > ### A stack és a heap {#the-stack-and-the-heap}
@@ -149,7 +149,7 @@ pedig kiváló példa erre.
 A `String` típusnak azokra a részeire fogunk összpontosítani, amelyek az
 ownershiphez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
 érvényesek, akár a standard könyvtár biztosítja őket, akár te hozod létre őket.
-A `String` ownership-től független szempontjait a
+A `String` ownershiptől független szempontjait a
 [8. fejezetben][ch8]<!-- ignore --> tárgyaljuk.
 
 A sztringliterálokat már láttuk, ahol a sztring értéke bele van égetve a
@@ -501,7 +501,7 @@ A visszatérési értékek szintén átadhatják az ownershipet. A 4-4. lista eg
 olyan függvényre mutat példát, amely visszaad valamilyen értéket, a 4-3.
 listához hasonló kommentekkel.
 
-<Listing number="4-4" file-name="src/main.rs" caption="A visszatérési értékek ownership-jének átadása">
+<Listing number="4-4" file-name="src/main.rs" caption="A visszatérési értékek ownershipjének átadása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-04/src/main.rs}}
@@ -524,7 +524,7 @@ szeretnénk kapni.
 A Rust lehetővé teszi, hogy tuple használatával több értéket adjunk vissza,
 ahogy azt a 4-5. lista mutatja.
 
-<Listing number="4-5" file-name="src/main.rs" caption="A paraméterek ownership-jének visszaadása">
+<Listing number="4-5" file-name="src/main.rs" caption="A paraméterek ownershipjének visszaadása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-05/src/main.rs}}
