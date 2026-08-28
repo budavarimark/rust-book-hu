@@ -10,6 +10,11 @@ additional-css = ["ferris.css", "theme/2018-edition.css", "theme/semantic-notes.
 additional-js = ["ferris.js"]
 git-repository-url = "https://github.com/rust-lang/book"
 
+# Az Aquascope-ábrákat rendereli. Csak a HTML kimenethez kell, így az
+# `mdbook test` az Aquascope binárisok nélkül is lefut.
+[preprocessor.aquascope]
+renderers = ["html"]
+
 [output.html.search]
 use-boolean-and = true
 

@@ -9,3 +9,6 @@ tmp
 .vscode
 .zed
 __pycache__/
+/bin
+/src/aquascope
+.aquascope-cache

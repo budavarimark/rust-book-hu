@@ -2,7 +2,9 @@ name: CI
 on: [push, pull_request]
 
 env:
-  MDBOOK_VERSION: 0.5.1
+  MDBOOK_VERSION: 0.5.2
+  AQUASCOPE_VERSION: 0.4.0
+  AQUASCOPE_TOOLCHAIN: nightly-2026-05-01
 
 jobs:
   test:
@@ -78,11 +80,17 @@ jobs:
         echo "$(pwd)/bin" >> "${GITHUB_PATH}"
     - name: Install shellcheck
       run: sudo apt-get install shellcheck
+    - name: Install Aquascope
+      run: |
+        BIN_DIR="$(pwd)/bin" ./ci/aquascope-setup.sh
+        echo "$(pwd)/bin" >> "${GITHUB_PATH}"
+        echo "LD_LIBRARY_PATH=$(rustc +${AQUASCOPE_TOOLCHAIN} --print target-libdir)" >> "${GITHUB_ENV}"
     - name: Report versions
       run: |
         rustup --version
         rustc -Vv
         mdbook --version
+        mdbook-aquascope --version
         shellcheck --version
     - name: Shellcheck
       run: find . -name '*.sh' -print0 | xargs -0 shellcheck

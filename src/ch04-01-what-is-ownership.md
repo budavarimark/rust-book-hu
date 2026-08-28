@@ -236,6 +236,23 @@ záró kapcsos zárójelnél.
 > Initialization (RAII)_ néven emlegetik. A Rust `drop` függvénye ismerős lesz
 > számodra, ha használtál már RAII-mintákat.
 
+Az alábbi interaktív ábra a program memóriaállapotát mutatja a kódban `L1`,
+`L2` és `L3` jelöléssel ellátott pontokon. Az `L2` pontban a `String` a
+stack-en él, a tartalma pedig a heap-en; amikor `make_and_drop` visszatér, `s`
+kilép a hatóköréből, ezért az `L3` pontban a heap-en lévő memória már fel van
+szabadítva:
+
+```aquascope,interpreter,horizontal
+fn main() {
+    let n = 5;`[]`
+    make_and_drop();`[]`
+}
+
+fn make_and_drop() {
+    let s = String::from("hello");`[]`
+}
+```
+
 Ennek a mintának mélyreható hatása van arra, ahogyan a Rust-kódot írjuk. Most
 még egyszerűnek tűnhet, de a kód viselkedése váratlan lehet bonyolultabb
 helyzetekben, amikor azt szeretnénk, hogy több változó használja a heap-en
@@ -263,6 +280,15 @@ aztán készíts másolatot az `x`-ben lévő értékről, és kösd azt `y`-hoz
 változónk van, `x` és `y`, és mindkettő `5`-tel egyenlő. Valóban ez történik,
 mert az egész számok egyszerű, ismert és rögzített méretű értékek, és ez a két
 `5` érték a stack-re kerül.
+
+Az ábrán mindkét `5` külön rekeszben, a `main` stack-keretében látszik:
+
+```aquascope,interpreter
+#fn main() {
+let x = 5;`[]`
+let y = x;`[]`
+#}
+```
 
 Most nézzük meg a `String` változatot:
 
@@ -318,6 +344,17 @@ src="img/trpl04-03.svg" class="center" style="width: 50%;" />
 
 <span class="caption">4-3. ábra: Egy másik lehetőség arra, mit tehetne az `s2 =
 s1`, ha a Rust a heap-en lévő adatot is lemásolná</span>
+
+A következő ábra a program tényleges memóriaállapotát mutatja. Az `L2` pontban
+jól látszik, hogy `s1` kiszürkült: a move után már nem használható, a heap-en
+lévő `"hello"` pedig egyetlen példányban létezik, és mostantól `s2` a gazdája:
+
+```aquascope,interpreter
+#fn main() {
+let s1 = String::from("hello");`[]`
+let s2 = s1;`[]`
+#}
+```
 
 Korábban azt mondtuk, hogy amikor egy változó kilép a hatóköréből, a Rust
 automatikusan meghívja a `drop` függvényt, és kitakarítja az adott változóhoz
