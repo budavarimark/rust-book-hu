@@ -49,6 +49,32 @@ rövidítsd. Vedd észre, hogy a `self` rövidítés elé továbbra is ki kell t
 ownershipjét, borrow-olhatják a `self`-et nem módosíthatóan – ahogy itt tettük
 –, vagy borrow-olhatják módosíthatóan, akárcsak bármely más paramétert.
 
+A metódushívás semmit nem másol le: a `rect1.area()` valójában a
+`Rectangle::area(&rect1)` hívás, ezért az `area` keretében a `self` csak egy
+pointer. Az `L2` pontban két keret van a stack-en – a `main` és az `area` –, és
+a `self` a `main`-ben élő `rect1`-re mutat; az `L3` pontban az `area` kerete
+már eltűnt, a `rect1` viszont változatlanul él:
+
+```aquascope,interpreter
+#struct Rectangle {
+#    width: u32,
+#    height: u32,
+#}
+impl Rectangle {
+    fn area(&self) -> u32 {
+        `[]`self.width * self.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };`[]`
+    let area = rect1.area();`[]`
+}
+```
+
 Itt ugyanazért választottuk a `&self`-et, amiért a függvényes változatban a
 `&Rectangle`-t használtuk: nem akarjuk átvenni az ownershipet, csak olvasni
 akarjuk a struct adatait, nem írni. Ha a metódus feladatának részeként meg
@@ -58,6 +84,120 @@ akarnánk változtatni azt a példányt, amelyen a metódust meghívtuk, akkor
 általában akkor használják, amikor a metódus a `self`-et valami mássá alakítja
 át, és meg akarod akadályozni, hogy a hívó az átalakítás után is használja az
 eredeti példányt.
+
+A három forma közötti különbség a jogosultsági ábrákon látszik a legjobban.
+Tegyük fel, hogy a `Rectangle`-höz az `area(&self)` mellett egy
+`set_width(&mut self, width: u32)` és egy `max(self, other: Rectangle)`
+metódust is definiálunk. Egy nem módosítható `rect` változónak **R** és **O**
+jogosultsága van, ezért az `area` (`&self`) és a `max` (`self`) hívása is
+megengedett:
+
+```aquascope,permissions,boundaries,stepper
+#struct Rectangle {
+#    width: u32,
+#    height: u32,
+#}
+#impl Rectangle {
+#    fn area(&self) -> u32 {
+#        self.width * self.height
+#    }
+#
+#    fn set_width(&mut self, width: u32) {
+#        self.width = width;
+#    }
+#
+#    fn max(self, other: Rectangle) -> Rectangle {
+#        Rectangle {
+#            width: self.width.max(other.width),
+#            height: self.height.max(other.height),
+#        }
+#    }
+#}
+#fn main() {
+let rect = Rectangle {
+    width: 0,
+    height: 0,
+};
+println!("{}", rect.area());
+
+let other_rect = Rectangle { width: 1, height: 1 };
+let max_rect = rect.max(other_rect);
+#}
+```
+
+A `set_width` viszont **W** jogosultságot kíván a `rect`-en, mert a `&mut self`
+paraméter módosítható borrow-t igényel. Ez a jogosultság a `mut` nélkül
+deklarált `rect`-nek nincs meg, ezért a fordító elutasítja a hívást:
+
+```aquascope,permissions,boundaries,shouldFail
+#struct Rectangle {
+#    width: u32,
+#    height: u32,
+#}
+#impl Rectangle {
+#    fn area(&self) -> u32 {
+#        self.width * self.height
+#    }
+#
+#    fn set_width(&mut self, width: u32) {
+#        self.width = width;
+#    }
+#
+#    fn max(self, other: Rectangle) -> Rectangle {
+#        Rectangle {
+#            width: self.width.max(other.width),
+#            height: self.height.max(other.height),
+#        }
+#    }
+#}
+#fn main() {
+let rect = Rectangle {
+    width: 0,
+    height: 0,
+};
+rect.set_width(0);
+#}
+```
+
+A puszta `self` első paraméter ezzel szemben elmozgatja a példányt: a
+`rect.max(...)` hívás elhasználja a `rect` **O** jogosultságát, és utána a
+`rect` minden jogosultságát elveszíti, ezért a rá következő `rect.area()` már
+nem fordul le:
+
+```aquascope,permissions,boundaries,stepper,shouldFail
+#struct Rectangle {
+#    width: u32,
+#    height: u32,
+#}
+#impl Rectangle {
+#    fn area(&self) -> u32 {
+#        self.width * self.height
+#    }
+#
+#    fn set_width(&mut self, width: u32) {
+#        self.width = width;
+#    }
+#
+#    fn max(self, other: Rectangle) -> Rectangle {
+#        Rectangle {
+#            width: self.width.max(other.width),
+#            height: self.height.max(other.height),
+#        }
+#    }
+#}
+#fn main() {
+let rect = Rectangle {
+    width: 0,
+    height: 0,
+};
+let other_rect = Rectangle {
+    width: 1,
+    height: 1,
+};
+let max_rect = rect.max(other_rect);
+println!("{}", rect.area());
+#}
+```
 
 A metódusok függvények helyett való használatának fő oka – azon túl, hogy
 metódusszintaxist kapunk, és nem kell minden metódus szignatúrájában
@@ -195,6 +335,35 @@ Ha ezt a kódot az 5-14. lista `main` függvényével futtatjuk, megkapjuk a kí
 kimenetet. A metódusoknak több paraméterük is lehet, amelyeket a `self`
 paraméter után adunk hozzá a szignatúrához, és ezek a paraméterek pontosan úgy
 működnek, mint a függvények paraméterei.
+
+A `can_hold` keretében jól látszik, hogy egyik téglalap sem másolódik le: az
+`L2` pontban a `self` és az `other` is a `main` keretében élő `Rectangle`
+példányokra mutató pointer. Ezért marad a `rect1` és a `rect2` is használható a
+hívás után, az `L3` pontban:
+
+```aquascope,interpreter
+#struct Rectangle {
+#    width: u32,
+#    height: u32,
+#}
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        `[]`self.width > other.width && self.height > other.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+    let rect2 = Rectangle {
+        width: 10,
+        height: 40,
+    };`[]`
+    let fits = rect1.can_hold(&rect2);`[]`
+}
+```
 
 ### Asszociált függvények
 

@@ -41,6 +41,28 @@ deklarálhatunk.
 
 </Listing>
 
+A következő ábra azt mutatja, hogyan néz ki ez a példány a memóriában. Maga a
+`user1` a stack-en foglal helyet, és mind a négy mezőjét tartalmazza; a két
+`String` mező viszont a heap-en tárolja a tényleges karaktereket, ezért a
+structból pointerek mutatnak oda:
+
+```aquascope,interpreter
+#struct User {
+#    active: bool,
+#    username: String,
+#    email: String,
+#    sign_in_count: u64,
+#}
+fn main() {
+    let user1 = User {
+        active: true,
+        username: String::from("someusername123"),
+        email: String::from("someone@example.com"),
+        sign_in_count: 1,
+    };`[]`
+}
+```
+
 Ha egy konkrét értéket akarunk kiolvasni egy structból, pontjelöléssel tesszük.
 Ennek a felhasználónak az e-mail-címét például a `user1.email` kifejezéssel
 érjük el. Ha a példány módosítható, akkor a pontjelöléssel és egy adott mezőbe
@@ -55,6 +77,30 @@ mezőjének értéke.
 ```
 
 </Listing>
+
+Az ábrán jól látszik, mit jelent egy mező felülírása: az `L2` pontban a
+`user1.email` már az új sztringre mutat a heap-en, a korábbi `String`-et pedig
+eldobta a Rust, amikor a mező – vagyis az értékének a gazdája – új értéket
+kapott. A struct többi mezőjéhez semmi nem nyúlt:
+
+```aquascope,interpreter
+#struct User {
+#    active: bool,
+#    username: String,
+#    email: String,
+#    sign_in_count: u64,
+#}
+fn main() {
+    let mut user1 = User {
+        active: true,
+        username: String::from("someusername123"),
+        email: String::from("someone@example.com"),
+        sign_in_count: 1,
+    };`[]`
+
+    user1.email = String::from("anotheremail@example.com");`[]`
+}
+```
 
 Vedd észre, hogy a teljes példánynak módosíthatónak kell lennie; a Rust nem
 engedi, hogy csak bizonyos mezőket jelöljünk módosíthatónak. Mint bármely más
@@ -160,6 +206,63 @@ implementálja a `Copy` trait-et, tehát a [„Csak a stacken lévő adatok:
 Copy”][copy]<!-- ignore --> szakaszban tárgyalt viselkedés érvényesülne. A `user1.email` értéket egyébként
 ebben a példában is használhatjuk továbbra is, mert az értéke nem mozgott ki a
 `user1`-ből.
+
+Az alábbi ábra ezt a részleges move-ot teszi láthatóvá. Az `L1` pontban a
+`user1` `username` mezője kiszürkülve, áthúzva jelenik meg – az értéke átkerült
+a `user2`-be –, a heap-en lévő `"someusername123"` pedig egyetlen példányban
+él tovább, immár a `user2` mezőjeként. A `user1.email` érintetlen maradt, ezért
+az `L2` pontban még kiolvasható:
+
+```aquascope,interpreter
+#struct User {
+#    active: bool,
+#    username: String,
+#    email: String,
+#    sign_in_count: u64,
+#}
+fn main() {
+#   let user1 = User {
+#       active: true,
+#       username: String::from("someusername123"),
+#       email: String::from("someone@example.com"),
+#       sign_in_count: 1,
+#   };
+    // --snip--
+
+    let user2 = User {
+        email: String::from("another@example.com"),
+        ..user1
+    };`[]`
+
+    println!("{}", user1.email);`[]`
+}
+```
+
+A fordító nemcsak a move-oknál, hanem a borrowingnál is mezőnként tartja
+nyilván a jogosultságokat. Ha a `user1` egyetlen mezőjét borrow-oljuk
+módosíthatóan, akkor a `user1` és a `user1.username` veszíti el a
+jogosultságait; a `user1.email` megtartja őket, ezért a borrow ideje alatt is
+olvasható:
+
+```aquascope,permissions,stepper,boundaries
+#struct User {
+#    active: bool,
+#    username: String,
+#    email: String,
+#    sign_in_count: u64,
+#}
+#fn main() {
+let mut user1 = User {
+    active: true,
+    username: String::from("someusername123"),
+    email: String::from("someone@example.com"),
+    sign_in_count: 1,
+};
+let username = &mut user1.username;
+username.push_str("!");
+println!("{}", user1.email);
+#}
+```
 
 <!-- Old headings. Do not remove or links may break. -->
 
