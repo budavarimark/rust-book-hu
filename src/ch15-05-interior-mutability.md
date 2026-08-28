@@ -24,25 +24,25 @@ mutability mintát követi.
 
 ### A borrowing-szabályok érvényesítése futásidőben
 
-Az `Rc<T>`-vel ellentétben a `RefCell<T>` típus egyedüli ownership-et képvisel az
-általa tárolt adatok felett. Mitől más akkor a `RefCell<T>`, mint mondjuk egy
+Az `Rc<T>`-vel ellentétben a `RefCell<T>` típus egyedüli ownership-et képvisel
+az általa tárolt adatok felett. Mitől más akkor a `RefCell<T>`, mint mondjuk egy
 `Box<T>`? Idézzük fel a borrowing-szabályokat a 4. fejezetből:
 
 - Egy adott időpontban _vagy_ egy módosítható referenciád lehet, _vagy_
   tetszőleges számú nem módosítható referenciád (de nem mindkettő).
 - A referenciáknak mindig érvényesnek kell lenniük.
 
-Referenciák és `Box<T>` esetén a borrowing-szabályok invariánsai fordítási időben
-érvényesülnek. `RefCell<T>` esetén ezek az invariánsok _futásidőben_ érvényesülnek.
-Referenciáknál, ha megszeged ezeket a szabályokat, fordítási hibát kapsz.
-`RefCell<T>`-nél, ha megszeged ezeket a szabályokat, a programod panicot vált ki
-és kilép.
+Referenciák és `Box<T>` esetén a borrowing-szabályok invariánsai fordítási
+időben érvényesülnek. `RefCell<T>` esetén ezek az invariánsok _futásidőben_
+érvényesülnek. Referenciáknál, ha megszeged ezeket a szabályokat, fordítási
+hibát kapsz. `RefCell<T>`-nél, ha megszeged ezeket a szabályokat, a programod
+panicot vált ki és kilép.
 
 A borrowing-szabályok fordítási idejű ellenőrzésének az az előnye, hogy a hibák
 korábban derülnek ki a fejlesztés során, és nincs hatás a futásidejű
 teljesítményre, mert minden elemzés előre lefut. Ezen okokból az esetek
-többségében a borrowing-szabályok fordítási idejű ellenőrzése a legjobb választás
-– ezért is ez a Rust alapértelmezése.
+többségében a borrowing-szabályok fordítási idejű ellenőrzése a legjobb
+választás – ezért is ez a Rust alapértelmezése.
 
 Annak viszont, hogy a borrowing-szabályokat inkább futásidőben ellenőrizzük, az
 az előnye, hogy bizonyos memóriabiztonságos helyzetek megengedetté válnak,
@@ -165,9 +165,9 @@ egy valódi objektumot. A másik fontos rész, hogy a `LimitTracker` `set_value`
 metódusának viselkedését akarjuk tesztelni. Meg tudjuk változtatni, mit adunk át
 a `value` paraméternek, de a `set_value` nem ad vissza semmit, amiről állítást
 fogalmazhatnánk meg. Azt szeretnénk kimondani, hogy ha létrehozunk egy
-`LimitTracker`-t valamivel, ami implementálja a `Messenger` trait-et, és egy adott
-`max` értékkel, akkor a messenger utasítást kap a megfelelő üzenetek elküldésére,
-amikor különböző számokat adunk át a `value`-nak.
+`LimitTracker`-t valamivel, ami implementálja a `Messenger` trait-et, és egy
+adott `max` értékkel, akkor a messenger utasítást kap a megfelelő üzenetek
+elküldésére, amikor különböző számokat adunk át a `value`-nak.
 
 Szükségünk van egy mock objektumra, amely – ahelyett, hogy e-mailt vagy SMS-t
 küldene a `send` hívásakor – csak nyilvántartja azokat az üzeneteket, amelyek
@@ -190,8 +190,8 @@ Ez a tesztkód definiál egy `MockMessenger` structot, amelynek van egy
 `sent_messages` mezője `String` értékek `Vec`-jével, hogy nyilvántartsa azokat
 az üzeneteket, amelyek elküldésére utasítást kapott. Definiálunk egy `new`
 asszociált függvényt is, hogy kényelmesen létrehozhassunk üres üzenetlistával
-induló új `MockMessenger` értékeket. Ezután implementáljuk a `Messenger` trait-et
-a `MockMessenger`-re, hogy egy `MockMessenger`-t adhassunk egy
+induló új `MockMessenger` értékeket. Ezután implementáljuk a `Messenger`
+trait-et a `MockMessenger`-re, hogy egy `MockMessenger`-t adhassunk egy
 `LimitTracker`-nek. A `send` metódus definíciójában fogjuk a paraméterként
 átadott üzenetet, és eltároljuk a `MockMessenger` `sent_messages` listájában.
 
@@ -354,9 +354,10 @@ listákat, mindkettő hivatkozhasson `a`-ra – ahogy azt a 15-18. listában tet
 
 Miután létrehoztuk az `a`, `b` és `c` listákat, 10-et akarunk hozzáadni a
 `value`-ban lévő értékhez. Ezt úgy tesszük meg, hogy meghívjuk a `borrow_mut`-ot
-a `value`-n, amely az 5. fejezet [„Hol van a `->` operátor?”][wheres-the---operator]<!-- ignore -->
-részében tárgyalt automatikus dereferálást használja, hogy az `Rc<T>`-t a benne
-lévő `RefCell<T>` értékre dereferálja. A `borrow_mut` metódus egy `RefMut<T>`
+a `value`-n, amely az 5. fejezet
+[„Hol van a `->` operátor?”][wheres-the---operator]<!-- ignore --> részében
+tárgyalt automatikus dereferálást használja, hogy az `Rc<T>`-t a benne lévő
+`RefCell<T>` értékre dereferálja. A `borrow_mut` metódus egy `RefMut<T>`
 smart pointert ad vissza, amelyre alkalmazzuk a dereferáló operátort, és
 megváltoztatjuk a belső értéket.
 

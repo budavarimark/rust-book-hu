@@ -1,33 +1,32 @@
-# Programming a Guessing Game
+# Egy kitalálós játék programozása
 
-Let’s jump into Rust by working through a hands-on project together! This
-chapter introduces you to a few common Rust concepts by showing you how to use
-them in a real program. You’ll learn about `let`, `match`, methods, associated
-functions, external crates, and more! In the following chapters, we’ll explore
-these ideas in more detail. In this chapter, you’ll just practice the
-fundamentals.
+Vágjunk bele a Rustba egy közös, gyakorlati projekttel! Ez a fejezet néhány
+gyakori Rust-fogalmat mutat be azzal, hogy megmutatja, hogyan használd őket egy
+valódi programban. Megismerkedsz a `let`-tel, a `match`-csel, a metódusokkal, az
+asszociált függvényekkel, a külső crate-ekkel és még sok mással! A következő
+fejezetekben részletesebben is körüljárjuk ezeket a gondolatokat. Ebben a
+fejezetben csak az alapokat gyakorlod.
 
-We’ll implement a classic beginner programming problem: a guessing game. Here’s
-how it works: The program will generate a random integer between 1 and 100. It
-will then prompt the player to enter a guess. After a guess is entered, the
-program will indicate whether the guess is too low or too high. If the guess is
-correct, the game will print a congratulatory message and exit.
+Egy klasszikus kezdő programozási feladatot implementálunk: egy kitalálós
+játékot. Így működik: a program generál egy véletlen egész számot 1 és 100
+között. Ezután felszólítja a játékost, hogy adjon meg egy tippet. Miután
+megkapta a tippet, a program jelzi, hogy a tipp túl alacsony vagy túl magas
+volt-e. Ha a tipp helyes, a játék kiír egy gratuláló üzenetet, és kilép.
 
-## Setting Up a New Project
+## Új projekt létrehozása
 
-To set up a new project, go to the _projects_ directory that you created in
-Chapter 1 and make a new project using Cargo, like so:
+Új projekt létrehozásához lépj be a _projects_ könyvtárba, amelyet az 1.
+fejezetben hoztál létre, és készíts egy új projektet a Cargo segítségével, így:
 
 ```console
 $ cargo new guessing_game
 $ cd guessing_game
 ```
 
-The first command, `cargo new`, takes the name of the project (`guessing_game`)
-as the first argument. The second command changes to the new project’s
-directory.
+Az első parancs, a `cargo new`, a projekt nevét (`guessing_game`) kapja meg első
+argumentumként. A második parancs átvált az új projekt könyvtárába.
 
-Look at the generated _Cargo.toml_ file:
+Nézd meg a generált _Cargo.toml_ fájlt:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial
@@ -38,42 +37,42 @@ cargo run > output.txt 2>&1
 cd ../../..
 -->
 
-<span class="filename">Filename: Cargo.toml</span>
+<span class="filename">Fájlnév: Cargo.toml</span>
 
 ```toml
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/Cargo.toml}}
 ```
 
-As you saw in Chapter 1, `cargo new` generates a “Hello, world!” program for
-you. Check out the _src/main.rs_ file:
+Ahogy az 1. fejezetben láttad, a `cargo new` generál neked egy „Hello, world!”
+programot. Nézd meg a _src/main.rs_ fájlt:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/src/main.rs}}
 ```
 
-Now let’s compile this “Hello, world!” program and run it in the same step
-using the `cargo run` command:
+Most pedig fordítsuk le ezt a „Hello, world!” programot, és ugyanabban a
+lépésben futtassuk is a `cargo run` paranccsal:
 
 ```console
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/output.txt}}
 ```
 
-The `run` command comes in handy when you need to rapidly iterate on a project,
-as we’ll do in this game, quickly testing each iteration before moving on to
-the next one.
+A `run` parancs akkor jön jól, amikor gyorsan kell iterálnod egy projekten,
+ahogy azt ebben a játékban is tesszük: minden iterációt gyorsan kipróbálunk,
+mielőtt továbblépnénk a következőre.
 
-Reopen the _src/main.rs_ file. You’ll be writing all the code in this file.
+Nyisd meg újra a _src/main.rs_ fájlt. Az összes kódot ebbe a fájlba fogod írni.
 
-## Processing a Guess
+## Egy tipp feldolgozása
 
-The first part of the guessing game program will ask for user input, process
-that input, and check that the input is in the expected form. To start, we’ll
-allow the player to input a guess. Enter the code in Listing 2-1 into
-_src/main.rs_.
+A kitalálós játék programjának első része bekéri a felhasználói bemenetet,
+feldolgozza azt, és ellenőrzi, hogy a bemenet a várt formában van-e. Kezdésként
+engedjük meg a játékosnak, hogy megadjon egy tippet. Írd be a 2-1. listában
+látható kódot a _src/main.rs_ fájlba.
 
-<Listing number="2-1" file-name="src/main.rs" caption="Code that gets a guess from the user and prints it">
+<Listing number="2-1" file-name="src/main.rs" caption="Kód, amely bekér egy tippet a felhasználótól, és kiírja azt">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:all}}
@@ -81,208 +80,216 @@ _src/main.rs_.
 
 </Listing>
 
-This code contains a lot of information, so let’s go over it line by line. To
-obtain user input and then print the result as output, we need to bring the
-`io` input/output library into scope. The `io` library comes from the standard
-library, known as `std`:
+Ez a kód rengeteg információt tartalmaz, úgyhogy nézzük végig soronként. Ahhoz,
+hogy felhasználói bemenetet szerezzünk, majd az eredményt kimenetként kiírjuk,
+be kell hoznunk a hatókörbe az `io` bemeneti/kimeneti könyvtárat. Az `io`
+könyvtár a standard könyvtárból származik, amelyet `std` néven ismerünk:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:io}}
 ```
 
-By default, Rust has a set of items defined in the standard library that it
-brings into the scope of every program. This set is called the _prelude_, and
-you can see everything in it [in the standard library documentation][prelude].
+Alapértelmezés szerint a Rustnak van egy készlete a standard könyvtárban
+definiált elemekből, amelyeket minden program hatókörébe behoz. Ezt a készletet
+_prelude_-nak hívjuk, és mindent megnézhetsz benne [a standard könyvtár
+dokumentációjában][prelude].
 
-If a type you want to use isn’t in the prelude, you have to bring that type
-into scope explicitly with a `use` statement. Using the `std::io` library
-provides you with a number of useful features, including the ability to accept
-user input.
+Ha egy típus, amelyet használni szeretnél, nincs benne a prelude-ban, akkor azt
+a típust kifejezetten be kell hoznod a hatókörbe egy `use` utasítással. A
+`std::io` könyvtár használata számos hasznos képességet ad neked, köztük azt a
+lehetőséget, hogy felhasználói bemenetet fogadj.
 
-As you saw in Chapter 1, the `main` function is the entry point into the
-program:
+Ahogy az 1. fejezetben láttad, a `main` függvény a program belépési pontja:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:main}}
 ```
 
-The `fn` syntax declares a new function; the parentheses, `()`, indicate there
-are no parameters; and the curly bracket, `{`, starts the body of the function.
+Az `fn` szintaxis új függvényt deklarál; a zárójelek, `()`, azt jelzik, hogy
+nincsenek paraméterek; a nyitó kapcsos zárójel, `{`, pedig elkezdi a függvény
+törzsét.
 
-As you also learned in Chapter 1, `println!` is a macro that prints a string to
-the screen:
+Szintén az 1. fejezetben tanultad, hogy a `println!` egy makró, amely egy
+sztringet ír ki a képernyőre:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:print}}
 ```
 
-This code is printing a prompt stating what the game is and requesting input
-from the user.
+Ez a kód egy felszólítást ír ki, amely elmondja, mi ez a játék, és bemenetet kér
+a felhasználótól.
 
-### Storing Values with Variables {#storing-values-with-variables}
+### Értékek tárolása változókban {#storing-values-with-variables}
 
-Next, we’ll create a _variable_ to store the user input, like this:
+Ezután létrehozunk egy _változót_, amely tárolja a felhasználói bemenetet, így:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:string}}
 ```
 
-Now the program is getting interesting! There’s a lot going on in this little
-line. We use the `let` statement to create the variable. Here’s another example:
+Most kezd érdekessé válni a program! Sok minden történik ebben a rövid sorban. A
+változó létrehozásához a `let` utasítást használjuk. Íme egy másik példa:
 
 ```rust,ignore
 let apples = 5;
 ```
 
-This line creates a new variable named `apples` and binds it to the value `5`.
-In Rust, variables are immutable by default, meaning once we give the variable
-a value, the value won’t change. We’ll be discussing this concept in detail in
-the [“Variables and Mutability”][variables-and-mutability]<!-- ignore -->
-section in Chapter 3. To make a variable mutable, we add `mut` before the
-variable name:
+Ez a sor létrehoz egy új, `apples` nevű változót, és hozzáköti az `5` értéket. A
+Rustban a változók alapértelmezés szerint nem módosíthatók, vagyis ha egyszer
+értéket adtunk a változónak, az érték nem fog megváltozni. Ezt a fogalmat
+részletesen a 3. fejezet
+[„Változók és módosíthatóság”][variables-and-mutability]<!-- ignore --> című
+szakaszában tárgyaljuk. Ahhoz, hogy egy változó módosítható legyen, a
+változónév elé írjuk a `mut` kulcsszót:
 
 ```rust,ignore
 let apples = 5; // immutable
 let mut bananas = 5; // mutable
 ```
 
-> Note: The `//` syntax starts a comment that continues until the end of the
-> line. Rust ignores everything in comments. We’ll discuss comments in more
-> detail in [Chapter 3][comments]<!-- ignore -->.
+> Megjegyzés: A `//` szintaxis egy kommentet indít, amely a sor végéig tart. A
+> Rust mindent figyelmen kívül hagy a kommentekben. A kommenteket
+> részletesebben a [3. fejezetben][comments]<!-- ignore --> tárgyaljuk.
 
-Returning to the guessing game program, you now know that `let mut guess` will
-introduce a mutable variable named `guess`. The equal sign (`=`) tells Rust we
-want to bind something to the variable now. On the right of the equal sign is
-the value that `guess` is bound to, which is the result of calling
-`String::new`, a function that returns a new instance of a `String`.
-[`String`][string]<!-- ignore --> is a string type provided by the standard
-library that is a growable, UTF-8 encoded bit of text.
+Visszatérve a kitalálós játék programjához, most már tudod, hogy a
+`let mut guess` egy `guess` nevű módosítható változót vezet be. Az egyenlőségjel
+(`=`) azt mondja a Rustnak, hogy most valamit hozzá akarunk kötni a változóhoz.
+Az egyenlőségjeltől jobbra az az érték áll, amelyhez a `guess` hozzákötődik, ez
+pedig a `String::new` hívásának eredménye – annak a függvénynek az eredménye,
+amely egy új `String` példányt ad vissza. A [`String`][string]<!-- ignore --> a
+standard könyvtár által biztosított sztringtípus, amely egy növelhető, UTF-8
+kódolású szövegdarab.
 
-The `::` syntax in the `::new` line indicates that `new` is an associated
-function of the `String` type. An _associated function_ is a function that’s
-implemented on a type, in this case `String`. This `new` function creates a
-new, empty string. You’ll find a `new` function on many types because it’s a
-common name for a function that makes a new value of some kind.
+A `::new` sorban a `::` szintaxis azt jelzi, hogy a `new` a `String` típus
+asszociált függvénye. Az _asszociált függvény_ olyan függvény, amely egy típusra
+van implementálva, ebben az esetben a `String`-re. Ez a `new` függvény egy új,
+üres sztringet hoz létre. Sok típusnál találsz majd `new` függvényt, mert ez
+gyakori név az olyan függvényekre, amelyek valamilyen új értéket készítenek.
 
-In full, the `let mut guess = String::new();` line has created a mutable
-variable that is currently bound to a new, empty instance of a `String`. Whew!
+Összességében a `let mut guess = String::new();` sor létrehozott egy módosítható
+változót, amely jelenleg egy új, üres `String` példányhoz van kötve. Hűha!
 
-### Receiving User Input
+### Felhasználói bemenet fogadása
 
-Recall that we included the input/output functionality from the standard
-library with `use std::io;` on the first line of the program. Now we’ll call
-the `stdin` function from the `io` module, which will allow us to handle user
-input:
+Emlékezz vissza, hogy a program első sorában a `use std::io;` utasítással
+behoztuk a standard könyvtár bemeneti/kimeneti funkcionalitását. Most meghívjuk
+az `io` modul `stdin` függvényét, amely lehetővé teszi, hogy kezeljük a
+felhasználói bemenetet:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:read}}
 ```
 
-If we hadn’t imported the `io` module with `use std::io;` at the beginning of
-the program, we could still use the function by writing this function call as
-`std::io::stdin`. The `stdin` function returns an instance of
-[`std::io::Stdin`][iostdin]<!-- ignore -->, which is a type that represents a
-handle to the standard input for your terminal.
+Ha nem importáltuk volna az `io` modult a `use std::io;` utasítással a program
+elején, akkor is használhatnánk a függvényt, ha a függvényhívást
+`std::io::stdin` alakban írnánk. Az `stdin` függvény egy
+[`std::io::Stdin`][iostdin]<!-- ignore --> példányt ad vissza, ami egy olyan
+típus, amely a terminálod standard bemenetére mutató handle-t képviseli.
 
-Next, the line `.read_line(&mut guess)` calls the [`read_line`][read_line]<!--
-ignore --> method on the standard input handle to get input from the user.
-We’re also passing `&mut guess` as the argument to `read_line` to tell it what
-string to store the user input in. The full job of `read_line` is to take
-whatever the user types into standard input and append that into a string
-(without overwriting its contents), so we therefore pass that string as an
-argument. The string argument needs to be mutable so that the method can change
-the string’s content.
+Ezután a `.read_line(&mut guess)` sor meghívja a standard bemenet handle-jén a
+[`read_line`][read_line]<!-- ignore --> metódust, hogy bemenetet kapjon a
+felhasználótól. A `&mut guess`-t is átadjuk argumentumként a `read_line`-nak,
+hogy megmondjuk neki, melyik sztringben tárolja a felhasználói bemenetet. A
+`read_line` teljes feladata az, hogy fogja, amit a felhasználó a standard
+bemenetre gépel, és hozzáfűzze egy sztringhez (anélkül, hogy felülírná annak
+tartalmát), ezért adjuk át azt a sztringet argumentumként. A sztringargumentumnak
+módosíthatónak kell lennie, hogy a metódus meg tudja változtatni a sztring
+tartalmát.
 
-The `&` indicates that this argument is a _reference_, which gives you a way to
-let multiple parts of your code access one piece of data without needing to
-copy that data into memory multiple times. References are a complex feature,
-and one of Rust’s major advantages is how safe and easy it is to use
-references. You don’t need to know a lot of those details to finish this
-program. For now, all you need to know is that, like variables, references are
-immutable by default. Hence, you need to write `&mut guess` rather than
-`&guess` to make it mutable. (Chapter 4 will explain references more
-thoroughly.)
+Az `&` azt jelzi, hogy ez az argumentum egy _referencia_, ami módot ad arra,
+hogy a kódod több része is hozzáférjen egyetlen adatdarabhoz anélkül, hogy azt
+az adatot többször be kellene másolni a memóriába. A referenciák összetett
+képességet jelentenek, és a Rust egyik nagy előnye éppen az, hogy milyen
+biztonságos és egyszerű a referenciák használata. Nem kell sokat tudnod ezekről
+a részletekről ahhoz, hogy befejezd ezt a programot. Egyelőre annyit kell
+tudnod, hogy a referenciák – akárcsak a változók – alapértelmezés szerint nem
+módosíthatók. Ezért kell `&mut guess`-t írnod `&guess` helyett, hogy
+módosítható legyen. (A 4. fejezet alaposabban elmagyarázza a referenciákat.)
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="handling-potential-failure-with-the-result-type"></a>
 
-### Handling Potential Failure with `Result` {#handling-potential-failure-with-result}
+### Lehetséges hibák kezelése a `Result` típussal {#handling-potential-failure-with-result}
 
-We’re still working on this line of code. We’re now discussing a third line of
-text, but note that it’s still part of a single logical line of code. The next
-part is this method:
+Még mindig ezen a kódsoron dolgozunk. Most a szöveg harmadik sorát tárgyaljuk,
+de vedd észre, hogy ez még mindig egyetlen logikai kódsor része. A következő
+rész ez a metódus:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:expect}}
 ```
 
-We could have written this code as:
+Ezt a kódot írhattuk volna így is:
 
 ```rust,ignore
 io::stdin().read_line(&mut guess).expect("Failed to read line");
 ```
 
-However, one long line is difficult to read, so it’s best to divide it. It’s
-often wise to introduce a newline and other whitespace to help break up long
-lines when you call a method with the `.method_name()` syntax. Now let’s
-discuss what this line does.
+Egy hosszú sort azonban nehéz olvasni, ezért érdemes feldarabolni. Gyakran
+bölcs dolog sortörést és egyéb whitespace-t beiktatni, hogy tagoljuk a hosszú
+sorokat, amikor egy metódust a `.method_name()` szintaxissal hívunk meg. Most
+pedig nézzük meg, mit csinál ez a sor.
 
-As mentioned earlier, `read_line` puts whatever the user enters into the string
-we pass to it, but it also returns a `Result` value. [`Result`][result]<!--
-ignore --> is an [_enumeration_][enums]<!-- ignore -->, often called an _enum_,
-which is a type that can be in one of multiple possible states. We call each
-possible state a _variant_.
+Ahogy korábban említettük, a `read_line` beteszi azt, amit a felhasználó beír,
+abba a sztringbe, amelyet átadunk neki, de emellett visszaad egy `Result`
+értéket is. A [`Result`][result]<!-- ignore --> egy
+[_felsorolás_][enums]<!-- ignore -->, amelyet gyakran _enum_-nak neveznek, és ez
+egy olyan típus, amely több lehetséges állapot egyikében lehet. Minden egyes
+lehetséges állapotot _variánsnak_ hívunk.
 
-[Chapter 6][enums]<!-- ignore --> will cover enums in more detail. The purpose
-of these `Result` types is to encode error-handling information.
+A [6. fejezet][enums]<!-- ignore --> részletesebben tárgyalja az enumokat. Ezen
+`Result` típusok célja a hibakezelési információk kódolása.
 
-`Result`’s variants are `Ok` and `Err`. The `Ok` variant indicates the
-operation was successful, and it contains the successfully generated value.
-The `Err` variant means the operation failed, and it contains information
-about how or why the operation failed.
+A `Result` variánsai az `Ok` és az `Err`. Az `Ok` variáns azt jelzi, hogy a
+művelet sikeres volt, és tartalmazza a sikeresen előállított értéket. Az `Err`
+variáns azt jelenti, hogy a művelet meghiúsult, és információt tartalmaz arról,
+hogyan vagy miért hiúsult meg a művelet.
 
-Values of the `Result` type, like values of any type, have methods defined on
-them. An instance of `Result` has an [`expect` method][expect]<!-- ignore -->
-that you can call. If this instance of `Result` is an `Err` value, `expect`
-will cause the program to crash and display the message that you passed as an
-argument to `expect`. If the `read_line` method returns an `Err`, it would
-likely be the result of an error coming from the underlying operating system.
-If this instance of `Result` is an `Ok` value, `expect` will take the return
-value that `Ok` is holding and return just that value to you so that you can
-use it. In this case, that value is the number of bytes in the user’s input.
+A `Result` típusú értékeknek – mint bármely típus értékeinek – vannak rájuk
+definiált metódusai. Egy `Result` példányon meghívható az
+[`expect` metódus][expect]<!-- ignore -->. Ha ez a `Result` példány egy `Err`
+érték, az `expect` összeomlasztja a programot, és megjeleníti azt az üzenetet,
+amelyet argumentumként adtál át az `expect`-nek. Ha a `read_line` metódus `Err`
+értéket ad vissza, az valószínűleg az alatta lévő operációs rendszerből érkező
+hiba eredménye. Ha ez a `Result` példány egy `Ok` érték, az `expect` fogja az
+`Ok` által tárolt visszatérési értéket, és pontosan azt az értéket adja vissza
+neked, hogy használhasd. Ebben az esetben ez az érték a felhasználó bemenetének
+bájtokban mért hossza.
 
-If you don’t call `expect`, the program will compile, but you’ll get a warning:
+Ha nem hívod meg az `expect`-et, a program lefordul, de figyelmeztetést kapsz:
 
 ```console
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-02-without-expect/output.txt}}
 ```
 
-Rust warns that you haven’t used the `Result` value returned from `read_line`,
-indicating that the program hasn’t handled a possible error.
+A Rust arra figyelmeztet, hogy nem használtad fel a `read_line` által
+visszaadott `Result` értéket, ami azt jelzi, hogy a program nem kezelt egy
+lehetséges hibát.
 
-The right way to suppress the warning is to actually write error-handling code,
-but in our case we just want to crash this program when a problem occurs, so we
-can use `expect`. You’ll learn about recovering from errors in [Chapter
-9][recover]<!-- ignore -->.
+A figyelmeztetés elnyomásának helyes módja az, ha ténylegesen írsz hibakezelő
+kódot, de a mi esetünkben egyszerűen azt akarjuk, hogy a program összeomoljon,
+amikor probléma történik, ezért használhatjuk az `expect`-et. A hibákból való
+helyreállásról a [9. fejezetben][recover]<!-- ignore --> tanulsz majd.
 
-### Printing Values with `println!` Placeholders
+### Értékek kiírása `println!` helyőrzőkkel
 
-Aside from the closing curly bracket, there’s only one more line to discuss in
-the code so far:
+A záró kapcsos zárójelen kívül már csak egyetlen sort kell megtárgyalnunk az
+eddigi kódban:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:print_guess}}
 ```
 
-This line prints the string that now contains the user’s input. The `{}` set of
-curly brackets is a placeholder: Think of `{}` as little crab pincers that hold
-a value in place. When printing the value of a variable, the variable name can
-go inside the curly brackets. When printing the result of evaluating an
-expression, place empty curly brackets in the format string, then follow the
-format string with a comma-separated list of expressions to print in each empty
-curly bracket placeholder in the same order. Printing a variable and the result
-of an expression in one call to `println!` would look like this:
+Ez a sor kiírja azt a sztringet, amely most a felhasználó bemenetét tartalmazza.
+A `{}` kapcsoszárójel-pár egy helyőrző: gondolj a `{}` jelre úgy, mint kis
+rákollókra, amelyek a helyükön tartanak egy értéket. Egy változó értékének
+kiírásakor a változónév a kapcsos zárójelek közé kerülhet. Egy kifejezés
+kiértékelésének eredményét úgy írjuk ki, hogy üres kapcsos zárójeleket teszünk a
+formátumsztringbe, majd a formátumsztring után vesszővel elválasztva
+felsoroljuk azokat a kifejezéseket, amelyeket az egyes üres
+kapcsoszárójel-helyőrzőkbe kell kiírni, ugyanabban a sorrendben. Egy változó és
+egy kifejezés eredményének kiírása egyetlen `println!` hívásban így nézne ki:
 
 ```rust
 let x = 5;
@@ -291,11 +298,11 @@ let y = 10;
 println!("x = {x} and y + 2 = {}", y + 2);
 ```
 
-This code would print `x = 5 and y + 2 = 12`.
+Ez a kód a következőt írná ki: `x = 5 and y + 2 = 12`.
 
-### Testing the First Part
+### Az első rész tesztelése
 
-Let’s test the first part of the guessing game. Run it using `cargo run`:
+Teszteljük a kitalálós játék első részét. Futtasd a `cargo run` paranccsal:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-01/
@@ -314,34 +321,36 @@ Please input your guess.
 You guessed: 6
 ```
 
-At this point, the first part of the game is done: We’re getting input from the
-keyboard and then printing it.
+Ezen a ponton a játék első része kész: bemenetet kapunk a billentyűzetről, majd
+kiírjuk azt.
 
-## Generating a Secret Number
+## A titkos szám generálása
 
-Next, we need to generate a secret number that the user will try to guess. The
-secret number should be different every time so that the game is fun to play
-more than once. We’ll use a random number between 1 and 100 so that the game
-isn’t too difficult. Rust doesn’t yet include random number functionality in
-its standard library. However, the Rust team does provide a [`rand`
-crate][randcrate] with said functionality.
+Ezután generálnunk kell egy titkos számot, amelyet a felhasználó megpróbál majd
+kitalálni. A titkos számnak minden alkalommal másnak kell lennie, hogy a
+játékkal többször is szórakoztató legyen játszani. Egy 1 és 100 közötti
+véletlen számot fogunk használni, hogy a játék ne legyen túl nehéz. A Rust
+standard könyvtára egyelőre nem tartalmaz véletlenszám-generáló
+funkcionalitást. A Rust csapata azonban biztosít egy [`rand`
+crate-et][randcrate] ezzel a funkcionalitással.
 
 <!-- Old headings. Do not remove or links may break. -->
 <a id="using-a-crate-to-get-more-functionality"></a>
 
-### Increasing Functionality with a Crate
+### A funkcionalitás bővítése egy crate-tel
 
-Remember that a crate is a collection of Rust source code files. The project
-we’ve been building is a binary crate, which is an executable. The `rand` crate
-is a library crate, which contains code that is intended to be used in other
-programs and can’t be executed on its own.
+Ne feledd, hogy a crate Rust forráskódfájlok gyűjteménye. Az a projekt, amelyet
+eddig építettünk, egy binary crate, ami egy futtatható program. A `rand` crate
+egy library crate, amely olyan kódot tartalmaz, amelyet más programokban való
+felhasználásra szántak, és önmagában nem futtatható.
 
-Cargo’s coordination of external crates is where Cargo really shines. Before we
-can write code that uses `rand`, we need to modify the _Cargo.toml_ file to
-include the `rand` crate as a dependency. Open that file now and add the
-following line to the bottom, beneath the `[dependencies]` section header that
-Cargo created for you. Be sure to specify `rand` exactly as we have here, with
-this version number, or the code examples in this tutorial may not work:
+A Cargo igazán a külső crate-ek összehangolásában ragyog. Mielőtt olyan kódot
+írhatnánk, amely a `rand`-ot használja, módosítanunk kell a _Cargo.toml_ fájlt,
+hogy a `rand` crate függőségként szerepeljen benne. Nyisd meg most ezt a fájlt,
+és add hozzá a következő sort az aljához, a Cargo által létrehozott
+`[dependencies]` szakaszfejléc alá. Ügyelj rá, hogy a `rand`-ot pontosan úgy add
+meg, ahogy itt szerepel, ezzel a verziószámmal, különben előfordulhat, hogy az
+oktatóanyag kódpéldái nem működnek:
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -351,30 +360,30 @@ this version number, or the code examples in this tutorial may not work:
 * ch14-03-cargo-workspaces.md
 -->
 
-<span class="filename">Filename: Cargo.toml</span>
+<span class="filename">Fájlnév: Cargo.toml</span>
 
 ```toml
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-02/Cargo.toml:8:}}
 ```
 
-In the _Cargo.toml_ file, everything that follows a header is part of that
-section that continues until another section starts. In `[dependencies]`, you
-tell Cargo which external crates your project depends on and which versions of
-those crates you require. In this case, we specify the `rand` crate with the
-semantic version specifier `0.10.1`. Cargo understands [Semantic
-Versioning][semver]<!-- ignore --> (sometimes called _SemVer_), which is a
-standard for writing version numbers. The specifier `0.10.1` is actually
-shorthand for `^0.10.1`, which means any version that is at least 0.10.1 but
-below 0.11.0.
+A _Cargo.toml_ fájlban minden, ami egy fejléc után következik, annak a
+szakasznak a része, és addig tart, amíg egy másik szakasz el nem kezdődik. A
+`[dependencies]` szakaszban mondod meg a Cargónak, hogy a projekted mely külső
+crate-ektől függ, és azoknak a crate-eknek mely verzióira van szükséged. Ebben
+az esetben a `rand` crate-et a `0.10.1` szemantikus verziómegjelöléssel adjuk
+meg. A Cargo érti a [szemantikus verziózást][semver]<!-- ignore --> (amelyet
+néha _SemVer_-nek hívnak), ami a verziószámok írásának szabványa. A `0.10.1`
+megjelölés valójában a `^0.10.1` rövidítése, ami bármely olyan verziót jelent,
+amely legalább 0.10.1, de 0.11.0 alatt van.
 
-Cargo considers these versions to have public APIs compatible with version
-0.10.1, and this specification ensures that you’ll get the latest patch release
-that will still compile with the code in this chapter. Any version 0.11.0 or
-greater is not guaranteed to have the same API as what the following examples
-use.
+A Cargo úgy tekinti, hogy ezeknek a verzióknak a publikus API-ja kompatibilis a
+0.10.1-es verzióéval, és ez a megadás biztosítja, hogy a legfrissebb olyan
+javítóverziót kapod, amely még lefordul az ebben a fejezetben szereplő kóddal. A
+0.11.0-s vagy annál nagyobb verziókról nem garantált, hogy ugyanaz az API-juk,
+mint amit a következő példák használnak.
 
-Now, without changing any of the code, let’s build the project, as shown in
-Listing 2-2.
+Most pedig – anélkül, hogy bármit is változtatnánk a kódon – buildeljük a
+projektet, ahogy a 2-2. listában látható.
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -382,7 +391,7 @@ rm Cargo.lock
 cargo clean
 cargo build -->
 
-<Listing number="2-2" caption="The output from running `cargo build` after adding the `rand` crate as a dependency">
+<Listing number="2-2" caption="A `cargo build` futtatásának kimenete, miután függőségként hozzáadtuk a `rand` crate-et">
 
 ```console
 $ cargo build
@@ -404,30 +413,32 @@ $ cargo build
 
 </Listing>
 
-You may see different version numbers (but they will all be compatible with the
-code, thanks to SemVer!) and different lines (depending on the operating
-system), and the lines may be in a different order.
+Előfordulhat, hogy más verziószámokat látsz (de mind kompatibilis lesz a
+kóddal, hála a SemVernek!), és más sorokat is (az operációs rendszertől
+függően), a sorok pedig más sorrendben is állhatnak.
 
-When we include an external dependency, Cargo fetches the latest versions of
-everything that dependency needs from the _registry_, which is a copy of data
-from [Crates.io][cratesio]. Crates.io is where people in the Rust ecosystem
-post their open source Rust projects for others to use.
+Amikor külső függőséget veszünk fel, a Cargo letölti mindannak a legfrissebb
+verzióját, amire annak a függőségnek szüksége van, a _registryből_, ami a
+[Crates.io][cratesio] adatainak másolata. A Crates.io az a hely, ahová a Rust
+ökoszisztéma tagjai feltöltik a nyílt forráskódú Rust-projektjeiket, hogy mások
+is használhassák őket.
 
-After updating the registry, Cargo checks the `[dependencies]` section and
-downloads any crates listed that aren’t already downloaded. In this case,
-although we only listed `rand` as a dependency, Cargo also grabbed other crates
-that `rand` depends on to work. After downloading the crates, Rust compiles
-them and then compiles the project with the dependencies available.
+A registry frissítése után a Cargo megnézi a `[dependencies]` szakaszt, és
+letölti az ott felsorolt crate-ek közül azokat, amelyek még nincsenek letöltve.
+Ebben az esetben, bár mi csak a `rand`-ot soroltuk fel függőségként, a Cargo
+megszerzett más crate-eket is, amelyektől a `rand` működése függ. A crate-ek
+letöltése után a Rust lefordítja őket, majd lefordítja a projektet is a
+rendelkezésre álló függőségekkel.
 
-If you immediately run `cargo build` again without making any changes, you
-won’t get any output aside from the `Finished` line. Cargo knows it has already
-downloaded and compiled the dependencies, and you haven’t changed anything
-about them in your _Cargo.toml_ file. Cargo also knows that you haven’t changed
-anything about your code, so it doesn’t recompile that either. With nothing to
-do, it simply exits.
+Ha azonnal újra lefuttatod a `cargo build`-et anélkül, hogy bármit
+változtatnál, a `Finished` soron kívül nem kapsz kimenetet. A Cargo tudja, hogy
+már letöltötte és lefordította a függőségeket, és te semmit sem változtattál
+rajtuk a _Cargo.toml_ fájlodban. A Cargo azt is tudja, hogy a kódodon sem
+változtattál semmit, ezért azt sem fordítja újra. Mivel nincs mit tennie,
+egyszerűen kilép.
 
-If you open the _src/main.rs_ file, make a trivial change, and then save it and
-build again, you’ll only see two lines of output:
+Ha megnyitod a _src/main.rs_ fájlt, végzel benne egy apró változtatást, majd
+elmented és újra buildelsz, csak két sor kimenetet fogsz látni:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -440,43 +451,46 @@ $ cargo build
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
 ```
 
-These lines show that Cargo only updates the build with your tiny change to the
-_src/main.rs_ file. Your dependencies haven’t changed, so Cargo knows it can
-reuse what it has already downloaded and compiled for those.
+Ezek a sorok azt mutatják, hogy a Cargo csak a _src/main.rs_ fájlon végzett
+apró változtatásoddal frissíti a buildet. A függőségeid nem változtak, így a
+Cargo tudja, hogy azokhoz újra felhasználhatja azt, amit már letöltött és
+lefordított.
 
 <!-- Old headings. Do not remove or links may break. -->
 <a id="ensuring-reproducible-builds-with-the-cargo-lock-file"></a>
 
-#### Ensuring Reproducible Builds
+#### Reprodukálható buildek biztosítása
 
-Cargo has a mechanism that ensures that you can rebuild the same artifact every
-time you or anyone else builds your code: Cargo will use only the versions of
-the dependencies you specified until you indicate otherwise. For example, say
-that next week version 0.10.2 of the `rand` crate comes out, and that version
-contains an important bug fix, but it also contains a regression that will
-break your code. To handle this, Rust creates the _Cargo.lock_ file the first
-time you run `cargo build`, so we now have this in the _guessing_game_
-directory.
+A Cargóban van egy mechanizmus, amely biztosítja, hogy minden alkalommal
+ugyanazt az artifactot tudd újraépíteni, akár te, akár bárki más buildeli a
+kódodat: a Cargo csak az általad megadott függőségverziókat fogja használni,
+amíg másképp nem rendelkezel. Tegyük fel például, hogy jövő héten megjelenik a
+`rand` crate 0.10.2-es verziója, és az a verzió tartalmaz egy fontos
+hibajavítást, de tartalmaz egy regressziót is, amely eltöri a kódodat. Ennek
+kezelésére a Rust az első `cargo build` futtatásakor létrehozza a _Cargo.lock_
+fájlt, így most már ez is megvan a _guessing_game_ könyvtárban.
 
-When you build a project for the first time, Cargo figures out all the versions
-of the dependencies that fit the criteria and then writes them to the
-_Cargo.lock_ file. When you build your project in the future, Cargo will see
-that the _Cargo.lock_ file exists and will use the versions specified there
-rather than doing all the work of figuring out versions again. This lets you
-have a reproducible build automatically. In other words, your project will
-remain at 0.10.1 until you explicitly upgrade, thanks to the _Cargo.lock_ file.
-Because the _Cargo.lock_ file is important for reproducible builds, it’s often
-checked into source control with the rest of the code in your project.
+Amikor először buildelsz egy projektet, a Cargo kitalálja a függőségek összes
+olyan verzióját, amely megfelel a feltételeknek, majd beírja őket a
+_Cargo.lock_ fájlba. Amikor a jövőben buildeled a projektedet, a Cargo látni
+fogja, hogy a _Cargo.lock_ fájl létezik, és az ott megadott verziókat fogja
+használni ahelyett, hogy újra elvégezné a verziók kitalálásának munkáját. Ez
+lehetővé teszi, hogy automatikusan reprodukálható buildjeid legyenek. Más
+szóval a projekted a 0.10.1-es verziónál marad, amíg kifejezetten nem
+frissítesz, hála a _Cargo.lock_ fájlnak. Mivel a _Cargo.lock_ fájl fontos a
+reprodukálható buildekhez, gyakran a projekted többi kódjával együtt
+verziókövetés alá helyezik.
 
-#### Updating a Crate to Get a New Version
+#### Crate frissítése új verzióra
 
-When you _do_ want to update a crate, Cargo provides the command `update`,
-which will ignore the _Cargo.lock_ file and figure out all the latest versions
-that fit your specifications in _Cargo.toml_. Cargo will then write those
-versions to the _Cargo.lock_ file. Otherwise, by default, Cargo will only look
-for versions greater than 0.10.1 and less than 0.11.0. If the `rand` crate has
-released the two new versions 0.10.2 and 0.999.0, you would see the following if
-you ran `cargo update`:
+Amikor _tényleg_ frissíteni akarsz egy crate-et, a Cargo biztosítja az `update`
+parancsot, amely figyelmen kívül hagyja a _Cargo.lock_ fájlt, és kitalálja az
+összes olyan legfrissebb verziót, amely megfelel a _Cargo.toml_ fájlban
+megadott specifikációidnak. A Cargo ezután beírja ezeket a verziókat a
+_Cargo.lock_ fájlba. Egyébként alapértelmezés szerint a Cargo csak a 0.10.1-nél
+nagyobb és 0.11.0-nál kisebb verziókat keresi. Ha a `rand` crate kiadta a két
+új, 0.10.2-es és 0.999.0-s verziót, a következőt látnád, ha lefuttatnád a
+`cargo update` parancsot:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -491,34 +505,34 @@ $ cargo update
     Updating rand v0.10.1 -> v0.10.2 (available: v0.999.0)
 ```
 
-Cargo ignores the 0.999.0 release. At this point, you would also notice a
-change in your _Cargo.lock_ file noting that the version of the `rand` crate
-you are now using is 0.10.2. To use `rand` version 0.999.0 or any version in the
-0.999._x_ series, you’d have to update the _Cargo.toml_ file to look like this
-instead (don’t actually make this change because the following examples assume
-you’re using `rand` 0.10):
+A Cargo figyelmen kívül hagyja a 0.999.0-s kiadást. Ezen a ponton azt is
+észrevennéd, hogy a _Cargo.lock_ fájlod megváltozott, és most azt jelzi, hogy a
+használt `rand` crate verziója 0.10.2. Ahhoz, hogy a `rand` 0.999.0-s verzióját
+vagy a 0.999._x_ sorozat bármely verzióját használd, a _Cargo.toml_ fájlt
+ehelyett így kellene frissítened (valójában ne végezd el ezt a változtatást,
+mert a következő példák azt feltételezik, hogy a `rand` 0.10-et használod):
 
 ```toml
 [dependencies]
 rand = "0.999.0"
 ```
 
-The next time you run `cargo build`, Cargo will update the registry of crates
-available and reevaluate your `rand` requirements according to the new version
-you have specified.
+Amikor legközelebb lefuttatod a `cargo build`-et, a Cargo frissíti az elérhető
+crate-ek registryjét, és az általad megadott új verzió szerint újraértékeli a
+`rand` követelményeit.
 
-There’s a lot more to say about [Cargo][doccargo]<!-- ignore --> and [its
-ecosystem][doccratesio]<!-- ignore -->, which we’ll discuss in Chapter 14, but
-for now, that’s all you need to know. Cargo makes it very easy to reuse
-libraries, so Rustaceans are able to write smaller projects that are assembled
-from a number of packages.
+Sokkal több mondanivaló van még a [Cargóról][doccargo]<!-- ignore --> és [az
+ökoszisztémájáról][doccratesio]<!-- ignore -->, amit a 14. fejezetben
+tárgyalunk, de egyelőre ennyit kell tudnod. A Cargo nagyon megkönnyíti a
+könyvtárak újrafelhasználását, így a rustaceanek kisebb projekteket tudnak
+írni, amelyeket számos csomagból állítanak össze.
 
-### Generating a Random Number {#generating-a-random-number}
+### Véletlen szám generálása {#generating-a-random-number}
 
-Let’s start using `rand` to generate a number to guess. The next step is to
-update _src/main.rs_, as shown in Listing 2-3.
+Kezdjük el használni a `rand`-ot, hogy generáljunk egy kitalálandó számot. A
+következő lépés a _src/main.rs_ frissítése, ahogy a 2-3. listában látható.
 
-<Listing number="2-3" file-name="src/main.rs" caption="Adding code to generate a random number">
+<Listing number="2-3" file-name="src/main.rs" caption="Kód hozzáadása véletlen szám generálásához">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-03/src/main.rs:all}}
@@ -526,36 +540,36 @@ update _src/main.rs_, as shown in Listing 2-3.
 
 </Listing>
 
-First, we add the line `use rand::prelude::*;`. The `prelude` module contains
-the most commonly used parts of the `rand` crate, and `use` makes those items
-available in our program's scope.
+Először hozzáadjuk a `use rand::prelude::*;` sort. A `prelude` modul a `rand`
+crate leggyakrabban használt részeit tartalmazza, a `use` pedig elérhetővé teszi
+ezeket az elemeket a programunk hatókörében.
 
-Next, we’re adding two lines in the middle. In the first line, we call the
-`rand::rng` function that gives us the particular random number generator we’re
-going to use: one that is local to the current thread of execution and is
-seeded by the operating system. Then, we call the `random_range` method on the
-random number generator. This method is defined by the `RngExt` trait that is
-part of the `rand::prelude` module that we brought into scope with the `use
-rand::prelude::*;` statement. The `random_range` method takes a range
-expression as an argument and generates a random number in the range. The kind
-of range expression we’re using here takes the form `start..=end` and is
-inclusive on the lower and upper bounds, so we need to specify `1..=100` to
-request a number between 1 and 100.
+Ezután két sort adunk hozzá középen. Az első sorban meghívjuk a `rand::rng`
+függvényt, amely megadja nekünk azt a bizonyos véletlenszám-generátort, amelyet
+használni fogunk: egy olyat, amely az aktuális végrehajtási szálhoz lokális, és
+amelynek a magját az operációs rendszer adja. Ezután meghívjuk a
+véletlenszám-generátoron a `random_range` metódust. Ezt a metódust az `RngExt`
+trait definiálja, amely a `rand::prelude` modul része, és amelyet a `use
+rand::prelude::*;` utasítással hoztunk a hatókörbe. A `random_range` metódus
+argumentumként egy tartománykifejezést vár, és a tartományon belül generál egy
+véletlen számot. Az itt használt tartománykifejezés `start..=end` alakú, és
+alulról is, felülről is zárt, ezért az `1..=100` alakot kell megadnunk, hogy 1
+és 100 közötti számot kérjünk.
 
-> Note: You won’t just know what to bring into scope and which methods and
-> functions to call from a crate, so each crate has documentation with
-> instructions for using it. Another neat feature of Cargo is that running the
-> `cargo doc --open` command will build documentation provided by all your
-> dependencies locally and open it in your browser. If you’re interested in
-> other functionality in the `rand` crate, for example, run `cargo doc --open`
-> and click `rand` in the sidebar on the left.
+> Megjegyzés: Nem fogod csak úgy tudni, hogy mit kell egy crate-ből a hatókörbe
+> hozni, és mely metódusait, illetve függvényeit kell meghívni, ezért minden
+> crate-hez tartozik dokumentáció, amely leírja a használatát. A Cargo egy
+> másik ügyes képessége, hogy a `cargo doc --open` parancs futtatása lokálisan
+> felépíti az összes függőséged által biztosított dokumentációt, és megnyitja
+> azt a böngésződben. Ha például a `rand` crate egyéb funkcionalitása is
+> érdekel, futtasd a `cargo doc --open` parancsot, és kattints a bal oldali
+> oldalsávban a `rand`-ra.
 
-The second new line prints the secret number. This is useful while we’re
-developing the program to be able to test it, but we’ll delete it from the
-final version. It’s not much of a game if the program prints the answer as soon
-as it starts!
+A második új sor kiírja a titkos számot. Ez a program fejlesztése közben
+hasznos, mert így tesztelni tudjuk, de a végleges változatból törölni fogjuk.
+Nem sok játék az, ha a program azonnal kiírja a választ, amint elindul!
 
-Try running the program a few times:
+Próbáld meg néhányszor lefuttatni a programot:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-03/
@@ -586,19 +600,20 @@ Please input your guess.
 You guessed: 5
 ```
 
-You should get different random numbers, and they should all be numbers between
-1 and 100. If you get warnings, they are safe to ignore. If you get errors,
-please check that you have `rand = "0.10.1"` in your *Cargo.toml* as future
-versions of `rand` may have a different API, but any version in the `0.10`
-series should work with the code in this chapter.
+Különböző véletlen számokat kell kapnod, és mindegyiknek 1 és 100 közötti
+számnak kell lennie. Ha figyelmeztetéseket kapsz, azokat nyugodtan figyelmen
+kívül hagyhatod. Ha hibákat kapsz, ellenőrizd, hogy a *Cargo.toml* fájlodban
+`rand = "0.10.1"` szerepel-e, mivel a `rand` későbbi verzióinak más lehet az
+API-ja, de a `0.10` sorozat bármely verziójának működnie kell az ebben a
+fejezetben szereplő kóddal.
 
-## Comparing the Guess to the Secret Number {#comparing-the-guess-to-the-secret-number}
+## A tipp összehasonlítása a titkos számmal {#comparing-the-guess-to-the-secret-number}
 
-Now that we have user input and a random number, we can compare them. That step
-is shown in Listing 2-4. Note that this code won’t compile just yet, as we will
-explain.
+Most, hogy van felhasználói bemenetünk és egy véletlen számunk,
+összehasonlíthatjuk őket. Ezt a lépést a 2-4. lista mutatja. Vedd észre, hogy
+ez a kód még nem fordul le, ahogy azt mindjárt elmagyarázzuk.
 
-<Listing number="2-4" file-name="src/main.rs" caption="Handling the possible return values of comparing two numbers">
+<Listing number="2-4" file-name="src/main.rs" caption="Két szám összehasonlításának lehetséges visszatérési értékeit kezelő kód">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-04/src/main.rs:here}}
@@ -606,44 +621,45 @@ explain.
 
 </Listing>
 
-First, we add another `use` statement, bringing a type called
-`std::cmp::Ordering` into scope from the standard library. The `Ordering` type
-is another enum and has the variants `Less`, `Greater`, and `Equal`. These are
-the three outcomes that are possible when you compare two values.
+Először hozzáadunk egy újabb `use` utasítást, amely a standard könyvtárból a
+`std::cmp::Ordering` nevű típust hozza a hatókörbe. Az `Ordering` típus egy
+másik enum, és `Less`, `Greater`, illetve `Equal` variánsai vannak. Ez az a
+három kimenetel, amely két érték összehasonlításakor lehetséges.
 
-Then, we add five new lines at the bottom that use the `Ordering` type. The
-`cmp` method compares two values and can be called on anything that can be
-compared. It takes a reference to whatever you want to compare with: Here, it’s
-comparing `guess` to `secret_number`. Then, it returns a variant of the
-`Ordering` enum we brought into scope with the `use` statement. We use a
-[`match`][match]<!-- ignore --> expression to decide what to do next based on
-which variant of `Ordering` was returned from the call to `cmp` with the values
-in `guess` and `secret_number`.
+Ezután öt új sort adunk hozzá alul, amelyek az `Ordering` típust használják. A
+`cmp` metódus két értéket hasonlít össze, és bármin meghívható, ami
+összehasonlítható. Referenciát vár arra, amivel össze akarod hasonlítani: itt a
+`guess`-t hasonlítja a `secret_number`-höz. Ezután visszaadja az `Ordering`
+enum egy variánsát, amelyet a `use` utasítással hoztunk a hatókörbe. Egy
+[`match`][match]<!-- ignore --> kifejezést használunk annak eldöntésére, hogy
+mit tegyünk ezután, attól függően, hogy az `Ordering` melyik variánsát adta
+vissza a `cmp` hívása a `guess` és a `secret_number` értékekkel.
 
-A `match` expression is made up of _arms_. An arm consists of a _pattern_ to
-match against, and the code that should be run if the value given to `match`
-fits that arm’s pattern. Rust takes the value given to `match` and looks
-through each arm’s pattern in turn. Patterns and the `match` construct are
-powerful Rust features: They let you express a variety of situations your code
-might encounter, and they make sure you handle them all. These features will be
-covered in detail in Chapter 6 and Chapter 19, respectively.
+A `match` kifejezés _ágakból_ áll. Egy ág egy _mintából_ áll, amelyre
+illeszteni kell, és abból a kódból, amelynek le kell futnia, ha a `match`-nek
+átadott érték illeszkedik az adott ág mintájára. A Rust fogja a `match`-nek
+átadott értéket, és sorban végignézi az egyes ágak mintáit. A minták és a
+`match` szerkezet a Rust erőteljes nyelvi elemei: lehetővé teszik, hogy sokféle
+helyzetet fejezz ki, amellyel a kódod találkozhat, és gondoskodnak arról, hogy
+mindegyiket kezeld is. Ezeket a nyelvi elemeket részletesen a 6., illetve a 19.
+fejezetben tárgyaljuk.
 
-Let’s walk through an example with the `match` expression we use here. Say that
-the user has guessed 50 and the randomly generated secret number this time is
-38.
+Nézzünk végig egy példát az itt használt `match` kifejezéssel. Tegyük fel, hogy
+a felhasználó 50-re tippelt, a véletlenszerűen generált titkos szám pedig
+ezúttal 38.
 
-When the code compares 50 to 38, the `cmp` method will return
-`Ordering::Greater` because 50 is greater than 38. The `match` expression gets
-the `Ordering::Greater` value and starts checking each arm’s pattern. It looks
-at the first arm’s pattern, `Ordering::Less`, and sees that the value
-`Ordering::Greater` does not match `Ordering::Less`, so it ignores the code in
-that arm and moves to the next arm. The next arm’s pattern is
-`Ordering::Greater`, which _does_ match `Ordering::Greater`! The associated
-code in that arm will execute and print `Too big!` to the screen. The `match`
-expression ends after the first successful match, so it won’t look at the last
-arm in this scenario.
+Amikor a kód összehasonlítja az 50-et a 38-cal, a `cmp` metódus
+`Ordering::Greater`-t ad vissza, mert 50 nagyobb, mint 38. A `match` kifejezés
+megkapja az `Ordering::Greater` értéket, és elkezdi ellenőrizni az egyes ágak
+mintáit. Megnézi az első ág mintáját, az `Ordering::Less`-t, és látja, hogy az
+`Ordering::Greater` érték nem illeszkedik az `Ordering::Less`-re, ezért
+figyelmen kívül hagyja az abban az ágban lévő kódot, és továbblép a következő
+ágra. A következő ág mintája az `Ordering::Greater`, ami _illeszkedik_ az
+`Ordering::Greater`-re! Az ahhoz az ághoz tartozó kód lefut, és kiírja a
+képernyőre, hogy `Too big!`. A `match` kifejezés az első sikeres illeszkedés
+után véget ér, így ebben az esetben már nem nézi meg az utolsó ágat.
 
-However, the code in Listing 2-4 won’t compile yet. Let’s try it:
+A 2-4. listában szereplő kód azonban még nem fordul le. Próbáljuk ki:
 
 <!--
 The error numbers in this output should be that of the code **WITHOUT** the
@@ -654,80 +670,87 @@ anchor or snip comments
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-04/output.txt}}
 ```
 
-The core of the error states that there are _mismatched types_. Rust has a
-strong, static type system. However, it also has type inference. When we wrote
-`let mut guess = String::new()`, Rust was able to infer that `guess` should be
-a `String` and didn’t make us write the type. The `secret_number`, on the other
-hand, is a number type. A few of Rust’s number types can have a value between 1
-and 100: `i32`, a 32-bit number; `u32`, an unsigned 32-bit number; `i64`, a
-64-bit number; as well as others. Unless otherwise specified, Rust defaults to
-an `i32`, which is the type of `secret_number` unless you add type information
-elsewhere that would cause Rust to infer a different numerical type. The reason
-for the error is that Rust cannot compare a string and a number type.
+A hiba lényege az, hogy _mismatched types_, azaz eltérnek a típusok. A Rustnak
+erős, statikus típusrendszere van. Ugyanakkor típuskikövetkeztetése is van.
+Amikor azt írtuk, hogy `let mut guess = String::new()`, a Rust ki tudta
+következtetni, hogy a `guess` egy `String` kell legyen, és nem kellett kiírnunk
+a típust. A `secret_number` viszont egy számtípus. A Rust számtípusai közül
+többnek is lehet 1 és 100 közötti értéke: az `i32`, ami egy 32 bites szám; az
+`u32`, ami egy előjel nélküli 32 bites szám; az `i64`, ami egy 64 bites szám;
+és mások is. Hacsak másképp nem adjuk meg, a Rust alapértelmezésben `i32`-t
+használ, és ez a `secret_number` típusa is, hacsak nem adsz hozzá máshol olyan
+típusinformációt, amely miatt a Rust más numerikus típust következtetne ki. A
+hiba oka az, hogy a Rust nem tud összehasonlítani egy sztringet és egy
+számtípust.
 
-Ultimately, we want to convert the `String` the program reads as input into a
-number type so that we can compare it numerically to the secret number. We do
-so by adding this line to the `main` function body:
+Végső soron azt szeretnénk, hogy a program a bemenetként beolvasott `String`-et
+számtípussá alakítsa, hogy numerikusan össze tudjuk hasonlítani a titkos
+számmal. Ezt úgy tesszük meg, hogy hozzáadjuk ezt a sort a `main` függvény
+törzséhez:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-03-convert-string-to-number/src/main.rs:here}}
 ```
 
-The line is:
+A sor a következő:
 
 ```rust,ignore
 let guess: u32 = guess.trim().parse().expect("Please type a number!");
 ```
 
-We create a variable named `guess`. But wait, doesn’t the program already have
-a variable named `guess`? It does, but helpfully Rust allows us to shadow the
-previous value of `guess` with a new one. _Shadowing_ lets us reuse the `guess`
-variable name rather than forcing us to create two unique variables, such as
-`guess_str` and `guess`, for example. We’ll cover this in more detail in
-[Chapter 3][shadowing]<!-- ignore -->, but for now, know that this feature is
-often used when you want to convert a value from one type to another type.
+Létrehozunk egy `guess` nevű változót. De várjunk csak, nincs már a programnak
+egy `guess` nevű változója? De van, csakhogy a Rust szerencsére megengedi, hogy
+a `guess` korábbi értékét egy újjal árnyékoljuk. A _shadowing_ lehetővé teszi,
+hogy újrahasználjuk a `guess` változónevet, ahelyett hogy két külön változót
+kellene létrehoznunk, például `guess_str`-t és `guess`-t. Ezt részletesebben a
+[3. fejezetben][shadowing]<!-- ignore --> tárgyaljuk, de egyelőre elég annyit
+tudni, hogy ezt a képességet gyakran használják, amikor egy értéket az egyik
+típusból egy másikba akarsz konvertálni.
 
-We bind this new variable to the expression `guess.trim().parse()`. The `guess`
-in the expression refers to the original `guess` variable that contained the
-input as a string. The `trim` method on a `String` instance will eliminate any
-whitespace at the beginning and end, which we must do before we can convert the
-string to a `u32`, which can only contain numerical data. The user must press
-<kbd>enter</kbd> to satisfy `read_line` and input their guess, which adds a
-newline character to the string. For example, if the user types <kbd>5</kbd> and
-presses <kbd>enter</kbd>, `guess` looks like this: `5\n`. The `\n` represents
-“newline.” (On Windows, pressing <kbd>enter</kbd> results in a carriage return
-and a newline, `\r\n`.) The `trim` method eliminates `\n` or `\r\n`, resulting
-in just `5`.
+Ezt az új változót a `guess.trim().parse()` kifejezéshez kötjük. A kifejezésben
+szereplő `guess` az eredeti `guess` változóra utal, amely a bemenetet
+sztringként tartalmazta. A `String` példány `trim` metódusa eltávolít minden
+whitespace-t az elejéről és a végéről, amit meg kell tennünk, mielőtt a
+sztringet `u32`-vé alakíthatnánk, mert az csak numerikus adatot tartalmazhat. A
+felhasználónak meg kell nyomnia az <kbd>enter</kbd> billentyűt ahhoz, hogy a
+`read_line` teljesüljön és beírja a tippjét, ez pedig egy újsor karaktert ad a
+sztringhez. Ha például a felhasználó beírja az <kbd>5</kbd>-öt és megnyomja az
+<kbd>enter</kbd>-t, a `guess` így néz ki: `5\n`. A `\n` az „újsort” jelöli.
+(Windowson az <kbd>enter</kbd> megnyomása kocsivissza és újsor karaktert
+eredményez: `\r\n`.) A `trim` metódus eltávolítja a `\n`-t vagy a `\r\n`-t, így
+csak az `5` marad.
 
-The [`parse` method on strings][parse]<!-- ignore --> converts a string to
-another type. Here, we use it to convert from a string to a number. We need to
-tell Rust the exact number type we want by using `let guess: u32`. The colon
-(`:`) after `guess` tells Rust we’ll annotate the variable’s type. Rust has a
-few built-in number types; the `u32` seen here is an unsigned, 32-bit integer.
-It’s a good default choice for a small positive number. You’ll learn about
-other number types in [Chapter 3][integers]<!-- ignore -->.
+A [sztringek `parse` metódusa][parse]<!-- ignore --> egy sztringet egy másik
+típussá alakít. Itt arra használjuk, hogy sztringből számot csináljunk. Meg
+kell mondanunk a Rustnak, pontosan milyen számtípust akarunk, ezt a
+`let guess: u32` alakkal tesszük. A `guess` utáni kettőspont (`:`) azt mondja a
+Rustnak, hogy meg fogjuk adni a változó típusát. A Rustnak van néhány beépített
+számtípusa; az itt látható `u32` egy előjel nélküli, 32 bites egész szám. Jó
+alapértelmezett választás egy kis pozitív számhoz. Más számtípusokról a
+[3. fejezetben][integers]<!-- ignore --> tanulsz majd.
 
-Additionally, the `u32` annotation in this example program and the comparison
-with `secret_number` means Rust will infer that `secret_number` should be a
-`u32` as well. So, now the comparison will be between two values of the same
-type!
+Ráadásul az `u32` típusjelölés ebben a példaprogramban és a `secret_number`-rel
+való összehasonlítás azt jelenti, hogy a Rust ki fogja következtetni: a
+`secret_number` is `u32` kell legyen. Így most már két azonos típusú érték
+között történik az összehasonlítás!
 
-The `parse` method will only work on characters that can logically be converted
-into numbers and so can easily cause errors. If, for example, the string
-contained `A👍%`, there would be no way to convert that to a number. Because it
-might fail, the `parse` method returns a `Result` type, much as the `read_line`
-method does (discussed earlier in [“Handling Potential Failure with
-`Result`”](#handling-potential-failure-with-result)<!-- ignore -->). We’ll treat
-this `Result` the same way by using the `expect` method again. If `parse`
-returns an `Err` `Result` variant because it couldn’t create a number from the
-string, the `expect` call will crash the game and print the message we give it.
-If `parse` can successfully convert the string to a number, it will return the
-`Ok` variant of `Result`, and `expect` will return the number that we want from
-the `Ok` value.
+A `parse` metódus csak olyan karakterekkel működik, amelyek logikusan számmá
+alakíthatók, ezért könnyen okozhat hibát. Ha például a sztring az `A👍%`-ot
+tartalmazná, azt sehogy sem lehetne számmá alakítani. Mivel meghiúsulhat, a
+`parse` metódus `Result` típust ad vissza, ahogy a `read_line` metódus is
+(erről korábban a [„Lehetséges hibák kezelése a `Result`
+típussal”](#handling-potential-failure-with-result)<!-- ignore --> szakaszban
+volt szó). Ezt a `Result`-ot ugyanúgy kezeljük: ismét az `expect` metódust
+használjuk. Ha a `parse` az `Err` `Result`-variánst adja vissza, mert nem
+tudott számot előállítani a sztringből, az `expect` hívás összeomlasztja a
+játékot, és kiírja az általunk megadott üzenetet. Ha a `parse` sikeresen át
+tudja alakítani a sztringet számmá, akkor a `Result` `Ok` variánsát adja
+vissza, és az `expect` visszaadja azt a számot, amelyet szeretnénk, az `Ok`
+értékből.
 
-Let’s run the program now:
+Futtassuk most a programot:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/no-listing-03-convert-string-to-number/
@@ -749,36 +772,38 @@ You guessed: 76
 Too big!
 ```
 
-Nice! Even though spaces were added before the guess, the program still figured
-out that the user guessed 76. Run the program a few times to verify the
-different behavior with different kinds of input: Guess the number correctly,
-guess a number that is too high, and guess a number that is too low.
+Szuper! Bár a tipp elé szóközöket írtunk, a program mégis rájött, hogy a
+felhasználó 76-ra tippelt. Futtasd le a programot néhányszor, hogy ellenőrizd a
+különböző bemenetekkel járó eltérő viselkedést: találd el pontosan a számot,
+tippelj túl nagy számra, és tippelj túl kicsire is.
 
-We have most of the game working now, but the user can make only one guess.
-Let’s change that by adding a loop!
+A játék nagy része már működik, de a felhasználó csak egyetlen tippet adhat.
+Változtassunk ezen egy ciklus hozzáadásával!
 
-## Allowing Multiple Guesses with Looping
+## Több tipp engedélyezése ciklussal
 
-The `loop` keyword creates an infinite loop. We’ll add a loop to give users
-more chances at guessing the number:
+A `loop` kulcsszó végtelen ciklust hoz létre. Hozzáadunk egy ciklust, hogy a
+felhasználóknak több esélyük legyen kitalálni a számot:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-04-looping/src/main.rs:here}}
 ```
 
-As you can see, we’ve moved everything from the guess input prompt onward into
-a loop. Be sure to indent the lines inside the loop another four spaces each
-and run the program again. The program will now ask for another guess forever,
-which actually introduces a new problem. It doesn’t seem like the user can quit!
+Ahogy látod, mindent a tippet bekérő felszólítástól kezdve beletettünk egy
+ciklusba. Ügyelj arra, hogy a cikluson belüli sorokat még négy szóközzel
+beljebb húzd, majd futtasd le újra a programot. A program most már örökké újabb
+tippet fog kérni, ami valójában új problémát vet fel. Úgy tűnik, a felhasználó
+nem tud kilépni!
 
-The user could always interrupt the program by using the keyboard shortcut
-<kbd>ctrl</kbd>-<kbd>C</kbd>. But there’s another way to escape this insatiable
-monster, as mentioned in the `parse` discussion in [“Comparing the Guess to the
-Secret Number”](#comparing-the-guess-to-the-secret-number)<!-- ignore -->: If
-the user enters a non-number answer, the program will crash. We can take
-advantage of that to allow the user to quit, as shown here:
+A felhasználó bármikor megszakíthatná a programot a
+<kbd>ctrl</kbd>-<kbd>C</kbd> billentyűkombinációval. De van másik módja is
+annak, hogy megmeneküljünk ettől a telhetetlen szörnyetegtől, ahogy azt a
+`parse` tárgyalásánál említettük [„A tipp összehasonlítása a titkos
+számmal”](#comparing-the-guess-to-the-secret-number)<!-- ignore --> című
+részben: ha a felhasználó nem szám választ ad meg, a program összeomlik. Ezt
+kihasználhatjuk, hogy a felhasználó ki tudjon lépni, ahogy itt látható:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/no-listing-04-looping/
@@ -817,32 +842,35 @@ Please type a number!: ParseIntError { kind: InvalidDigit }
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-Typing `quit` will quit the game, but as you’ll notice, so will entering any
-other non-number input. This is suboptimal, to say the least; we want the game
-to also stop when the correct number is guessed.
+A `quit` beírása kilép a játékból, de ahogy észre fogod venni, ugyanezt teszi
+bármilyen más, nem szám bemenet is. Ez enyhén szólva nem optimális; azt
+szeretnénk, hogy a játék akkor is álljon meg, ha eltalálták a helyes számot.
 
-### Quitting After a Correct Guess {#quitting-after-a-correct-guess}
+### Kilépés a helyes tipp után {#quitting-after-a-correct-guess}
 
-Let’s program the game to quit when the user wins by adding a `break` statement:
+Programozzuk úgy a játékot, hogy kilépjen, amikor a felhasználó nyer: adjunk
+hozzá egy `break` utasítást:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-05-quitting/src/main.rs:here}}
 ```
 
-Adding the `break` line after `You win!` makes the program exit the loop when
-the user guesses the secret number correctly. Exiting the loop also means
-exiting the program, because the loop is the last part of `main`.
+A `break` sor hozzáadása a `You win!` után azt eredményezi, hogy a program
+kilép a ciklusból, amikor a felhasználó helyesen tippeli meg a titkos számot. A
+ciklusból való kilépés a programból való kilépést is jelenti, mert a ciklus a
+`main` utolsó része.
 
-### Handling Invalid Input
+### Érvénytelen bemenet kezelése
 
-To further refine the game’s behavior, rather than crashing the program when
-the user inputs a non-number, let’s make the game ignore a non-number so that
-the user can continue guessing. We can do that by altering the line where
-`guess` is converted from a `String` to a `u32`, as shown in Listing 2-5.
+Hogy tovább finomítsuk a játék viselkedését, ahelyett hogy összeomlana a
+program, amikor a felhasználó nem számot ír be, tegyük úgy, hogy a játék
+figyelmen kívül hagyja a nem szám bemenetet, így a felhasználó folytathatja a
+tippelést. Ezt úgy érhetjük el, hogy módosítjuk azt a sort, ahol a `guess`
+`String`-ből `u32`-vé alakul, ahogy a 2-5. listában látható.
 
-<Listing number="2-5" file-name="src/main.rs" caption="Ignoring a non-number guess and asking for another guess instead of crashing the program">
+<Listing number="2-5" file-name="src/main.rs" caption="Nem szám tipp figyelmen kívül hagyása és újabb tipp kérése a program összeomlasztása helyett">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-05/src/main.rs:here}}
@@ -850,29 +878,32 @@ the user can continue guessing. We can do that by altering the line where
 
 </Listing>
 
-We switch from an `expect` call to a `match` expression to move from crashing
-on an error to handling the error. Remember that `parse` returns a `Result`
-type and `Result` is an enum that has the variants `Ok` and `Err`. We’re using
-a `match` expression here, as we did with the `Ordering` result of the `cmp`
-method.
+Az `expect` hívásról egy `match` kifejezésre váltunk, hogy a hibán való
+összeomlás helyett kezeljük a hibát. Ne feledd, hogy a `parse` `Result` típust
+ad vissza, a `Result` pedig egy enum, amelynek `Ok` és `Err` variánsai vannak.
+Itt `match` kifejezést használunk, ahogy azt a `cmp` metódus `Ordering`
+eredményénél is tettük.
 
-If `parse` is able to successfully turn the string into a number, it will
-return an `Ok` value that contains the resultant number. That `Ok` value will
-match the first arm’s pattern, and the `match` expression will just return the
-`num` value that `parse` produced and put inside the `Ok` value. That number
-will end up right where we want it in the new `guess` variable we’re creating.
+Ha a `parse` sikeresen számmá tudja alakítani a sztringet, egy `Ok` értéket ad
+vissza, amely az eredményül kapott számot tartalmazza. Ez az `Ok` érték
+illeszkedni fog az első ág mintájára, és a `match` kifejezés egyszerűen
+visszaadja azt a `num` értéket, amelyet a `parse` előállított és az `Ok` értékbe
+tett. Ez a szám pontosan ott köt ki, ahol szeretnénk: az új `guess` változóban,
+amelyet létrehozunk.
 
-If `parse` is _not_ able to turn the string into a number, it will return an
-`Err` value that contains more information about the error. The `Err` value
-does not match the `Ok(num)` pattern in the first `match` arm, but it does
-match the `Err(_)` pattern in the second arm. The underscore, `_`, is a
-catch-all value; in this example, we’re saying we want to match all `Err`
-values, no matter what information they have inside them. So, the program will
-execute the second arm’s code, `continue`, which tells the program to go to the
-next iteration of the `loop` and ask for another guess. So, effectively, the
-program ignores all errors that `parse` might encounter!
+Ha a `parse` _nem_ tudja számmá alakítani a sztringet, egy `Err` értéket ad
+vissza, amely több információt tartalmaz a hibáról. Az `Err` érték nem
+illeszkedik az első `match`-ág `Ok(num)` mintájára, de illeszkedik a második ág
+`Err(_)` mintájára. Az aláhúzásjel, `_`, egy mindent elkapó érték; ebben a
+példában azt mondjuk, hogy minden `Err` értékre illeszkedni akarunk,
+függetlenül attól, milyen információt tartalmaznak. Így a program a második ág
+kódját fogja végrehajtani, a `continue`-t, ami azt mondja a programnak, hogy
+lépjen a `loop` következő iterációjára, és kérjen újabb tippet. Vagyis
+gyakorlatilag a program minden olyan hibát figyelmen kívül hagy, amellyel a
+`parse` találkozhat!
 
-Now everything in the program should work as expected. Let’s try it:
+Most már mindennek úgy kell működnie a programban, ahogy elvárjuk. Próbáljuk
+ki:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-05/
@@ -906,12 +937,12 @@ You guessed: 61
 You win!
 ```
 
-Awesome! With one tiny final tweak, we will finish the guessing game. Recall
-that the program is still printing the secret number. That worked well for
-testing, but it ruins the game. Let’s delete the `println!` that outputs the
-secret number. Listing 2-6 shows the final code.
+Nagyszerű! Egyetlen apró utolsó igazítással befejezzük a kitalálós játékot.
+Emlékezz vissza, hogy a program még mindig kiírja a titkos számot. Ez
+teszteléshez jól jött, de tönkreteszi a játékot. Töröljük azt a `println!`-t,
+amely kiírja a titkos számot. A 2-6. lista mutatja a végleges kódot.
 
-<Listing number="2-6" file-name="src/main.rs" caption="Complete guessing game code">
+<Listing number="2-6" file-name="src/main.rs" caption="A kitalálós játék teljes kódja">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-06/src/main.rs}}
@@ -919,17 +950,19 @@ secret number. Listing 2-6 shows the final code.
 
 </Listing>
 
-At this point, you’ve successfully built the guessing game. Congratulations!
+Ezen a ponton sikeresen megépítetted a kitalálós játékot. Gratulálunk!
 
-## Summary
+## Összefoglalás
 
-This project was a hands-on way to introduce you to many new Rust concepts:
-`let`, `match`, functions, the use of external crates, and more. In the next
-few chapters, you’ll learn about these concepts in more detail. Chapter 3
-covers concepts that most programming languages have, such as variables, data
-types, and functions, and shows how to use them in Rust. Chapter 4 explores
-ownership, a feature that makes Rust different from other languages. Chapter 5
-discusses structs and method syntax, and Chapter 6 explains how enums work.
+Ez a projekt gyakorlati módja volt annak, hogy sok új Rust-fogalmat megismerj:
+a `let`-et, a `match`-et, a függvényeket, a külső crate-ek használatát és még
+sok mást. A következő néhány fejezetben ezekről a fogalmakról részletesebben is
+tanulsz majd. A 3. fejezet olyan fogalmakat tárgyal, amelyek a legtöbb
+programozási nyelvben megvannak, például a változókat, az adattípusokat és a
+függvényeket, és megmutatja, hogyan használd őket a Rustban. A 4. fejezet az
+ownershipet járja körül, azt a képességet, amely a Rustot különbözővé teszi a
+többi nyelvtől. Az 5. fejezet a structokat és a metódusszintaxist tárgyalja, a
+6. fejezet pedig azt magyarázza el, hogyan működnek az enumok.
 
 [prelude]: ../std/prelude/index.html
 [variables-and-mutability]: ch03-01-variables-and-mutability.html#variables-and-mutability

@@ -1,79 +1,81 @@
-## Refactoring to Improve Modularity and Error Handling
+## Refaktorálás a modularitás és a hibakezelés javítására
 
-To improve our program, we’ll fix four problems that have to do with the
-program’s structure and how it’s handling potential errors. First, our `main`
-function now performs two tasks: It parses arguments and reads files. As our
-program grows, the number of separate tasks the `main` function handles will
-increase. As a function gains responsibilities, it becomes more difficult to
-reason about, harder to test, and harder to change without breaking one of its
-parts. It’s best to separate functionality so that each function is responsible
-for one task.
+A programunk javításához négy olyan problémát orvosolunk, amely a program
+szerkezetével és a lehetséges hibák kezelésével kapcsolatos. Először is, a
+`main` függvényünk jelenleg két feladatot lát el: argumentumokat elemez és
+fájlokat olvas be. Ahogy a programunk növekszik, egyre több különálló feladatot
+kezel majd a `main` függvény. Minél több felelősséget kap egy függvény, annál
+nehezebb átlátni, tesztelni és úgy módosítani, hogy közben ne romoljon el
+valamelyik része. A legjobb, ha úgy választjuk szét a funkcionalitást, hogy
+minden függvény egyetlen feladatért feleljen.
 
-This issue also ties into the second problem: Although `query` and `file_path`
-are configuration variables to our program, variables like `contents` are used
-to perform the program’s logic. The longer `main` becomes, the more variables
-we’ll need to bring into scope; the more variables we have in scope, the harder
-it will be to keep track of the purpose of each. It’s best to group the
-configuration variables into one structure to make their purpose clear.
+Ez a kérdés a második problémához is kapcsolódik: bár a `query` és a `file_path`
+a programunk konfigurációs változói, az olyan változók, mint a `contents`, a
+program logikájának végrehajtását szolgálják. Minél hosszabb lesz a `main`,
+annál több változót kell hatókörbe hoznunk; és minél több változó van a
+hatókörben, annál nehezebb számon tartani, melyiknek mi a szerepe. A legjobb, ha
+a konfigurációs változókat egyetlen szerkezetbe csoportosítjuk, hogy világos
+legyen a rendeltetésük.
 
-The third problem is that we’ve used `expect` to print an error message when
-reading the file fails, but the error message just prints `Should have been
-able to read the file`. Reading a file can fail in a number of ways: For
-example, the file could be missing, or we might not have permission to open it.
-Right now, regardless of the situation, we’d print the same error message for
-everything, which wouldn’t give the user any information!
+A harmadik probléma az, hogy az `expect` segítségével írunk ki hibaüzenetet, ha
+a fájl beolvasása nem sikerül, de a hibaüzenet csak annyit ír ki, hogy `Should
+have been able to read the file`. Egy fájl beolvasása sokféleképpen
+meghiúsulhat: hiányozhat például a fájl, vagy nincs jogosultságunk a
+megnyitásához. Jelenleg a helyzettől függetlenül ugyanazt a hibaüzenetet írnánk
+ki mindenre, ami semmilyen információt nem adna a felhasználónak!
 
-Fourth, we use `expect` to handle an error, and if the user runs our program
-without specifying enough arguments, they’ll get an `index out of bounds` error
-from Rust that doesn’t clearly explain the problem. It would be best if all the
-error-handling code were in one place so that future maintainers had only one
-place to consult the code if the error-handling logic needed to change. Having
-all the error-handling code in one place will also ensure that we’re printing
-messages that will be meaningful to our end users.
+Negyedszer, az `expect` segítségével kezelünk egy hibát, és ha a felhasználó úgy
+futtatja a programunkat, hogy nem ad meg elegendő argumentumot, egy `index out
+of bounds` hibát kap a Rusttól, amely nem magyarázza el világosan a problémát. A
+legjobb az volna, ha a teljes hibakezelő kód egy helyen lenne, hogy a jövőbeli
+karbantartóknak csak egyetlen helyen kelljen a kódot megnézniük, ha változtatni
+kell a hibakezelés logikáján. Ha az összes hibakezelő kód egy helyen van, az azt
+is biztosítja, hogy a végfelhasználóink számára értelmes üzeneteket írunk ki.
 
-Let’s address these four problems by refactoring our project.
+Foglalkozzunk ezzel a négy problémával a projektünk refaktorálásával.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="separation-of-concerns-for-binary-projects"></a>
 
-### Separating Concerns in Binary Projects
+### Felelősségek szétválasztása bináris projektekben
 
-The organizational problem of allocating responsibility for multiple tasks to
-the `main` function is common to many binary projects. As a result, many Rust
-programmers find it useful to split up the separate concerns of a binary
-program when the `main` function starts getting large. This process has the
-following steps:
+Az a szervezési probléma, hogy több feladat felelősségét a `main` függvényre
+bízzuk, sok bináris projektben előfordul. Ezért sok Rust-programozó hasznosnak
+tartja, hogy szétválassza egy bináris program különálló felelősségeit, amikor a
+`main` függvény kezd megnőni. Ez a folyamat a következő lépésekből áll:
 
-- Split your program into a _main.rs_ file and a _lib.rs_ file and move your
-  program’s logic to _lib.rs_.
-- As long as your command line parsing logic is small, it can remain in
-  the `main` function.
-- When the command line parsing logic starts getting complicated, extract it
-  from the `main` function into other functions or types.
+- Bontsd szét a programodat egy _main.rs_ és egy _lib.rs_ fájlra, és mozgasd át
+  a programod logikáját a _lib.rs_ fájlba.
+- Amíg a parancssori argumentumokat elemző logikád kicsi, maradhat a `main`
+  függvényben.
+- Amikor a parancssori argumentumokat elemző logika bonyolulttá kezd válni,
+  emeld ki a `main` függvényből más függvényekbe vagy típusokba.
 
-The responsibilities that remain in the `main` function after this process
-should be limited to the following:
+Azoknak a felelősségeknek, amelyek a folyamat után a `main` függvényben
+maradnak, a következőkre kell korlátozódniuk:
 
-- Calling the command line parsing logic with the argument values
-- Setting up any other configuration
-- Calling a `run` function in _lib.rs_
-- Handling the error if `run` returns an error
+- A parancssori argumentumokat elemző logika meghívása az argumentumértékekkel
+- Minden további konfiguráció beállítása
+- Egy `run` függvény meghívása a _lib.rs_ fájlban
+- A hiba kezelése, ha a `run` hibát ad vissza
 
-This pattern is about separating concerns: _main.rs_ handles running the
-program and _lib.rs_ handles all the logic of the task at hand. Because you
-can’t test the `main` function directly, this structure lets you test all of
-your program’s logic by moving it out of the `main` function. The code that
-remains in the `main` function will be small enough to verify its correctness
-by reading it. Let’s rework our program by following this process.
+Ez a minta a felelősségek szétválasztásáról szól: a _main.rs_ a program
+futtatásáért felel, a _lib.rs_ pedig az adott feladat teljes logikájáért. Mivel
+a `main` függvényt nem tudod közvetlenül tesztelni, ez a szerkezet lehetővé
+teszi, hogy a program teljes logikáját tesztelhesd azáltal, hogy kimozgatod a
+`main` függvényből. Az a kód, amely a `main` függvényben marad, elég rövid lesz
+ahhoz, hogy elolvasással ellenőrizhessük a helyességét. Alakítsuk át a
+programunkat ezt a folyamatot követve.
 
-#### Extracting the Argument Parser
+#### Az argumentumelemző kiemelése
 
-We’ll extract the functionality for parsing arguments into a function that
-`main` will call. Listing 12-5 shows the new start of the `main` function that
-calls a new function `parse_config`, which we’ll define in _src/main.rs_.
+Kiemeljük az argumentumok elemzését végző funkcionalitást egy függvénybe,
+amelyet a `main` fog meghívni. A 12-5. lista a `main` függvény új kezdetét
+mutatja, amely meghívja az új `parse_config` függvényt; ezt a függvényt az
+_src/main.rs_ fájlban definiáljuk majd.
 
-<Listing number="12-5" file-name="src/main.rs" caption="Extracting a `parse_config` function from `main`">
+<Listing number="12-5" file-name="src/main.rs" caption="A `parse_config` függvény kiemelése a `main`-ből">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-05/src/main.rs:here}}
@@ -81,40 +83,41 @@ calls a new function `parse_config`, which we’ll define in _src/main.rs_.
 
 </Listing>
 
-We’re still collecting the command line arguments into a vector, but instead of
-assigning the argument value at index 1 to the variable `query` and the
-argument value at index 2 to the variable `file_path` within the `main`
-function, we pass the whole vector to the `parse_config` function. The
-`parse_config` function then holds the logic that determines which argument
-goes in which variable and passes the values back to `main`. We still create
-the `query` and `file_path` variables in `main`, but `main` no longer has the
-responsibility of determining how the command line arguments and variables
-correspond.
+A parancssori argumentumokat továbbra is egy vektorba gyűjtjük, de ahelyett,
+hogy az 1-es indexen lévő argumentumértéket a `query`, a 2-es indexen lévőt
+pedig a `file_path` változóhoz rendelnénk a `main` függvényen belül, az egész
+vektort átadjuk a `parse_config` függvénynek. A `parse_config` függvény
+tartalmazza azt a logikát, amely eldönti, melyik argumentum melyik változóba
+kerül, majd visszaadja az értékeket a `main`-nek. A `query` és a `file_path`
+változókat továbbra is a `main`-ben hozzuk létre, de a `main`-nek már nem
+felelőssége eldönteni, hogyan felelnek meg egymásnak a parancssori argumentumok
+és a változók.
 
-This rework may seem like overkill for our small program, but we’re refactoring
-in small, incremental steps. After making this change, run the program again to
-verify that the argument parsing still works. It’s good to check your progress
-often, to help identify the cause of problems when they occur.
+Ez az átalakítás túlzásnak tűnhet a kicsi programunkhoz, de kis, fokozatos
+lépésekben refaktorálunk. Miután elvégezted ezt a változtatást, futtasd le újra
+a programot, hogy meggyőződj róla: az argumentumok elemzése továbbra is működik.
+Érdemes gyakran ellenőrizni, hol tartasz, mert így könnyebb megtalálni a
+problémák okát, amikor felbukkannak.
 
-#### Grouping Configuration Values
+#### Konfigurációs értékek csoportosítása
 
-We can take another small step to improve the `parse_config` function further.
-At the moment, we’re returning a tuple, but then we immediately break that
-tuple into individual parts again. This is a sign that perhaps we don’t have
-the right abstraction yet.
+Tehetünk még egy kis lépést a `parse_config` függvény további javítása felé.
+Pillanatnyilag egy tuple-t adunk vissza, majd azonnal fel is bontjuk ezt a
+tuple-t különálló részekre. Ez annak a jele, hogy talán még nem találtuk meg a
+megfelelő absztrakciót.
 
-Another indicator that shows there’s room for improvement is the `config` part
-of `parse_config`, which implies that the two values we return are related and
-are both part of one configuration value. We’re not currently conveying this
-meaning in the structure of the data other than by grouping the two values into
-a tuple; we’ll instead put the two values into one struct and give each of the
-struct fields a meaningful name. Doing so will make it easier for future
-maintainers of this code to understand how the different values relate to each
-other and what their purpose is.
+Egy másik jel, amely arra utal, hogy van még mit javítani, a `parse_config`
+nevében szereplő `config` rész, amely azt sugallja, hogy a két visszaadott érték
+összetartozik, és mindkettő egyetlen konfigurációs érték része. Jelenleg az
+adatok szerkezetében ezt a jelentést semmi más nem fejezi ki azon kívül, hogy a
+két értéket egy tuple-be csoportosítottuk; helyette egyetlen structba tesszük a
+két értéket, és a struct minden mezőjének beszédes nevet adunk. Ezzel
+megkönnyítjük a kód jövőbeli karbantartóinak, hogy megértsék, hogyan
+kapcsolódnak egymáshoz a különböző értékek, és mi a rendeltetésük.
 
-Listing 12-6 shows the improvements to the `parse_config` function.
+A 12-6. lista a `parse_config` függvény javításait mutatja be.
 
-<Listing number="12-6" file-name="src/main.rs" caption="Refactoring `parse_config` to return an instance of a `Config` struct">
+<Listing number="12-6" file-name="src/main.rs" caption="A `parse_config` refaktorálása úgy, hogy egy `Config` struct példányát adja vissza">
 
 ```rust,should_panic,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-06/src/main.rs:here}}
@@ -122,65 +125,68 @@ Listing 12-6 shows the improvements to the `parse_config` function.
 
 </Listing>
 
-We’ve added a struct named `Config` defined to have fields named `query` and
-`file_path`. The signature of `parse_config` now indicates that it returns a
-`Config` value. In the body of `parse_config`, where we used to return
-string slices that reference `String` values in `args`, we now define `Config`
-to contain owned `String` values. The `args` variable in `main` is the owner of
-the argument values and is only letting the `parse_config` function borrow
-them, which means we’d violate Rust’s borrowing rules if `Config` tried to take
-ownership of the values in `args`.
+Hozzáadtunk egy `Config` nevű structot, amelynek `query` és `file_path` nevű
+mezői vannak. A `parse_config` szignatúrája most már jelzi, hogy egy `Config`
+értéket ad vissza. A `parse_config` törzsében, ahol korábban olyan string
+slice-okat adtunk vissza, amelyek az `args`-ban lévő `String` értékekre
+hivatkoztak, most úgy definiáljuk a `Config`-ot, hogy birtokolt `String`
+értékeket tartalmazzon. A `main`-ben lévő `args` változó az argumentumértékek
+ownere, és csak kölcsönadja őket a `parse_config` függvénynek, ami azt jelenti,
+hogy megsértenénk a Rust borrowing-szabályait, ha a `Config` megpróbálná átvenni
+az `args` értékeinek ownershipjét.
 
-There are a number of ways we could manage the `String` data; the easiest,
-though somewhat inefficient, route is to call the `clone` method on the values.
-This will make a full copy of the data for the `Config` instance to own, which
-takes more time and memory than storing a reference to the string data.
-However, cloning the data also makes our code very straightforward because we
-don’t have to manage the lifetimes of the references; in this circumstance,
-giving up a little performance to gain simplicity is a worthwhile trade-off.
+Sokféleképpen kezelhetnénk a `String` adatokat; a legegyszerűbb – bár némileg
+pazarló – út az, ha meghívjuk az értékeken a `clone` metódust. Ez az adatok
+teljes másolatát elkészíti, hogy a `Config` példány birtokolhassa őket, ami több
+időbe és memóriába kerül, mint a karakterlánc-adatra mutató referencia tárolása.
+Az adatok klónozása viszont nagyon egyértelművé teszi a kódunkat, mert nem kell
+kezelnünk a referenciák lifetime-jait; ebben a helyzetben megéri egy kis
+teljesítményt feláldozni az egyszerűségért.
 
-> ### The Trade-Offs of Using `clone`
+> ### A `clone` használatának előnyei és hátrányai
 >
-> There’s a tendency among many Rustaceans to avoid using `clone` to fix
-> ownership problems because of its runtime cost. In
-> [Chapter 13][ch13]<!-- ignore -->, you’ll learn how to use more efficient
-> methods in this type of situation. But for now, it’s okay to copy a few
-> strings to continue making progress because you’ll make these copies only
-> once and your file path and query string are very small. It’s better to have
-> a working program that’s a bit inefficient than to try to hyperoptimize code
-> on your first pass. As you become more experienced with Rust, it’ll be
-> easier to start with the most efficient solution, but for now, it’s
-> perfectly acceptable to call `clone`.
+> Sok Rustacean körében megvan az a hajlam, hogy elkerülje a `clone`
+> használatát az ownership-problémák megoldására, a futásidejű költsége miatt.
+> A [13. fejezetben][ch13]<!-- ignore --> megtanulod, hogyan használhatsz
+> hatékonyabb módszereket az ilyen helyzetekben. Egyelőre azonban rendben van,
+> ha lemásolunk néhány karakterláncot, hogy tovább haladhassunk, mert ezeket a
+> másolatokat csak egyszer készítjük el, és a fájlútvonalunk, valamint a
+> keresési kifejezésünk nagyon rövid. Jobb, ha van egy működő programunk, amely
+> kissé pazarló, mintha első nekifutásra próbálnánk agyonoptimalizálni a kódot.
+> Ahogy egyre tapasztaltabb leszel a Rustban, könnyebb lesz rögtön a
+> leghatékonyabb megoldással kezdeni, egyelőre viszont teljesen elfogadható a
+> `clone` hívása.
 
-We’ve updated `main` so that it places the instance of `Config` returned by
-`parse_config` into a variable named `config`, and we updated the code that
-previously used the separate `query` and `file_path` variables so that it now
-uses the fields on the `Config` struct instead.
+Frissítettük a `main`-t úgy, hogy a `parse_config` által visszaadott `Config`
+példányt egy `config` nevű változóba helyezze, és frissítettük azt a kódot is,
+amely korábban a különálló `query` és `file_path` változókat használta, hogy
+mostantól a `Config` struct mezőit használja.
 
-Now our code more clearly conveys that `query` and `file_path` are related and
-that their purpose is to configure how the program will work. Any code that
-uses these values knows to find them in the `config` instance in the fields
-named for their purpose.
+Így a kódunk világosabban fejezi ki, hogy a `query` és a `file_path`
+összetartozik, és hogy a rendeltetésük a program működésének beállítása. Minden
+kód, amely ezeket az értékeket használja, tudja, hogy a `config` példányban
+találja meg őket, a rendeltetésükről elnevezett mezőkben.
 
-#### Creating a Constructor for `Config`
+#### Konstruktor létrehozása a `Config`-hoz
 
-So far, we’ve extracted the logic responsible for parsing the command line
-arguments from `main` and placed it in the `parse_config` function. Doing so
-helped us see that the `query` and `file_path` values were related, and that
-relationship should be conveyed in our code. We then added a `Config` struct to
-name the related purpose of `query` and `file_path` and to be able to return the
-values’ names as struct field names from the `parse_config` function.
+Eddig kiemeltük a `main`-ből a parancssori argumentumok elemzéséért felelős
+logikát, és a `parse_config` függvénybe helyeztük. Ezzel láthatóvá vált, hogy a
+`query` és a `file_path` értékek összetartoznak, és ezt a kapcsolatot ki kell
+fejeznünk a kódunkban. Ezután hozzáadtunk egy `Config` structot, hogy nevet
+adjunk a `query` és a `file_path` közös rendeltetésének, és hogy a
+`parse_config` függvényből az értékek nevét struct-mezőnevekként adhassuk
+vissza.
 
-So, now that the purpose of the `parse_config` function is to create a `Config`
-instance, we can change `parse_config` from a plain function to a function
-named `new` that is associated with the `Config` struct. Making this change
-will make the code more idiomatic. We can create instances of types in the
-standard library, such as `String`, by calling `String::new`. Similarly, by
-changing `parse_config` into a `new` function associated with `Config`, we’ll
-be able to create instances of `Config` by calling `Config::new`. Listing 12-7
-shows the changes we need to make.
+Most tehát, hogy a `parse_config` függvény célja egy `Config` példány
+létrehozása, a `parse_config`-ot egyszerű függvényből egy `new` nevű függvénnyé
+alakíthatjuk, amely a `Config` structhoz kapcsolódik. Ez a változtatás
+idiomatikusabbá teszi a kódot. A standard könyvtár típusaiból, például a
+`String`-ből úgy hozhatunk létre példányokat, hogy meghívjuk a `String::new`
+függvényt. Hasonlóképpen, ha a `parse_config`-ot a `Config`-hoz kapcsolódó `new`
+függvénnyé alakítjuk, a `Config::new` hívásával tudunk majd `Config` példányokat
+létrehozni. A 12-7. lista mutatja a szükséges változtatásokat.
 
-<Listing number="12-7" file-name="src/main.rs" caption="Changing `parse_config` into `Config::new`">
+<Listing number="12-7" file-name="src/main.rs" caption="A `parse_config` átalakítása `Config::new` függvénnyé">
 
 ```rust,should_panic,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-07/src/main.rs:here}}
@@ -188,33 +194,35 @@ shows the changes we need to make.
 
 </Listing>
 
-We’ve updated `main` where we were calling `parse_config` to instead call
-`Config::new`. We’ve changed the name of `parse_config` to `new` and moved it
-within an `impl` block, which associates the `new` function with `Config`. Try
-compiling this code again to make sure it works.
+Frissítettük a `main`-t ott, ahol a `parse_config`-ot hívtuk, hogy helyette a
+`Config::new` függvényt hívja. A `parse_config` nevét `new`-ra változtattuk, és
+áthelyeztük egy `impl` blokkba, amely a `new` függvényt a `Config`-hoz
+kapcsolja. Próbáld meg újra lefordítani ezt a kódot, hogy megbizonyosodj róla:
+működik.
 
-### Fixing the Error Handling
+### A hibakezelés javítása
 
-Now we’ll work on fixing our error handling. Recall that attempting to access
-the values in the `args` vector at index 1 or index 2 will cause the program to
-panic if the vector contains fewer than three items. Try running the program
-without any arguments; it will look like this:
+Most a hibakezelésünk javításán dolgozunk. Emlékezz vissza: ha megpróbáljuk
+elérni az `args` vektor 1-es vagy 2-es indexén lévő értékeket, a program panicot
+vált ki, ha a vektor háromnál kevesebb elemet tartalmaz. Próbáld meg lefuttatni
+a programot mindenféle argumentum nélkül; így fog kinézni:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-07/output.txt}}
 ```
 
-The line `index out of bounds: the len is 1 but the index is 1` is an error
-message intended for programmers. It won’t help our end users understand what
-they should do instead. Let’s fix that now.
+Az `index out of bounds: the len is 1 but the index is 1` sor programozóknak
+szánt hibaüzenet. A végfelhasználóinknak nem segít megérteni, mit kellene
+tenniük helyette. Javítsuk ezt ki most.
 
-#### Improving the Error Message
+#### A hibaüzenet javítása
 
-In Listing 12-8, we add a check in the `new` function that will verify that the
-slice is long enough before accessing index 1 and index 2. If the slice isn’t
-long enough, the program panics and displays a better error message.
+A 12-8. listában hozzáadunk egy ellenőrzést a `new` függvényhez, amely
+megvizsgálja, hogy a slice elég hosszú-e, mielőtt az 1-es és a 2-es indexhez
+nyúlnánk. Ha a slice nem elég hosszú, a program panicot vált ki, és jobb
+hibaüzenetet jelenít meg.
 
-<Listing number="12-8" file-name="src/main.rs" caption="Adding a check for the number of arguments">
+<Listing number="12-8" file-name="src/main.rs" caption="Az argumentumok számának ellenőrzése">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-08/src/main.rs:here}}
@@ -222,50 +230,52 @@ long enough, the program panics and displays a better error message.
 
 </Listing>
 
-This code is similar to [the `Guess::new` function we wrote in Listing
-9-13][ch9-custom-types]<!-- ignore -->, where we called `panic!` when the
-`value` argument was out of the range of valid values. Instead of checking for
-a range of values here, we’re checking that the length of `args` is at least
-`3` and the rest of the function can operate under the assumption that this
-condition has been met. If `args` has fewer than three items, this condition
-will be `true`, and we call the `panic!` macro to end the program immediately.
+Ez a kód hasonló [a `Guess::new` függvényhez, amelyet a 9-13. listában
+írtunk][ch9-custom-types]<!-- ignore -->, ahol a `panic!` makrót hívtuk, amikor
+a `value` argumentum az érvényes értékek tartományán kívül esett. Itt nem egy
+értéktartományt ellenőrzünk, hanem azt, hogy az `args` hossza legalább `3`, és a
+függvény többi része már abból indulhat ki, hogy ez a feltétel teljesült. Ha az
+`args` háromnál kevesebb elemet tartalmaz, ez a feltétel `true` lesz, és
+meghívjuk a `panic!` makrót, hogy azonnal befejezzük a programot.
 
-With these extra few lines of code in `new`, let’s run the program without any
-arguments again to see what the error looks like now:
+Ezzel a néhány plusz kódsorral a `new`-ban futtassuk le újra a programot
+argumentumok nélkül, hogy lássuk, hogyan néz ki most a hiba:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-08/output.txt}}
 ```
 
-This output is better: We now have a reasonable error message. However, we also
-have extraneous information we don’t want to give to our users. Perhaps the
-technique we used in Listing 9-13 isn’t the best one to use here: A call to
-`panic!` is more appropriate for a programming problem than a usage problem,
-[as discussed in Chapter 9][ch9-error-guidelines]<!-- ignore -->. Instead,
-we’ll use the other technique you learned about in Chapter 9—[returning a
-`Result`][ch9-result]<!-- ignore --> that indicates either success or an error.
+Ez a kimenet jobb: immár van egy értelmes hibaüzenetünk. Van benne azonban
+fölösleges információ is, amelyet nem szeretnénk a felhasználóink elé tárni.
+Talán az a technika, amelyet a 9-13. listában használtunk, itt nem a legjobb: a
+`panic!` hívása inkább programozási hibához illik, mint használati problémához,
+[ahogy a 9. fejezetben tárgyaltuk][ch9-error-guidelines]<!-- ignore -->.
+Helyette azt a másik technikát használjuk, amelyet a 9. fejezetben tanultál –
+egy [`Result` visszaadását][ch9-result]<!-- ignore -->, amely vagy a sikert,
+vagy a hibát jelzi.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="returning-a-result-from-new-instead-of-calling-panic"></a>
 
-#### Returning a `Result` Instead of Calling `panic!`
+#### `Result` visszaadása a `panic!` hívása helyett
 
-We can instead return a `Result` value that will contain a `Config` instance in
-the successful case and will describe the problem in the error case. We’re also
-going to change the function name from `new` to `build` because many
-programmers expect `new` functions to never fail. When `Config::build` is
-communicating to `main`, we can use the `Result` type to signal there was a
-problem. Then, we can change `main` to convert an `Err` variant into a more
-practical error for our users without the surrounding text about `thread
-'main'` and `RUST_BACKTRACE` that a call to `panic!` causes.
+Ehelyett visszaadhatunk egy `Result` értéket, amely sikeres esetben egy `Config`
+példányt tartalmaz, hiba esetén pedig leírja a problémát. A függvény nevét is
+megváltoztatjuk `new`-ról `build`-re, mert sok programozó elvárja, hogy a `new`
+függvények soha ne hibázzanak. Amikor a `Config::build` a `main`-nel kommunikál,
+a `Result` típussal jelezhetjük, hogy probléma történt. Ezután módosíthatjuk a
+`main`-t úgy, hogy az `Err` variánst a felhasználóink számára gyakorlatiasabb
+hibává alakítsa, a `thread 'main'` és a `RUST_BACKTRACE` kifejezéseket
+tartalmazó körítés nélkül, amelyet a `panic!` hívása okoz.
 
-Listing 12-9 shows the changes we need to make to the return value of the
-function we’re now calling `Config::build` and the body of the function needed
-to return a `Result`. Note that this won’t compile until we update `main` as
-well, which we’ll do in the next listing.
+A 12-9. lista mutatja azokat a változtatásokat, amelyeket a most már
+`Config::build` néven hívott függvény visszatérési értékén, valamint a függvény
+törzsén kell elvégeznünk ahhoz, hogy `Result` értéket adjon vissza. Vedd
+figyelembe, hogy ez addig nem fordul le, amíg a `main`-t is nem frissítjük, amit
+a következő listában teszünk meg.
 
-<Listing number="12-9" file-name="src/main.rs" caption="Returning a `Result` from `Config::build`">
+<Listing number="12-9" file-name="src/main.rs" caption="`Result` visszaadása a `Config::build`-ból">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-09/src/main.rs:here}}
@@ -273,33 +283,35 @@ well, which we’ll do in the next listing.
 
 </Listing>
 
-Our `build` function returns a `Result` with a `Config` instance in the success
-case and a string literal in the error case. Our error values will always be
-string literals that have the `'static` lifetime.
+A `build` függvényünk egy `Result` értéket ad vissza, sikeres esetben egy
+`Config` példánnyal, hiba esetén pedig egy string literállal. A hibaértékeink
+mindig olyan string literálok lesznek, amelyeknek `'static` a lifetime-juk.
 
-We’ve made two changes in the body of the function: Instead of calling `panic!`
-when the user doesn’t pass enough arguments, we now return an `Err` value, and
-we’ve wrapped the `Config` return value in an `Ok`. These changes make the
-function conform to its new type signature.
+Két változtatást végeztünk a függvény törzsében: ahelyett, hogy a `panic!`
+makrót hívnánk, amikor a felhasználó nem ad át elegendő argumentumot, most egy
+`Err` értéket adunk vissza, a `Config` visszatérési értéket pedig egy `Ok`-ba
+csomagoltuk. Ezekkel a változtatásokkal a függvény megfelel az új
+típusszignatúrájának.
 
-Returning an `Err` value from `Config::build` allows the `main` function to
-handle the `Result` value returned from the `build` function and exit the
-process more cleanly in the error case.
+Ha a `Config::build` egy `Err` értéket ad vissza, az lehetővé teszi a `main`
+függvénynek, hogy kezelje a `build` függvény által visszaadott `Result` értéket,
+és hiba esetén tisztábban lépjen ki a folyamatból.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="calling-confignew-and-handling-errors"></a>
 
-#### Calling `Config::build` and Handling Errors
+#### A `Config::build` hívása és a hibák kezelése
 
-To handle the error case and print a user-friendly message, we need to update
-`main` to handle the `Result` being returned by `Config::build`, as shown in
-Listing 12-10. We’ll also take the responsibility of exiting the command line
-tool with a nonzero error code away from `panic!` and instead implement it by
-hand. A nonzero exit status is a convention to signal to the process that
-called our program that the program exited with an error state.
+Ahhoz, hogy kezeljük a hibás esetet, és felhasználóbarát üzenetet írjunk ki,
+frissítenünk kell a `main`-t, hogy kezelje a `Config::build` által visszaadott
+`Result` értéket, ahogy a 12-10. listában látható. Emellett a `panic!`-tól azt a
+felelősséget is elvesszük, hogy nem nulla hibakóddal lépjen ki a parancssori
+eszközből, és helyette saját kezűleg valósítjuk meg. A nem nulla kilépési
+állapot bevett szokás annak jelzésére a programunkat meghívó folyamat felé, hogy
+a program hibás állapotban fejeződött be.
 
-<Listing number="12-10" file-name="src/main.rs" caption="Exiting with an error code if building a `Config` fails">
+<Listing number="12-10" file-name="src/main.rs" caption="Kilépés hibakóddal, ha a `Config` felépítése nem sikerül">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-10/src/main.rs:here}}
@@ -307,52 +319,54 @@ called our program that the program exited with an error state.
 
 </Listing>
 
-In this listing, we’ve used a method we haven’t covered in detail yet:
-`unwrap_or_else`, which is defined on `Result<T, E>` by the standard library.
-Using `unwrap_or_else` allows us to define some custom, non-`panic!` error
-handling. If the `Result` is an `Ok` value, this method’s behavior is similar
-to `unwrap`: It returns the inner value that `Ok` is wrapping. However, if the
-value is an `Err` value, this method calls the code in the closure, which is
-an anonymous function we define and pass as an argument to `unwrap_or_else`.
-We’ll cover closures in more detail in [Chapter 13][ch13]<!-- ignore -->. For
-now, you just need to know that `unwrap_or_else` will pass the inner value of
-the `Err`, which in this case is the static string `"not enough arguments"`
-that we added in Listing 12-9, to our closure in the argument `err` that
-appears between the vertical pipes. The code in the closure can then use the
-`err` value when it runs.
+Ebben a listában olyan metódust használtunk, amelyet még nem tárgyaltunk
+részletesen: az `unwrap_or_else` metódust, amelyet a standard könyvtár definiál
+a `Result<T, E>` típuson. Az `unwrap_or_else` használatával egyedi, nem a
+`panic!`-ra épülő hibakezelést határozhatunk meg. Ha a `Result` egy `Ok` érték,
+ennek a metódusnak a viselkedése hasonló az `unwrap`-éhoz: visszaadja azt a
+belső értéket, amelyet az `Ok` becsomagol. Ha viszont az érték egy `Err` érték,
+ez a metódus meghívja a closure-ben lévő kódot, vagyis azt a névtelen függvényt,
+amelyet mi definiálunk, és argumentumként átadunk az `unwrap_or_else`
+metódusnak. A closure-öket részletesebben a [13.
+fejezetben][ch13]<!-- ignore --> tárgyaljuk. Egyelőre csak azt kell tudnod, hogy
+az `unwrap_or_else` átadja az `Err` belső értékét – ami ebben az esetben a `"not
+enough arguments"` statikus karakterlánc, amelyet a 12-9. listában adtunk hozzá
+– a closure-ünknek, a függőleges vonalak között megjelenő `err` argumentumban. A
+closure-ben lévő kód futáskor használhatja az `err` értéket.
 
-We’ve added a new `use` line to bring `process` from the standard library into
-scope. The code in the closure that will be run in the error case is only two
-lines: We print the `err` value and then call `process::exit`. The
-`process::exit` function will stop the program immediately and return the
-number that was passed as the exit status code. This is similar to the
-`panic!`-based handling we used in Listing 12-8, but we no longer get all the
-extra output. Let’s try it:
+Hozzáadtunk egy új `use` sort, hogy hatókörbe hozzuk a `process` modult a
+standard könyvtárból. A closure-ben lévő kód, amely hiba esetén lefut, mindössze
+két sor: kiírjuk az `err` értéket, majd meghívjuk a `process::exit` függvényt. A
+`process::exit` függvény azonnal leállítja a programot, és visszaadja azt a
+számot, amelyet kilépési állapotkódként átadtunk neki. Ez hasonló ahhoz a
+`panic!`-alapú kezeléshez, amelyet a 12-8. listában használtunk, de már nem
+kapjuk meg az összes fölösleges kimenetet. Próbáljuk ki:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-10/output.txt}}
 ```
 
-Great! This output is much friendlier for our users.
+Nagyszerű! Ez a kimenet sokkal barátságosabb a felhasználóink számára.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="extracting-logic-from-the-main-function"></a>
 
-### Extracting Logic from `main`
+### A logika kiemelése a `main`-ből
 
-Now that we’ve finished refactoring the configuration parsing, let’s turn to
-the program’s logic. As we stated in [“Separating Concerns in Binary
-Projects”](#separation-of-concerns-for-binary-projects)<!-- ignore -->, we’ll
-extract a function named `run` that will hold all the logic currently in the
-`main` function that isn’t involved with setting up configuration or handling
-errors. When we’re done, the `main` function will be concise and easy to verify
-by inspection, and we’ll be able to write tests for all the other logic.
+Most, hogy befejeztük a konfigurációelemzés refaktorálását, forduljunk a program
+logikája felé. Ahogy a [„Felelősségek szétválasztása bináris
+projektekben”](#separation-of-concerns-for-binary-projects)<!-- ignore -->
+részben leírtuk, kiemelünk egy `run` nevű függvényt, amely a `main` függvényben
+jelenleg meglévő teljes logikát tartalmazza majd, azt kivéve, ami a konfiguráció
+beállításához vagy a hibák kezeléséhez tartozik. Amikor elkészülünk, a `main`
+függvény tömör lesz, és ránézésre ellenőrizhető, a többi logikára pedig
+teszteket írhatunk.
 
-Listing 12-11 shows the small, incremental improvement of extracting a `run`
-function.
+A 12-11. lista a `run` függvény kiemelésének kicsi, fokozatos javítását mutatja
+be.
 
-<Listing number="12-11" file-name="src/main.rs" caption="Extracting a `run` function containing the rest of the program logic">
+<Listing number="12-11" file-name="src/main.rs" caption="A program logikájának többi részét tartalmazó `run` függvény kiemelése">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-11/src/main.rs:here}}
@@ -360,25 +374,25 @@ function.
 
 </Listing>
 
-The `run` function now contains all the remaining logic from `main`, starting
-from reading the file. The `run` function takes the `Config` instance as an
-argument.
+A `run` függvény most már a `main` teljes megmaradt logikáját tartalmazza, a
+fájl beolvasásától kezdve. A `run` függvény argumentumként kapja a `Config`
+példányt.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="returning-errors-from-the-run-function"></a>
 
-#### Returning Errors from `run`
+#### Hibák visszaadása a `run`-ból
 
-With the remaining program logic separated into the `run` function, we can
-improve the error handling, as we did with `Config::build` in Listing 12-9.
-Instead of allowing the program to panic by calling `expect`, the `run`
-function will return a `Result<T, E>` when something goes wrong. This will let
-us further consolidate the logic around handling errors into `main` in a
-user-friendly way. Listing 12-12 shows the changes we need to make to the
-signature and body of `run`.
+Miután a program megmaradt logikáját a `run` függvénybe választottuk szét,
+javíthatjuk a hibakezelést, ahogy a `Config::build` esetében tettük a 12-9.
+listában. Ahelyett, hogy hagynánk a programot panicot kiváltani az `expect`
+hívásával, a `run` függvény egy `Result<T, E>` értéket ad vissza, ha valami
+elromlik. Így tovább vonhatjuk össze a hibakezelés körüli logikát a `main`-ben,
+mégpedig felhasználóbarát módon. A 12-12. lista mutatja azokat a
+változtatásokat, amelyeket a `run` szignatúráján és törzsén el kell végeznünk.
 
-<Listing number="12-12" file-name="src/main.rs" caption="Changing the `run` function to return `Result`">
+<Listing number="12-12" file-name="src/main.rs" caption="A `run` függvény átalakítása úgy, hogy `Result` értéket adjon vissza">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-12/src/main.rs:here}}
@@ -386,80 +400,86 @@ signature and body of `run`.
 
 </Listing>
 
-We’ve made three significant changes here. First, we changed the return type of
-the `run` function to `Result<(), Box<dyn Error>>`. This function previously
-returned the unit type, `()`, and we keep that as the value returned in the
-`Ok` case.
+Itt három jelentős változtatást végeztünk. Először is, a `run` függvény
+visszatérési típusát `Result<(), Box<dyn Error>>`-ra változtattuk. Ez a függvény
+korábban a unit típust, a `()`-t adta vissza, és ezt megtartjuk az `Ok` esetben
+visszaadott értékként.
 
-For the error type, we used the trait object `Box<dyn Error>` (and we brought
-`std::error::Error` into scope with a `use` statement at the top). We’ll cover
-trait objects in [Chapter 18][ch18]<!-- ignore -->. For now, just know that
-`Box<dyn Error>` means the function will return a type that implements the
-`Error` trait, but we don’t have to specify what particular type the return
-value will be. This gives us flexibility to return error values that may be of
-different types in different error cases. The `dyn` keyword is short for
-_dynamic_.
+A hibatípushoz a `Box<dyn Error>` trait objectet használtuk (a
+`std::error::Error` típust pedig egy `use` utasítással hoztuk hatókörbe a fájl
+elején). A trait objecteket a [18. fejezetben][ch18]<!-- ignore --> tárgyaljuk.
+Egyelőre csak azt kell tudni, hogy a `Box<dyn Error>` azt jelenti: a függvény
+olyan típust ad vissza, amely implementálja az `Error` traitet, de nem kell
+megadnunk, pontosan milyen típusú lesz a visszatérési érték. Ez rugalmasságot ad
+nekünk ahhoz, hogy különböző hibaesetekben különböző típusú hibaértékeket
+adhassunk vissza. A `dyn` kulcsszó a _dynamic_ (dinamikus) szó rövidítése.
 
-Second, we’ve removed the call to `expect` in favor of the `?` operator, as we
-talked about in [Chapter 9][ch9-question-mark]<!-- ignore -->. Rather than
-`panic!` on an error, `?` will return the error value from the current function
-for the caller to handle.
+Másodszor, elhagytuk az `expect` hívását a `?` operátor javára, ahogy arról a
+[9. fejezetben][ch9-question-mark]<!-- ignore --> beszéltünk. Ahelyett, hogy
+hiba esetén panicot váltana ki, a `?` visszaadja a hibaértéket az aktuális
+függvényből, hogy a hívó kezelhesse.
 
-Third, the `run` function now returns an `Ok` value in the success case.
-We’ve declared the `run` function’s success type as `()` in the signature,
-which means we need to wrap the unit type value in the `Ok` value. This
-`Ok(())` syntax might look a bit strange at first. But using `()` like this is
-the idiomatic way to indicate that we’re calling `run` for its side effects
-only; it doesn’t return a value we need.
+Harmadszor, a `run` függvény most sikeres esetben egy `Ok` értéket ad vissza. A
+`run` függvény sikeres típusát `()`-ként adtuk meg a szignatúrában, ami azt
+jelenti, hogy a unit típus értékét be kell csomagolnunk az `Ok` értékbe. Ez az
+`Ok(())` szintaxis elsőre kissé furcsán nézhet ki. A `()` ilyen használata
+viszont az idiomatikus módja annak, hogy jelezzük: a `run` függvényt csak a
+mellékhatásaiért hívjuk meg; nem ad vissza olyan értéket, amelyre szükségünk
+volna.
 
-When you run this code, it will compile but will display a warning:
+Ha lefuttatod ezt a kódot, le fog fordulni, de egy figyelmeztetést jelenít meg:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-12/output.txt}}
 ```
 
-Rust tells us that our code ignored the `Result` value and the `Result` value
-might indicate that an error occurred. But we’re not checking to see whether or
-not there was an error, and the compiler reminds us that we probably meant to
-have some error-handling code here! Let’s rectify that problem now.
+A Rust azt mondja nekünk, hogy a kódunk figyelmen kívül hagyta a `Result`
+értéket, és a `Result` érték hiba bekövetkeztét jelezheti. Mi viszont nem
+ellenőrizzük, hogy történt-e hiba, és a fordító emlékeztet minket rá, hogy
+valószínűleg valamilyen hibakezelő kódot akartunk ide írni! Orvosoljuk most ezt
+a problémát.
 
-#### Handling Errors Returned from `run` in `main`
+#### A `run` által visszaadott hibák kezelése a `main`-ben
 
-We’ll check for errors and handle them using a technique similar to one we used
-with `Config::build` in Listing 12-10, but with a slight difference:
+Ellenőrizzük a hibákat, és olyan technikával kezeljük őket, amely hasonlít arra,
+amelyet a `Config::build` esetében használtunk a 12-10. listában, de van egy
+apró eltérés:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Fájlnév: src/main.rs</span>
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/no-listing-01-handling-errors-in-main/src/main.rs:here}}
 ```
 
-We use `if let` rather than `unwrap_or_else` to check whether `run` returns an
-`Err` value and to call `process::exit(1)` if it does. The `run` function
-doesn’t return a value that we want to `unwrap` in the same way that
-`Config::build` returns the `Config` instance. Because `run` returns `()` in
-the success case, we only care about detecting an error, so we don’t need
-`unwrap_or_else` to return the unwrapped value, which would only be `()`.
+Az `unwrap_or_else` helyett az `if let` szerkezetet használjuk annak
+ellenőrzésére, hogy a `run` `Err` értéket ad-e vissza, és hogy meghívjuk a
+`process::exit(1)` függvényt, ha igen. A `run` függvény nem ad vissza olyan
+értéket, amelyet ugyanúgy `unwrap`-elni akarnánk, ahogy a `Config::build` adja
+vissza a `Config` példányt. Mivel a `run` sikeres esetben `()`-t ad vissza,
+minket csak a hiba észlelése érdekel, ezért nincs szükségünk az
+`unwrap_or_else`-re ahhoz, hogy visszaadja a kicsomagolt értéket, amely úgyis
+csak `()` lenne.
 
-The bodies of the `if let` and the `unwrap_or_else` functions are the same in
-both cases: We print the error and exit.
+Az `if let` és az `unwrap_or_else` törzse mindkét esetben ugyanaz: kiírjuk a
+hibát, és kilépünk.
 
-### Splitting Code into a Library Crate
+### A kód szétbontása library crate-be
 
-Our `minigrep` project is looking good so far! Now we’ll split the
-_src/main.rs_ file and put some code into the _src/lib.rs_ file. That way, we
-can test the code and have a _src/main.rs_ file with fewer responsibilities.
+A `minigrep`-projektünk eddig jól fest! Most szétbontjuk az _src/main.rs_ fájlt,
+és egy részét áthelyezzük az _src/lib.rs_ fájlba. Így tesztelhetjük a kódot, és
+az _src/main.rs_ fájlnak kevesebb felelőssége lesz.
 
-Let’s define the code responsible for searching text in _src/lib.rs_ rather
-than in _src/main.rs_, which will let us (or anyone else using our
-`minigrep` library) call the searching function from more contexts than our
-`minigrep` binary.
+Definiáljuk a szövegben való keresésért felelős kódot az _src/lib.rs_ fájlban az
+_src/main.rs_ helyett, így mi (vagy bárki más, aki a `minigrep` könyvtárunkat
+használja) a `minigrep` binárisunkon kívül más környezetekből is meghívhatjuk a
+kereső függvényt.
 
-First, let’s define the `search` function signature in _src/lib.rs_ as shown in
-Listing 12-13, with a body that calls the `unimplemented!` macro. We’ll explain
-the signature in more detail when we fill in the implementation.
+Először definiáljuk a `search` függvény szignatúráját az _src/lib.rs_ fájlban,
+ahogy a 12-13. listában látható, olyan törzzsel, amely az `unimplemented!`
+makrót hívja. A szignatúrát részletesebben akkor magyarázzuk el, amikor
+kitöltjük az implementációt.
 
-<Listing number="12-13" file-name="src/lib.rs" caption="Defining the `search` function in *src/lib.rs*">
+<Listing number="12-13" file-name="src/lib.rs" caption="A `search` függvény definiálása az *src/lib.rs* fájlban">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-13/src/lib.rs}}
@@ -467,14 +487,16 @@ the signature in more detail when we fill in the implementation.
 
 </Listing>
 
-We’ve used the `pub` keyword on the function definition to designate `search`
-as part of our library crate’s public API. We now have a library crate that we
-can use from our binary crate and that we can test!
+A függvénydefiníción a `pub` kulcsszót használtuk, hogy a `search` függvényt a
+library crate-ünk publikus API-jának részévé tegyük. Most már van egy library
+crate-ünk, amelyet használhatunk a binary crate-ünkből, és amelyet tesztelhetünk
+is!
 
-Now we need to bring the code defined in _src/lib.rs_ into the scope of the
-binary crate in _src/main.rs_ and call it, as shown in Listing 12-14.
+Most hatókörbe kell hoznunk az _src/lib.rs_ fájlban definiált kódot az
+_src/main.rs_ binary crate-jében, és meg kell hívnunk, ahogy a 12-14. listában
+látható.
 
-<Listing number="12-14" file-name="src/main.rs" caption="Using the `minigrep` library crate’s `search` function in *src/main.rs*">
+<Listing number="12-14" file-name="src/main.rs" caption="A `minigrep` library crate `search` függvényének használata az *src/main.rs* fájlban">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-14/src/main.rs:here}}
@@ -482,28 +504,29 @@ binary crate in _src/main.rs_ and call it, as shown in Listing 12-14.
 
 </Listing>
 
-We add a `use minigrep::search` line to bring the `search` function from
-the library crate into the binary crate’s scope. Then, in the `run` function,
-rather than printing out the contents of the file, we call the `search`
-function and pass the `config.query` value and `contents` as arguments. Then,
-`run` will use a `for` loop to print each line returned from `search` that
-matched the query. This is also a good time to remove the `println!` calls in
-the `main` function that displayed the query and the file path so that our
-program only prints the search results (if no errors occur).
+Hozzáadunk egy `use minigrep::search` sort, hogy a `search` függvényt a library
+crate-ből a binary crate hatókörébe hozzuk. Ezután a `run` függvényben ahelyett,
+hogy kiírnánk a fájl tartalmát, meghívjuk a `search` függvényt, és
+argumentumként átadjuk neki a `config.query` értéket, valamint a `contents`
+értéket. Ezután a `run` egy `for` ciklussal kiírja a `search` által visszaadott
+minden olyan sort, amely illeszkedett a keresési kifejezésre. Ez egyben jó
+alkalom arra is, hogy eltávolítsuk a `main` függvényből azokat a `println!`
+hívásokat, amelyek a keresési kifejezést és a fájlútvonalat írták ki, hogy a
+programunk csak a keresés eredményeit írja ki (ha nem történik hiba).
 
-Note that the search function will be collecting all the results into a vector
-it returns before any printing happens. This implementation could be slow to
-display results when searching large files, because results aren’t printed as
-they’re found; we’ll discuss a possible way to fix this using iterators in
-Chapter 13.
+Vedd figyelembe, hogy a keresést végző függvény minden eredményt egy vektorba
+gyűjt, amelyet visszaad, mielőtt bármilyen kiírás történne. Ez az implementáció
+lassan jelenítheti meg az eredményeket nagy fájlokban való kereséskor, mert az
+eredmények nem íródnak ki, ahogy megtaláljuk őket; a 13. fejezetben megbeszéljük
+ennek egy lehetséges javítási módját iterátorok segítségével.
 
-Whew! That was a lot of work, but we’ve set ourselves up for success in the
-future. Now it’s much easier to handle errors, and we’ve made the code more
-modular. Almost all of our work will be done in _src/lib.rs_ from here on out.
+Hűha! Ez sok munka volt, de megalapoztuk a jövőbeli sikerünket. Mostantól sokkal
+könnyebb kezelni a hibákat, és modulárisabbá tettük a kódot. Innentől szinte
+minden munkánkat az _src/lib.rs_ fájlban végezzük.
 
-Let’s take advantage of this newfound modularity by doing something that would
-have been difficult with the old code but is easy with the new code: We’ll
-write some tests!
+Használjuk ki ezt az újonnan szerzett modularitást azzal, hogy olyasmit teszünk,
+ami a régi kóddal nehéz lett volna, az újjal viszont könnyű: írunk néhány
+tesztet!
 
 [ch13]: ch13-00-functional-features.html
 [ch9-custom-types]: ch09-03-to-panic-or-not-to-panic.html#creating-custom-types-for-validation

@@ -57,8 +57,8 @@ Ezután a `RefCell<Rc<List>>` `borrow_mut` metódusával megváltoztatjuk a benn
 lévő értéket: a `Nil` értéket tároló `Rc<List>` helyett a `b`-ben lévő
 `Rc<List>`-re.
 
-Ha lefuttatjuk ezt a kódot, egyelőre kikommentezve hagyva az utolsó `println!`-t,
-ezt a kimenetet kapjuk:
+Ha lefuttatjuk ezt a kódot, egyelőre kikommentezve hagyva az utolsó
+`println!`-t, ezt a kimenetet kapjuk:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-26/output.txt}}
@@ -73,8 +73,8 @@ referenciaszámlálója 1, nem 0. Ezután a Rust megsemmisíti `a`-t, ami az
 `a`-beli `Rc<List>` példány referenciaszámlálóját szintén 2-ről 1-re csökkenti.
 Ennek a példánynak a memóriája sem szabadulhat fel, mert a másik `Rc<List>`
 példány továbbra is hivatkozik rá. A listának lefoglalt memória örökre
-felszabadítatlan marad. Hogy szemléltessük ezt a referenciaciklust, elkészítettük
-a 15-4. ábrát.
+felszabadítatlan marad. Hogy szemléltessük ezt a referenciaciklust,
+elkészítettük a 15-4. ábrát.
 
 <img alt="Egy 'a' címkéjű téglalap, amely egy 5 egész számot tartalmazó téglalapra mutat. Egy 'b' címkéjű téglalap, amely egy 10 egész számot tartalmazó téglalapra mutat. Az 5-öt tartalmazó téglalap a 10-et tartalmazó téglalapra mutat, a 10-et tartalmazó téglalap pedig vissza az 5-öt tartalmazó téglalapra, így ciklus jön létre." src="img/trpl15-04.svg" class="center" />
 
@@ -105,12 +105,12 @@ A referenciaciklusok elkerülésének egy másik megoldása az adatszerkezeteid
 átszervezése úgy, hogy egyes referenciák ownership-et fejezzenek ki, mások pedig
 ne. Ennek eredményeként lehetnek olyan ciklusaid, amelyek részben
 ownership-kapcsolatokból, részben nem ownership jellegű kapcsolatokból állnak,
-és csak az ownership-kapcsolatok befolyásolják, hogy egy érték megsemmisíthető-e.
-A 15-25. listában mindig azt akarjuk, hogy a `Cons` variánsok birtokolják a
-listájukat, ezért az adatszerkezet átszervezése nem lehetséges. Nézzünk meg egy
-példát szülő- és gyerekcsomópontokból álló gráfokkal, hogy lássuk, mikor
-alkalmas megoldás a nem ownership jellegű kapcsolat a referenciaciklusok
-megelőzésére.
+és csak az ownership-kapcsolatok befolyásolják, hogy egy érték
+megsemmisíthető-e. A 15-25. listában mindig azt akarjuk, hogy a `Cons` variánsok
+birtokolják a listájukat, ezért az adatszerkezet átszervezése nem lehetséges.
+Nézzünk meg egy példát szülő- és gyerekcsomópontokból álló gráfokkal, hogy
+lássuk, mikor alkalmas megoldás a nem ownership jellegű kapcsolat a
+referenciaciklusok megelőzésére.
 
 <!-- Old headings. Do not remove or links may break. -->
 
