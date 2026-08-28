@@ -91,6 +91,21 @@ lifetime-blokk. Fordítási időben a Rust összehasonlítja a két lifetime mé
 a lifetime-ja `'b`. A program elutasításra kerül, mert a `'b` rövidebb, mint az
 `'a`: a referencia tárgya nem él olyan sokáig, mint maga a referencia.
 
+Ugyanezt a helyzetet beágyazott blokk nélkül is elő tudjuk idézni: ha explicit
+`drop` hívással zárjuk le az `x` életét, a borrow checker pontosan ugyanazt
+látja. Az ábrán a `let r = &x;` sorban `x` elveszíti az **O** jogosultságát,
+mert `r` kölcsönvette az értékét; a `drop(x)` sornál ezért pirosan jelenik meg
+a hiányzó **O**: `x`-et nem lehet eldobni, amíg `r`-t később még használjuk.
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+fn main() {
+    let x = String::from("hello");
+    let r = &x;
+    drop(x);
+    println!("r: {r}");
+}
+```
+
 A 10-18. lista úgy javítja ki a kódot, hogy ne legyen benne dangling
 referencia, és hiba nélkül lefordul.
 
@@ -105,6 +120,21 @@ referencia, és hiba nélkül lefordul.
 Itt az `x` lifetime-ja `'b`, amely ebben az esetben nagyobb, mint az `'a`. Ez
 azt jelenti, hogy az `r` hivatkozhat az `x`-re, mert a Rust tudja, hogy az
 `r`-ben lévő referencia mindig érvényes lesz, amíg az `x` érvényes.
+
+Az érvényes sorrenden is végigmehetsz az ábrán. A `let r = &x;` sorban `x`
+most is elveszíti az **O** jogosultságát, a `println!` után azonban – ez `r`
+utolsó használata – a borrow véget ér, és `x` visszakapja az **O**-t. Pontosan
+eddig tart az `r`-ben lévő referencia lifetime-ja, ezért a `drop(x)` már
+megengedett:
+
+```aquascope,permissions,stepper,boundaries
+fn main() {
+    let x = String::from("hello");
+    let r = &x;
+    println!("r: {r}");
+    drop(x);
+}
+```
 
 Most, hogy tudod, hol vannak a referenciák lifetime-jai, és hogyan elemzi a
 Rust a lifetime-okat annak biztosítására, hogy a referenciák mindig érvényesek
@@ -282,6 +312,21 @@ a belső hatókör végéig érvényes. Futtasd le ezt a kódot, és látni fogo
 borrow checker jóváhagyja; le fog fordulni, és kiírja: `The longest string is
 long string is long`.
 
+A futásidejű ábrán az látszik, mire mutat valójában a `result`. Az `L1`
+pontban mindkét `String` a saját heapen lévő adatával él, az `L2` pontban
+pedig a `result` nyila a `string1` tartalmába mutat, mert az a hosszabb:
+
+```aquascope,interpreter,horizontal
+#fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+#    if x.len() > y.len() { x } else { y }
+#}
+#fn main() {
+let string1 = String::from("long string is long");
+let string2 = String::from("xyz");`[]`
+let result = longest(string1.as_str(), string2.as_str());`[]`
+#}
+```
+
 Következzék egy olyan példa, amely megmutatja, hogy a `result`-ban lévő
 referencia lifetime-jának a két argumentum közül a rövidebb lifetime-nak kell
 lennie. A `result` változó deklarációját kivisszük a belső hatókörön kívülre, de
@@ -318,6 +363,28 @@ Rustnak, hogy a `longest` függvény által visszaadott referencia lifetime-ja
 megegyezik az átadott referenciák lifetime-jai közül a rövidebbel. Ezért a
 borrow checker a 10-23. listában lévő kódot elutasítja, mint amelyben lehet
 érvénytelen referencia.
+
+A fordítási idejű ábra megmutatja, honnan ered a megkötés. A `longest`
+szignatúrája mindkét paramétert ugyanahhoz az `'a` lifetime-hoz köti, ezért a
+hívás után a `string1` és a `string2` is elveszíti az **O** jogosultságát –
+attól függetlenül, hogy melyikük a hosszabb. Amíg a `result`-ot használjuk,
+egyiküket sem lehet eldobni, ezért a `drop(string2)` sornál pirosan jelenik
+meg a hiányzó **O**:
+
+```aquascope,permissions,stepper,boundaries,shouldFail
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() { x } else { y }
+}
+
+fn main() {
+    let string1 = String::from("long string is long");
+    let string2 = String::from("xyz");
+    let result = longest(string1.as_str(), string2.as_str());
+    drop(string2);
+    println!("The longest string is {result}");
+    drop(string1);
+}
+```
 
 Próbálj meg további kísérleteket kitalálni, amelyekben változtatod a `longest`
 függvénynek átadott referenciák értékeit és lifetime-jait, valamint azt, hogyan
@@ -421,6 +488,23 @@ referenciát tárol. A `novel`-ben lévő adat már azelőtt létezik, hogy az
 `ImportantExcerpt` példány létrejönne. Ráadásul a `novel` csak azután kerül ki
 a hatóköréből, hogy az `ImportantExcerpt` kikerült a hatóköréből, így az
 `ImportantExcerpt` példányban lévő referencia érvényes.
+
+A futásidejű ábra megmutatja, mit jelent ez a memóriában. Az `L1` pontban a
+`first_sentence` a `novel` heapen lévő szövegének első mondatára mutat, az
+`L2` pontban pedig az `i` struct `part` mezője ugyanoda mutat. A struct tehát
+nem birtokolja a szöveget, csak kölcsönveszi a `novel`-től – ezért kell
+lifetime-jelölés a definíciójába:
+
+```aquascope,interpreter,horizontal
+#struct ImportantExcerpt<'a> {
+#    part: &'a str,
+#}
+#fn main() {
+let novel = String::from("Call me Ishmael. Some years ago...");
+let first_sentence = novel.split('.').next().unwrap();`[]`
+let i = ImportantExcerpt { part: first_sentence };`[]`
+#}
+```
 
 ### Lifetime elision
 
