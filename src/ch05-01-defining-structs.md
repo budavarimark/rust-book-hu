@@ -1,19 +1,20 @@
-## Defining and Instantiating Structs
+## Structok definiálása és példányosítása
 
-Structs are similar to tuples, discussed in [“The Tuple Type”][tuples]<!--
-ignore --> section, in that both hold multiple related values. Like tuples, the
-pieces of a struct can be different types. Unlike with tuples, in a struct
-you’ll name each piece of data so it’s clear what the values mean. Adding these
-names means that structs are more flexible than tuples: You don’t have to rely
-on the order of the data to specify or access the values of an instance.
+A structok hasonlítanak a tuple-ökre, amelyekről a [„A tuple típus”][tuples]<!--
+ignore --> szakaszban volt szó, hiszen mindkettő több összetartozó értéket
+tárol. A tuple-ökhöz hasonlóan a struct darabjai is különböző típusúak
+lehetnek. A tuple-öktől eltérően viszont a structban minden adatdarabot
+elnevezel, így világos, hogy az értékek mit jelentenek. Ezektől a nevektől a
+structok rugalmasabbak a tuple-öknél: nem kell az adatok sorrendjére
+hagyatkoznod ahhoz, hogy megadd vagy elérd egy példány értékeit.
 
-To define a struct, we enter the keyword `struct` and name the entire struct. A
-struct’s name should describe the significance of the pieces of data being
-grouped together. Then, inside curly brackets, we define the names and types of
-the pieces of data, which we call _fields_. For example, Listing 5-1 shows a
-struct that stores information about a user account.
+Egy struct definiálásához beírjuk a `struct` kulcsszót, és nevet adunk az egész
+structnak. A struct nevének le kell írnia, mi a jelentősége az együvé
+csoportosított adatdaraboknak. Ezután kapcsos zárójelek között definiáljuk az
+adatdarabok nevét és típusát; ezeket _mezőknek_ nevezzük. Az 5-1. lista például
+egy olyan structot mutat, amely egy felhasználói fiók adatait tárolja.
 
-<Listing number="5-1" file-name="src/main.rs" caption="A `User` struct definition">
+<Listing number="5-1" file-name="src/main.rs" caption="A `User` struct definíciója">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-01/src/main.rs:here}}
@@ -21,17 +22,18 @@ struct that stores information about a user account.
 
 </Listing>
 
-To use a struct after we’ve defined it, we create an _instance_ of that struct
-by specifying concrete values for each of the fields. We create an instance by
-stating the name of the struct and then add curly brackets containing _`key:
-value`_ pairs, where the keys are the names of the fields and the values are the
-data we want to store in those fields. We don’t have to specify the fields in
-the same order in which we declared them in the struct. In other words, the
-struct definition is like a general template for the type, and instances fill
-in that template with particular data to create values of the type. For
-example, we can declare a particular user as shown in Listing 5-2.
+Ahhoz, hogy a definiálás után használjuk a structot, létrehozzuk a struct egy
+_példányát_ úgy, hogy minden mezőhöz konkrét értéket adunk meg. A példányt úgy
+hozzuk létre, hogy leírjuk a struct nevét, majd kapcsos zárójelek között
+felsoroljuk a _`kulcs: érték`_ párokat, ahol a kulcsok a mezők nevei, az értékek
+pedig azok az adatok, amelyeket ezekben a mezőkben tárolni akarunk. A mezőket
+nem kell ugyanabban a sorrendben megadnunk, ahogy a structban deklaráltuk őket.
+Más szóval a struct definíciója olyan, mint a típus általános sablonja, a
+példányok pedig konkrét adatokkal töltik ki ezt a sablont, így hozva létre a
+típus értékeit. Egy konkrét felhasználót például az 5-2. listában látható módon
+deklarálhatunk.
 
-<Listing number="5-2" file-name="src/main.rs" caption="Creating an instance of the `User` struct">
+<Listing number="5-2" file-name="src/main.rs" caption="A `User` struct egy példányának létrehozása">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-02/src/main.rs:here}}
@@ -39,13 +41,14 @@ example, we can declare a particular user as shown in Listing 5-2.
 
 </Listing>
 
-To get a specific value from a struct, we use dot notation. For example, to
-access this user’s email address, we use `user1.email`. If the instance is
-mutable, we can change a value by using the dot notation and assigning into a
-particular field. Listing 5-3 shows how to change the value in the `email`
-field of a mutable `User` instance.
+Ha egy konkrét értéket akarunk kiolvasni egy structból, pontjelöléssel tesszük.
+Ennek a felhasználónak az e-mail-címét például a `user1.email` kifejezéssel
+érjük el. Ha a példány módosítható, akkor a pontjelöléssel és egy adott mezőbe
+való értékadással meg is változtathatunk egy értéket. Az 5-3. lista azt
+mutatja, hogyan változtatható meg egy módosítható `User` példány `email`
+mezőjének értéke.
 
-<Listing number="5-3" file-name="src/main.rs" caption="Changing the value in the `email` field of a `User` instance">
+<Listing number="5-3" file-name="src/main.rs" caption="Egy `User` példány `email` mezőjében lévő érték megváltoztatása">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-03/src/main.rs:here}}
@@ -53,16 +56,16 @@ field of a mutable `User` instance.
 
 </Listing>
 
-Note that the entire instance must be mutable; Rust doesn’t allow us to mark
-only certain fields as mutable. As with any expression, we can construct a new
-instance of the struct as the last expression in the function body to
-implicitly return that new instance.
+Vedd észre, hogy a teljes példánynak módosíthatónak kell lennie; a Rust nem
+engedi, hogy csak bizonyos mezőket jelöljünk módosíthatónak. Mint bármely más
+kifejezést, a struct új példányának létrehozását is megtehetjük a függvénytörzs
+utolsó kifejezéseként, hogy implicit módon visszaadjuk ezt az új példányt.
 
-Listing 5-4 shows a `build_user` function that returns a `User` instance with
-the given email and username. The `active` field gets the value `true`, and the
-`sign_in_count` gets a value of `1`.
+Az 5-4. lista egy `build_user` függvényt mutat, amely a megadott e-mail-címmel
+és felhasználónévvel tér vissza egy `User` példánnyal. Az `active` mező a `true`
+értéket kapja, a `sign_in_count` pedig az `1` értéket.
 
-<Listing number="5-4" file-name="src/main.rs" caption="A `build_user` function that takes an email and username and returns a `User` instance">
+<Listing number="5-4" file-name="src/main.rs" caption="Egy `build_user` függvény, amely egy e-mail-címet és egy felhasználónevet kap, és egy `User` példányt ad vissza">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-04/src/main.rs:here}}
@@ -70,23 +73,25 @@ the given email and username. The `active` field gets the value `true`, and the
 
 </Listing>
 
-It makes sense to name the function parameters with the same name as the struct
-fields, but having to repeat the `email` and `username` field names and
-variables is a bit tedious. If the struct had more fields, repeating each name
-would get even more annoying. Luckily, there’s a convenient shorthand!
+Van értelme a függvény paramétereit ugyanazokkal a nevekkel elnevezni, mint a
+struct mezőit, de kicsit fárasztó újra és újra leírni az `email` és a
+`username` mezőneveket és változókat. Ha a structnak több mezője lenne, az
+egyes nevek ismételgetése még bosszantóbb lenne. Szerencsére van rá egy
+kényelmes rövidítés!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-the-field-init-shorthand-when-variables-and-fields-have-the-same-name"></a>
 
-### Using the Field Init Shorthand
+### A mezőinicializáló rövidítés használata
 
-Because the parameter names and the struct field names are exactly the same in
-Listing 5-4, we can use the _field init shorthand_ syntax to rewrite
-`build_user` so that it behaves exactly the same but doesn’t have the
-repetition of `username` and `email`, as shown in Listing 5-5.
+Mivel az 5-4. listában a paraméternevek és a struct mezőnevei pontosan
+megegyeznek, a _mezőinicializáló rövidítés_ (field init shorthand)
+szintaxisával úgy írhatjuk át a `build_user` függvényt, hogy pontosan
+ugyanúgy viselkedjen, de ne ismételgesse a `username`-et és az `email`-t – ezt
+mutatja az 5-5. lista.
 
-<Listing number="5-5" file-name="src/main.rs" caption="A `build_user` function that uses field init shorthand because the `username` and `email` parameters have the same name as struct fields">
+<Listing number="5-5" file-name="src/main.rs" caption="Egy `build_user` függvény, amely mezőinicializáló rövidítést használ, mert a `username` és az `email` paraméterek neve megegyezik a struct mezőinek nevével">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-05/src/main.rs:here}}
@@ -94,27 +99,27 @@ repetition of `username` and `email`, as shown in Listing 5-5.
 
 </Listing>
 
-Here, we’re creating a new instance of the `User` struct, which has a field
-named `email`. We want to set the `email` field’s value to the value in the
-`email` parameter of the `build_user` function. Because the `email` field and
-the `email` parameter have the same name, we only need to write `email` rather
-than `email: email`.
+Itt a `User` struct egy új példányát hozzuk létre, amelynek van egy `email` nevű
+mezője. Az `email` mező értékét a `build_user` függvény `email` paraméterében
+lévő értékre akarjuk beállítani. Mivel az `email` mező és az `email` paraméter
+neve azonos, elég csak `email`-t írnunk az `email: email` helyett.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="creating-instances-from-other-instances-with-struct-update-syntax"></a>
 
-### Creating Instances with Struct Update Syntax
+### Példányok létrehozása struct-frissítő szintaxissal
 
-It’s often useful to create a new instance of a struct that includes most of
-the values from another instance of the same type, but changes some of them.
-You can do this using struct update syntax.
+Gyakran hasznos, ha úgy hozzuk létre egy struct új példányát, hogy az
+ugyanazon típus egy másik példányának értékeit veszi át nagyrészt, de
+némelyiket megváltoztatja. Ezt a struct-frissítő szintaxissal tehetjük meg.
 
-First, in Listing 5-6 we show how to create a new `User` instance in `user2` in
-the regular way, without the update syntax. We set a new value for `email` but
-otherwise use the same values from `user1` that we created in Listing 5-2.
+Először az 5-6. listában megmutatjuk, hogyan hozunk létre a szokásos módon, a
+frissítő szintaxis nélkül egy új `User` példányt a `user2`-ben. Az `email`-nek
+új értéket adunk, egyébként pedig ugyanazokat az értékeket használjuk, amelyeket
+az 5-2. listában létrehozott `user1` tartalmaz.
 
-<Listing number="5-6" file-name="src/main.rs" caption="Creating a new `User` instance using all but one of the values from `user1`">
+<Listing number="5-6" file-name="src/main.rs" caption="Egy új `User` példány létrehozása a `user1` egy kivétellel az összes értékének felhasználásával">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-06/src/main.rs:here}}
@@ -122,11 +127,11 @@ otherwise use the same values from `user1` that we created in Listing 5-2.
 
 </Listing>
 
-Using struct update syntax, we can achieve the same effect with less code, as
-shown in Listing 5-7. The syntax `..` specifies that the remaining fields not
-explicitly set should have the same value as the fields in the given instance.
+A struct-frissítő szintaxissal ugyanezt kevesebb kóddal érhetjük el, ahogy azt
+az 5-7. lista mutatja. A `..` szintaxis azt jelöli, hogy a többi, kifejezetten
+be nem állított mező ugyanazt az értéket kapja, mint a megadott példány mezői.
 
-<Listing number="5-7" file-name="src/main.rs" caption="Using struct update syntax to set a new `email` value for a `User` instance but to use the rest of the values from `user1`">
+<Listing number="5-7" file-name="src/main.rs" caption="Struct-frissítő szintaxis használata: új `email` érték beállítása egy `User` példányhoz, a többi érték átvétele a `user1`-től">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-07/src/main.rs:here}}
@@ -134,42 +139,45 @@ explicitly set should have the same value as the fields in the given instance.
 
 </Listing>
 
-The code in Listing 5-7 also creates an instance in `user2` that has a
-different value for `email` but has the same values for the `username`,
-`active`, and `sign_in_count` fields from `user1`. The `..user1` must come last
-to specify that any remaining fields should get their values from the
-corresponding fields in `user1`, but we can choose to specify values for as
-many fields as we want in any order, regardless of the order of the fields in
-the struct’s definition.
+Az 5-7. listában szereplő kód is olyan példányt hoz létre a `user2`-ben, amely
+más `email` értékkel rendelkezik, de a `username`, `active` és `sign_in_count`
+mezőkben ugyanazokat az értékeket tartalmazza, mint a `user1`. A `..user1`
+résznek utolsóként kell állnia, hogy jelezze: minden fennmaradó mező a `user1`
+megfelelő mezőiből kapja az értékét, egyébként viszont tetszőleges számú
+mezőhöz megadhatunk értéket, tetszőleges sorrendben, függetlenül a mezők
+sorrendjétől a struct definíciójában.
 
-Note that the struct update syntax uses `=` like an assignment; this is because
-it moves the data, just as we saw in the [“Variables and Data Interacting with
-Move”][move]<!-- ignore --> section. In this example, we can no longer use
-`user1` after creating `user2` because the `String` in the `username` field of
-`user1` was moved into `user2`. If we had given `user2` new `String` values for
-both `email` and `username`, and thus only used the `active` and `sign_in_count`
-values from `user1`, then `user1` would still be valid after creating `user2`.
-Both `active` and `sign_in_count` are types that implement the `Copy` trait, so
-the behavior we discussed in the [“Stack-Only Data: Copy”][copy]<!-- ignore -->
-section would apply. We can also still use `user1.email` in this example,
-because its value was not moved out of `user1`.
+Vedd észre, hogy a struct-frissítő szintaxis az `=` jelet értékadásként
+használja; ez azért van, mert mozgatja az adatot, ahogy azt a [„Változók és
+adatok kölcsönhatása: move”][move]<!-- ignore --> szakaszban láttuk. Ebben a
+példában a `user2` létrehozása után már nem használhatjuk a `user1`-et, mert a
+`user1` `username` mezőjében lévő `String` bemozgott a `user2`-be. Ha az
+`email`-hez és a `username`-hez is új `String` értékeket adtunk volna a
+`user2`-nek, és így csak az `active` és a `sign_in_count` értékeket vettük volna
+át a `user1`-től, akkor a `user1` a `user2` létrehozása után is érvényes maradna.
+Az `active` és a `sign_in_count` egyaránt olyan típusú, amely implementálja a
+`Copy` traitet, tehát a [„Csak a stacken lévő adatok: Copy”][copy]<!-- ignore -->
+szakaszban tárgyalt viselkedés érvényesülne. A `user1.email` értéket egyébként
+ebben a példában is használhatjuk továbbra is, mert az értéke nem mozgott ki a
+`user1`-ből.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-tuple-structs-without-named-fields-to-create-different-types"></a>
 
-### Creating Different Types with Tuple Structs {#creating-different-types-with-tuple-structs}
+### Különböző típusok létrehozása tuple structokkal {#creating-different-types-with-tuple-structs}
 
-Rust also supports structs that look similar to tuples, called _tuple structs_.
-Tuple structs have the added meaning the struct name provides but don’t have
-names associated with their fields; rather, they just have the types of the
-fields. Tuple structs are useful when you want to give the whole tuple a name
-and make the tuple a different type from other tuples, and when naming each
-field as in a regular struct would be verbose or redundant.
+A Rust olyan structokat is támogat, amelyek a tuple-ökre hasonlítanak; ezek a
+_tuple structok_. A tuple structoknak megvan az a többletjelentésük, amit a
+struct neve ad, de a mezőikhez nem tartoznak nevek; csak a mezők típusait
+tartalmazzák. A tuple structok akkor hasznosak, ha az egész tuple-nek nevet
+akarsz adni, és a tuple-t más tuple-öktől eltérő típussá akarod tenni, illetve
+amikor a mezők elnevezése – ahogy egy közönséges structban tennénk – terjengős
+vagy fölösleges lenne.
 
-To define a tuple struct, start with the `struct` keyword and the struct name
-followed by the types in the tuple. For example, here we define and use two
-tuple structs named `Color` and `Point`:
+Egy tuple struct definiálásához kezdd a `struct` kulcsszóval és a struct
+nevével, majd sorold fel a tuple-ben szereplő típusokat. Például itt két tuple
+structot definiálunk és használunk, `Color` és `Point` néven:
 
 <Listing file-name="src/main.rs">
 
@@ -179,31 +187,31 @@ tuple structs named `Color` and `Point`:
 
 </Listing>
 
-Note that the `black` and `origin` values are different types because they’re
-instances of different tuple structs. Each struct you define is its own type,
-even though the fields within the struct might have the same types. For
-example, a function that takes a parameter of type `Color` cannot take a
-`Point` as an argument, even though both types are made up of three `i32`
-values. Otherwise, tuple struct instances are similar to tuples in that you can
-destructure them into their individual pieces, and you can use a `.` followed
-by the index to access an individual value. Unlike tuples, tuple structs
-require you to name the type of the struct when you destructure them. For
-example, we would write `let Point(x, y, z) = origin;` to destructure the
-values in the `origin` point into variables named `x`, `y`, and `z`.
+Vedd észre, hogy a `black` és az `origin` érték különböző típusú, mert
+különböző tuple structok példányai. Minden struct, amelyet definiálsz, önálló
+típus, még akkor is, ha a structon belüli mezők típusai megegyeznek. Egy olyan
+függvény például, amely `Color` típusú paramétert vár, nem fogadhat el `Point`
+típusú argumentumot, pedig mindkét típus három `i32` értékből áll. Ettől
+eltekintve a tuple struct példányok hasonlítanak a tuple-ökre: szét lehet
+bontani őket az egyes darabjaikra, és egy `.` jellel, majd az indexszel elérheted
+az egyes értékeket. A tuple-öktől eltérően a tuple structok szétbontásakor meg
+kell nevezned a struct típusát. Például a `let Point(x, y, z) = origin;`
+kifejezést írnánk ahhoz, hogy az `origin` pont értékeit `x`, `y` és `z` nevű
+változókba bontsuk szét.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="unit-like-structs-without-any-fields"></a>
 
-### Defining Unit-Like Structs
+### Unit-szerű structok definiálása
 
-You can also define structs that don’t have any fields! These are called
-_unit-like structs_ because they behave similarly to `()`, the unit type that
-we mentioned in [“The Tuple Type”][tuples]<!-- ignore --> section. Unit-like
-structs can be useful when you need to implement a trait on some type but don’t
-have any data that you want to store in the type itself. We’ll discuss traits
-in Chapter 10. Here’s an example of declaring and instantiating a unit struct
-named `AlwaysEqual`:
+Olyan structokat is definiálhatsz, amelyeknek egyetlen mezőjük sincs! Ezeket
+_unit-szerű structoknak_ nevezzük, mert hasonlóan viselkednek a `()`
+unit típushoz, amelyet a [„A tuple típus”][tuples]<!-- ignore --> szakaszban
+említettünk. A unit-szerű structok akkor lehetnek hasznosak, ha valamilyen
+típusra implementálnod kell egy traitet, de nincs olyan adat, amelyet magában a
+típusban akarnál tárolni. A traitekről a 10. fejezetben lesz szó. Íme egy példa
+egy `AlwaysEqual` nevű unit struct deklarálására és példányosítására:
 
 <Listing file-name="src/main.rs">
 
@@ -213,29 +221,33 @@ named `AlwaysEqual`:
 
 </Listing>
 
-To define `AlwaysEqual`, we use the `struct` keyword, the name we want, and
-then a semicolon. No need for curly brackets or parentheses! Then, we can get
-an instance of `AlwaysEqual` in the `subject` variable in a similar way: using
-the name we defined, without any curly brackets or parentheses. Imagine that
-later we’ll implement behavior for this type such that every instance of
-`AlwaysEqual` is always equal to every instance of any other type, perhaps to
-have a known result for testing purposes. We wouldn’t need any data to
-implement that behavior! You’ll see in Chapter 10 how to define traits and
-implement them on any type, including unit-like structs.
+Az `AlwaysEqual` definiálásához a `struct` kulcsszót, a kívánt nevet, majd egy
+pontosvesszőt használunk. Nincs szükség kapcsos zárójelekre vagy
+zárójelpárokra! Ezután hasonló módon kaphatunk egy `AlwaysEqual` példányt a
+`subject` változóba: az általunk definiált nevet írjuk le, mindenféle kapcsos
+zárójel és zárójelpár nélkül. Képzeld el, hogy később olyan viselkedést
+implementálunk ehhez a típushoz, amely szerint az `AlwaysEqual` minden példánya
+mindig egyenlő bármely más típus minden példányával – például azért, hogy
+tesztelési célokra ismert eredményünk legyen. Ennek a viselkedésnek az
+implementálásához semmilyen adatra nem lenne szükségünk! A 10. fejezetben
+látni fogod, hogyan definiálhatsz traiteket, és hogyan implementálhatod őket
+bármilyen típusra, köztük a unit-szerű structokra is.
 
-> ### Ownership of Struct Data
+> ### A struct adatainak ownershipje
 >
-> In the `User` struct definition in Listing 5-1, we used the owned `String`
-> type rather than the `&str` string slice type. This is a deliberate choice
-> because we want each instance of this struct to own all of its data and for
-> that data to be valid for as long as the entire struct is valid.
+> Az 5-1. listában szereplő `User` struct definíciójában a birtokolt `String`
+> típust használtuk az `&str` string slice típus helyett. Ez tudatos döntés,
+> mert azt akarjuk, hogy a struct minden példánya birtokolja az összes
+> adatát, és hogy ez az adat mindaddig érvényes legyen, amíg a teljes struct
+> érvényes.
 >
-> It’s also possible for structs to store references to data owned by something
-> else, but to do so requires the use of _lifetimes_, a Rust feature that we’ll
-> discuss in Chapter 10. Lifetimes ensure that the data referenced by a struct
-> is valid for as long as the struct is. Let’s say you try to store a reference
-> in a struct without specifying lifetimes, like the following in
-> *src/main.rs*; this won’t work:
+> Lehetséges az is, hogy egy struct valami máshoz tartozó adatra mutató
+> referenciákat tároljon, ehhez azonban _lifetime_-okat kell használni, ami a
+> Rust egy olyan képessége, amelyről a 10. fejezetben lesz szó. A lifetime-ok
+> biztosítják, hogy a struct által hivatkozott adat legalább addig érvényes
+> legyen, mint maga a struct. Tegyük fel, hogy megpróbálsz egy referenciát
+> tárolni egy structban lifetime-ok megadása nélkül, ahogy az alábbi kód teszi
+> a *src/main.rs* fájlban; ez nem fog működni:
 >
 > <Listing file-name="src/main.rs">
 >
@@ -261,7 +273,7 @@ implement them on any type, including unit-like structs.
 >
 > </Listing>
 >
-> The compiler will complain that it needs lifetime specifiers:
+> A fordító panaszkodni fog, hogy lifetime-megadókra van szüksége:
 >
 > ```console
 > $ cargo run
@@ -297,9 +309,10 @@ implement them on any type, including unit-like structs.
 > error: could not compile `structs` (bin "structs") due to 2 previous errors
 > ```
 >
-> In Chapter 10, we’ll discuss how to fix these errors so that you can store
-> references in structs, but for now, we’ll fix errors like these using owned
-> types like `String` instead of references like `&str`.
+> A 10. fejezetben megbeszéljük, hogyan javíthatók ezek a hibák, hogy
+> referenciákat tárolhass structokban, egyelőre azonban az ilyen hibákat úgy
+> javítjuk, hogy az `&str`-hez hasonló referenciák helyett a `String`-hez
+> hasonló birtokolt típusokat használunk.
 
 <!-- manual-regeneration
 for the error above

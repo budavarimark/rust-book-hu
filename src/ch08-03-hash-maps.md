@@ -22,7 +22,7 @@ dokumentációját.
 ### Új hash map létrehozása
 
 Üres hash mapet létrehozni például a `new` használatával lehet, elemeket pedig
-az `insert`tel adhatunk hozzá. A 8-20. listában két csapat pontszámát tartjuk
+az `insert`-tel adhatunk hozzá. A 8-20. listában két csapat pontszámát tartjuk
 nyilván, a csapatok neve _Blue_ és _Yellow_. A Blue csapat 10 ponttal indul, a
 Yellow csapat pedig 50-nel.
 
@@ -35,15 +35,16 @@ Yellow csapat pedig 50-nel.
 </Listing>
 
 Figyeld meg, hogy először `use`-olnunk kell a `HashMap`-et a standard könyvtár
-kollekciókat tartalmazó részéből. Három gyakori kollekciónk közül ezt használják
-a legritkábban, ezért nincs benne azokban a nyelvi elemekben, amelyeket a prelude
-automatikusan behoz a hatókörbe. A hash mapek kevesebb támogatást is kapnak a
-standard könyvtártól; például nincs beépített makró a létrehozásukra.
+kollekciókat tartalmazó részéből. Három gyakori kollekciónk közül ezt
+használják a legritkábban, ezért nincs benne azokban a nyelvi elemekben,
+amelyeket a prelude automatikusan behoz a hatókörbe. A hash mapek kevesebb
+támogatást is kapnak a standard könyvtártól; például nincs beépített makró a
+létrehozásukra.
 
 A vektorokhoz hasonlóan a hash mapek is a heapen tárolják az adataikat. Ennek a
 `HashMap`-nek `String` típusú kulcsai és `i32` típusú értékei vannak. A
-vektorokhoz hasonlóan a hash mapek is homogének: minden kulcsnak azonos típusúnak
-kell lennie, és minden értéknek is azonos típusúnak kell lennie.
+vektorokhoz hasonlóan a hash mapek is homogének: minden kulcsnak azonos
+típusúnak kell lennie, és minden értéknek is azonos típusúnak kell lennie.
 
 ### Értékek elérése egy hash mapben {#accessing-values-in-a-hash-map}
 
@@ -125,7 +126,7 @@ régi értéket, és figyelmen kívül hagyhatod az újat, csak akkor adva hozz�
 
 Ha beszúrunk egy kulcsot és egy értéket egy hash mapbe, majd ugyanazt a kulcsot
 egy másik értékkel szúrjuk be, az adott kulcshoz tartozó érték lecserélődik.
-Bár a 8-23. lista kódja kétszer hívja meg az `insert`et, a hash map csak egy
+Bár a 8-23. lista kódja kétszer hívja meg az `insert`-et, a hash map csak egy
 kulcs-érték párt fog tartalmazni, mert mindkétszer a Blue csapat kulcsához
 tartozó értéket szúrjuk be.
 
@@ -166,11 +167,12 @@ a kód a 8-24. listában láthatóan alakul.
 
 </Listing>
 
-Az `Entry` `or_insert` metódusa úgy van definiálva, hogy módosítható referenciát
-adjon vissza a megfelelő `Entry`-kulcshoz tartozó értékre, ha az a kulcs létezik,
-ha pedig nem, akkor a paramétert szúrja be az adott kulcs új értékeként, és
-módosítható referenciát ad vissza az új értékre. Ez a technika sokkal tisztább,
-mintha magunk írnánk meg a logikát, ráadásul jobban kijön a borrow checkerrel is.
+Az `Entry` `or_insert` metódusa úgy van definiálva, hogy módosítható
+referenciát adjon vissza a megfelelő `Entry`-kulcshoz tartozó értékre, ha az a
+kulcs létezik, ha pedig nem, akkor a paramétert szúrja be az adott kulcs új
+értékeként, és módosítható referenciát ad vissza az új értékre. Ez a technika
+sokkal tisztább, mintha magunk írnánk meg a logikát, ráadásul jobban kijön a
+borrow checkerrel is.
 
 A 8-24. lista kódjának futtatása a `{"Yellow": 50, "Blue": 10}` értéket írja ki.
 Az `entry` első hívása beszúrja a Yellow csapat kulcsát az `50` értékkel, mert a
@@ -219,8 +221,8 @@ hasher megadásával. A _hasher_ olyan típus, amely implementálja a `BuildHash
 traitet. A traitekről és arról, hogyan implementáljuk őket, a [10.
 fejezetben][traits]<!-- ignore --> beszélünk. Nem feltétlenül kell a nulláról
 megírnod a saját hasheredet; a [crates.io](https://crates.io/)<!-- ignore -->
-oldalon más Rust-felhasználók által megosztott könyvtárak érhetők el, amelyek sok
-elterjedt hash algoritmust megvalósító hashereket biztosítanak.
+oldalon más Rust-felhasználók által megosztott könyvtárak érhetők el, amelyek
+sok elterjedt hash algoritmust megvalósító hashereket biztosítanak.
 
 [^siphash]: [https://en.wikipedia.org/wiki/SipHash](https://en.wikipedia.org/wiki/SipHash)
 
@@ -250,9 +252,9 @@ A standard könyvtár API-dokumentációja leírja azokat a metódusokat, amelye
 vektorok, a sztringek és a hash mapek rendelkeznek, és amelyek hasznosak lesznek
 ezekhez a gyakorlatokhoz!
 
-Egyre összetettebb programok felé haladunk, amelyekben a műveletek meghiúsulhatnak,
-így ez tökéletes alkalom arra, hogy a hibakezelésről beszéljünk. Ez lesz a
-következő téma!
+Egyre összetettebb programok felé haladunk, amelyekben a műveletek
+meghiúsulhatnak, így ez tökéletes alkalom arra, hogy a hibakezelésről
+beszéljünk. Ez lesz a következő téma!
 
 [validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [access]: #accessing-values-in-a-hash-map

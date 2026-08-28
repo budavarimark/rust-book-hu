@@ -196,8 +196,8 @@ Egy vektoron végigiterálni, akár nem módosítható, akár módosítható mó
 biztonságos a borrow checker szabályai miatt. Ha megpróbálnánk elemeket
 beszúrni vagy eltávolítani a 8-7. és a 8-8. lista `for` ciklusainak
 törzsében, olyan fordítási hibát kapnánk, mint amilyet a 8-6. lista kódjánál
-kaptunk. A vektorra mutató referencia, amelyet a `for` ciklus tart, megakadályozza
-az egész vektor egyidejű módosítását.
+kaptunk. A vektorra mutató referencia, amelyet a `for` ciklus tart,
+megakadályozza az egész vektor egyidejű módosítását.
 
 ### Enum használata többféle típus tárolására
 

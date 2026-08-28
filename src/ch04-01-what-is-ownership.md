@@ -15,9 +15,9 @@ hír az, hogy minél nagyobb tapasztalatot szerzel a Rustban és az ownership
 rendszerének szabályaiban, annál könnyebben fogsz természetes módon biztonságos
 és hatékony kódot írni. Ne add fel!
 
-Ha megérted az ownershipet, szilárd alapod lesz azoknak a képességeknek a
+Ha megérted az ownership-et, szilárd alapod lesz azoknak a képességeknek a
 megértéséhez, amelyek a Rustot egyedivé teszik. Ebben a fejezetben néhány olyan
-példán keresztül ismerkedsz meg az ownershippel, amelyek egy nagyon gyakori
+példán keresztül ismerkedsz meg az ownership-pel, amelyek egy nagyon gyakori
 adatszerkezetre összpontosítanak: a sztringekre.
 
 > ### A stack és a heap {#the-stack-and-the-heap}
@@ -80,7 +80,7 @@ adatszerkezetre összpontosítanak: a sztringekre.
 > Annak nyilvántartása, hogy a kód mely részei milyen adatot használnak a heapen,
 > a heapen lévő adatduplikációk minimalizálása, valamint a heapen lévő nem
 > használt adat kitakarítása, hogy ne fogyj ki a helyből – ezek mind olyan
-> problémák, amelyeket az ownership old meg. Ha egyszer megérted az ownershipet,
+> problémák, amelyeket az ownership old meg. Ha egyszer megérted az ownership-et,
 > nem kell majd túl gyakran a stackkel és a heappel foglalkoznod. Az viszont, ha
 > tudod, hogy az ownership fő célja a heapen lévő adat kezelése, segíthet
 > megmagyarázni, miért éppen úgy működik, ahogy.
@@ -145,9 +145,9 @@ tárolódik, és fel akarjuk fedezni, honnan tudja a Rust, mikor kell kitakarít
 ezt az adatot – a `String` típus pedig kiváló példa erre.
 
 A `String` típusnak azokra a részeire fogunk összpontosítani, amelyek az
-ownershiphez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
+ownership-hez kapcsolódnak. Ezek a szempontok más összetett adattípusokra is
 érvényesek, akár a standard könyvtár biztosítja őket, akár te hozod létre őket. A
-`String` ownershiptől független szempontjait a [8. fejezetben][ch8]<!-- ignore -->
+`String` ownership-től független szempontjait a [8. fejezetben][ch8]<!-- ignore -->
 tárgyaljuk.
 
 A sztringliterálokat már láttuk, ahol a sztring értéke bele van égetve a
@@ -491,11 +491,11 @@ az ownership szabályai.
 
 ### Visszatérési értékek és hatókör
 
-A visszatérési értékek szintén átadhatják az ownershipet. A 4-4. lista egy olyan
+A visszatérési értékek szintén átadhatják az ownership-et. A 4-4. lista egy olyan
 függvényre mutat példát, amely visszaad valamilyen értéket, a 4-3. listához
 hasonló kommentekkel.
 
-<Listing number="4-4" file-name="src/main.rs" caption="A visszatérési értékek ownershipjének átadása">
+<Listing number="4-4" file-name="src/main.rs" caption="A visszatérési értékek ownership-jének átadása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-04/src/main.rs}}
@@ -503,14 +503,14 @@ hasonló kommentekkel.
 
 </Listing>
 
-Egy változó ownershipje minden alkalommal ugyanezt a mintát követi: ha egy
+Egy változó ownership-je minden alkalommal ugyanezt a mintát követi: ha egy
 értéket egy másik változóhoz rendelünk, az move-olódik. Amikor egy heapen lévő
 adatot tartalmazó változó kilép a hatóköréből, az értéket a `drop` takarítja ki,
-hacsak az adat ownershipje nem került át egy másik változóhoz.
+hacsak az adat ownership-je nem került át egy másik változóhoz.
 
 Bár ez működik, kissé fárasztó minden függvénynél átvenni, majd visszaadni az
-ownershipet. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson egy
-értéket anélkül, hogy átvenné az ownershipjét? Elég bosszantó, hogy bármit, amit
+ownership-et. Mi van akkor, ha azt szeretnénk, hogy egy függvény használhasson egy
+értéket anélkül, hogy átvenné az ownership-jét? Elég bosszantó, hogy bármit, amit
 átadunk, vissza is kell adni, ha újra használni akarjuk – azon az adaton felül,
 amely a függvény törzséből eredményként adódik, és amelyet szintén vissza
 szeretnénk kapni.
@@ -518,7 +518,7 @@ szeretnénk kapni.
 A Rust lehetővé teszi, hogy tuple használatával több értéket adjunk vissza, ahogy
 azt a 4-5. lista mutatja.
 
-<Listing number="4-5" file-name="src/main.rs" caption="A paraméterek ownershipjének visszaadása">
+<Listing number="4-5" file-name="src/main.rs" caption="A paraméterek ownership-jének visszaadása">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-05/src/main.rs}}
@@ -528,7 +528,7 @@ azt a 4-5. lista mutatja.
 
 Ez azonban túl sok ceremónia és túl sok munka egy olyan fogalomhoz, amelynek
 megszokottnak kellene lennie. Szerencsénkre a Rustnak van egy olyan képessége,
-amellyel úgy használhatunk egy értéket, hogy közben nem adjuk át az ownershipjét:
+amellyel úgy használhatunk egy értéket, hogy közben nem adjuk át az ownership-jét:
 ezek a referenciák.
 
 [data-types]: ch03-02-data-types.html#data-types

@@ -287,14 +287,14 @@ használjuk, hogy korán, teljesen kilépjünk a függvényből, és a `File::op
 hibaértékét – amely most az `e` mintaváltozóban van – visszaadjuk a hívó kódnak
 mint ennek a függvénynek a hibaértékét.
 
-Így, ha van egy fájlleírónk az `username_file`-ban, a függvény ezután létrehoz
-egy új `String`-et az `username` változóban, és meghívja a `read_to_string`
-metódust az `username_file`-ban lévő fájlleírón, hogy beolvassa a fájl tartalmát
-az `username`-be. A `read_to_string` metódus szintén `Result`-ot ad vissza, mert
+Így, ha van egy fájlleírónk a `username_file`-ban, a függvény ezután létrehoz
+egy új `String`-et a `username` változóban, és meghívja a `read_to_string`
+metódust a `username_file`-ban lévő fájlleírón, hogy beolvassa a fájl tartalmát
+a `username`-be. A `read_to_string` metódus szintén `Result`-ot ad vissza, mert
 hibázhat, még akkor is, ha a `File::open` sikerrel járt. Ezért szükségünk van
 egy újabb `match`-re ennek a `Result`-nak a kezelésére: ha a `read_to_string`
 sikerrel jár, akkor a függvényünk is sikerrel járt, és `Ok`-ba csomagolva
-visszaadjuk a fájlból származó, most már az `username`-ben lévő
+visszaadjuk a fájlból származó, most már a `username`-ben lévő
 felhasználónevet. Ha a `read_to_string` hibázik, ugyanúgy adjuk vissza a
 hibaértéket, ahogy abban a `match`-ben tettük, amely a `File::open` visszatérési
 értékét kezelte. Itt azonban nem kell kiírnunk a `return` kulcsszót, mert ez a
@@ -360,7 +360,7 @@ akkor a `read_username_from_file` törzsében lévő `?` operátorhívások megh
 kódot hozzá kellene adnunk a függvényhez.
 
 A 9-7. lista kontextusában a `File::open` hívás végén álló `?` az `Ok`-ban lévő
-értéket adja vissza az `username_file` változóba. Ha hiba történik, a `?`
+értéket adja vissza a `username_file` változóba. Ha hiba történik, a `?`
 operátor korán kilép az egész függvényből, és bármilyen `Err` értéket átad a
 hívó kódnak. Ugyanez érvényes a `read_to_string` hívás végén álló `?`-re is.
 
@@ -381,7 +381,7 @@ don't want to include it for rustdoc testing purposes. -->
 
 </Listing>
 
-Az új `String` létrehozását az `username` változóban a függvény elejére
+Az új `String` létrehozását a `username` változóban a függvény elejére
 helyeztük át; ez a rész nem változott. Ahelyett, hogy létrehoznánk egy
 `username_file` változót, a `read_to_string` hívását közvetlenül a
 `File::open("hello.txt")?` eredményéhez fűztük. Továbbra is van egy `?` a
